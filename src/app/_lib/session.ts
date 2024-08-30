@@ -9,7 +9,7 @@ export interface SessionPayload {
   expiresAt: Date;
 }
 
-const secretKey = process.env.SESSION_SECRET!;
+const secretKey = process.env.SESSION_SECRET;
 const encodedKey = new TextEncoder().encode(secretKey);
 
 // Function to create and sign a JWT
@@ -34,12 +34,13 @@ export async function decrypt(token: string = ''): Promise<SessionPayload | null
   }
 }
 
-export async function createSession(userId: number) {
+export async function createSession(data: any) {
+    const userId = data.id;
+    const name = data.name;
+    const email = data.email;
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     const session = await encrypt({
-        userId, expiresAt,
-        name: '',
-        email: ''
+        userId, expiresAt,name,email
     })
 
     cookies().set('session', session, {

@@ -19,10 +19,9 @@ export async function POST(request: Request) {
    try {
     // Parse the request body to extract the ID
     const body = await request.json();
-    const { id } = body;
     //create session
-    const session = await createSession(id);
-    const decryptSession =await decrypt(session);
+    const session = await createSession(body);
+    const decryptSession = await decrypt(session);
     return new Response(JSON.stringify(decryptSession), {
       status: 200,
     });
