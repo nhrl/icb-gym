@@ -22,17 +22,6 @@ const NavBar: React.FC<navProps> = ({ className }) => {
     setIsLoginModalOpen(true); // Open login modal
   };
 
-  const handleCloseModal = () => {
-    setIsSignupModalOpen(false); // Close signup modal
-    setIsLoginModalOpen(false); // Close login modal
-  };
-
-  // This function handles closing the modal when clicked outside
-  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (e.target === e.currentTarget) {
-      handleCloseModal(); // Close the modal when clicked outside
-    }
-  };
 
   return (
     <main className={`flex items-center w-full justify-between p-4 border border-zinc-800 rounded-2xl ${className}`}>
@@ -50,7 +39,6 @@ const NavBar: React.FC<navProps> = ({ className }) => {
       {isSignupModalOpen && (
         <div
           className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
-          onClick={handleOverlayClick} // Close when clicked outside modal
         >
           <div className="relative">
             <SignupModal />  {/* Render the signup modal */}
@@ -61,7 +49,6 @@ const NavBar: React.FC<navProps> = ({ className }) => {
       {isLoginModalOpen && (
         <div
           className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
-          onClick={handleOverlayClick} // Close when clicked outside modal
         >
           <div className="relative">
             <LoginModal />  {/* Render the login modal */}
