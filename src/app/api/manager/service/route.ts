@@ -1,4 +1,4 @@
-import { addService, getService, deleteService, updateService} from "../../../../service/service/service";
+import { addService, getService, deleteService, updateService} from "@service/service/service";
 
 export async function POST(request: Request) {
     try {
