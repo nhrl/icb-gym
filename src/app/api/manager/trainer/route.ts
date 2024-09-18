@@ -1,4 +1,4 @@
-import { addTrainer, getTrainer, deleteTrainer, updateTrainer} from "../../../../service/trainer/trainer";
+import { addTrainer, getTrainer, deleteTrainer, updateTrainer} from "@service/trainer/trainer";
 
 
 export async function POST(req: Request) {

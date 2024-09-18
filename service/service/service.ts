@@ -1,6 +1,5 @@
 import supabase from "../../database/db";
-import { getFilePathFromUrl, removeImage } from "../imageUpload/imageUploader";
-import { uploadImage } from "../imageUpload/imageUploader";
+import { getFilePathFromUrl, removeImage, uploadImage } from "@service/imageUpload/imageUploader";
 
 // For image folder directory
 const folder = `service`;
@@ -32,26 +31,28 @@ export async function addService(data:any) {
         }
         return {success: true, message: "New service added successfully"}
     } catch (error:any) {
-        return {
-            success: false,
-            error: error.message
-        }
+        return { success: false, message: "An error occurred. Please try again.", error: error.message };
     }
 }
 
 export async function getService() {
-    const { data, error } = await supabase
-    .from('service')
-    .select();
-
-    if (error) {
-       return {
-            success: false,
-            message: "Error getting service data",
-            error: error.message
-       }
+    try {
+        const { data, error } = await supabase
+        .from('service')
+        .select();
+    
+        if (error) {
+           return {
+                success: false,
+                message: "Error getting service data",
+                error: error.message
+           }
+        }
+        return {success: true, message: "Service data fetch successfully", data: data}; 
+    } catch (error:any) {
+        return { success: false, message: "An error occurred. Please try again.", error: error.message };
     }
-    return data;
+    
 }
 
 export async function updateService(data:any) {
@@ -117,59 +118,61 @@ export async function updateService(data:any) {
         }
         return { success: true, message: "Service updated successfully"};
     } catch (error: any) {
-        console.error("Update failed:", error.message);
-        return { error: error.message };
+        return { success: false, message: "An error occurred. Please try again.", error: error.message };
     }
 }
 
 
 export async function deleteService(id: number) {
-    //Get service data
-    const { data, error } = await supabase
+    try {
+        //Get service data
+        const { data, error } = await supabase
         .from('service')
         .select()
         .eq('service_id', id);
 
-    if (error) {
-        return {
-            success: false,
-            message: "Error getting service data",
-            error: error.message
-        }
-    }
-
-    //Delete image from storage
-    let fileName: string;
-    if (data && data.length > 0) {
-        const path = data[0].service_img;
-        fileName = getFilePathFromUrl(path);
-        // Remove the image from storage
-        const imageRemovalResult = await removeImage(fileName);
-        if (!imageRemovalResult.success) {
+        if (error) {
             return {
                 success: false,
-                message: "Error removing image from the storage",
+                message: "Error getting service data",
+                error: error.message
             }
         }
-    } else {
-        return { 
-            message: "No service found with the given ID" 
-        };
-    }
 
-    //Delete service data
-    const { error: deleteServiceError } = await supabase
-    .from('service')
-    .delete()
-    .eq('service_id', id);
-
-    if (deleteServiceError) {
-        return {
-            success: false,
-            message: 'Error deleting the service data',
-            error: deleteServiceError.message
+        //Delete image from storage
+        let fileName: string;
+        if (data && data.length > 0) {
+            const path = data[0].service_img;
+            fileName = getFilePathFromUrl(path);
+            // Remove the image from storage
+            const imageRemovalResult = await removeImage(fileName);
+            if (!imageRemovalResult.success) {
+                return {
+                    success: false,
+                    message: "Error removing image from the storage",
+                }
+            }
+        } else {
+            return { 
+                message: "No service found with the given ID" 
+            };
         }
+
+        //Delete service data
+        const { error: deleteServiceError } = await supabase
+        .from('service')
+        .delete()
+        .eq('service_id', id);
+
+        if (deleteServiceError) {
+            return {
+                success: false,
+                message: 'Error deleting the service data',
+                error: deleteServiceError.message
+            }
+        }
+        return { success: true, message: 'Service remove successfully'};
+    } catch (error:any) {
+        return { success: false, message: "An error occurred. Please try again.", error: error.message };
     }
-    return { success: true, message: 'Service remove successfully'};
- 
 }

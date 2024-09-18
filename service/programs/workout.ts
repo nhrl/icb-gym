@@ -1,5 +1,5 @@
 import supabase from "../../database/db";
-import { uploadImage, getFilePathFromUrl, removeImage } from "../imageUpload/imageUploader";
+import { uploadImage, getFilePathFromUrl, removeImage } from "@service/imageUpload/imageUploader";
 
 //Workout folder directory
 const folder = 'workout';

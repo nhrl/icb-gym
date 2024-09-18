@@ -1,18 +1,20 @@
-import { addProgram, getProgram, updateProgram, removeProgram} from "../../../../../service/programs/workout";
+import { addMeal, getMeal, updateMeal, removeMeal } from "@service/programs/meals";
 
 export async function POST(req: Request) {
     try {
         const data = await req.formData();
-        const message = await addProgram(data);
+        const message = await addMeal(data);
         return Response.json(message);
     } catch (error) {
         return Response.json({ error: "Error processing request" }, { status: 500 });
     }
 }
 
-export async function GET() {
+export async function GET(req: Request) {
     try {
-        const message = await getProgram();
+        const { searchParams } = new URL(req.url);
+        const id = searchParams.get('id');
+        const message = await getMeal(id);
         return Response.json(message);
     } catch (error) {
         return Response.json({ error: "Error processing request" }, { status: 500 });
@@ -22,18 +24,17 @@ export async function GET() {
 export async function PUT(req: Request) {
     try {
         const data = await req.formData();
-        const message = await updateProgram(data);
+        const message = await updateMeal(data);
         return Response.json(message);
     } catch (error) {
         return Response.json({ error: "Error processing request" }, { status: 500 });
     }
 }
 
-export async function DELETE(req: Response) {
+export async function DELETE(req: Request) {
     try {
-        const data = await req.json();
-        const {id} = data;
-        const message = await removeProgram(id);
+        const data = await req.formData();
+        const message = await removeMeal(data);
         return Response.json(message);
     } catch (error) {
         return Response.json({ error: "Error processing request" }, { status: 500 });

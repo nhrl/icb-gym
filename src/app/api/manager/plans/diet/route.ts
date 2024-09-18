@@ -1,4 +1,4 @@
-import { addDietPlan, getDietPlan, updateDietPlan, removeDietPlan} from "../../../../../service/programs/dietplan";
+import { addDietPlan, getDietPlan, updateDietPlan, removeDietPlan} from "@service/programs/dietplan";
 
 export async function POST(req: Response) {
     try {

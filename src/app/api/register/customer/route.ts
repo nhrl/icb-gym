@@ -1,4 +1,4 @@
-import { registerCustomer, getCustomerData, updateCustomerData } from '../../../../../service/register/customer';
+import { registerCustomer, getCustomerData, updateCustomerData } from '@service/register/customer';
 
 
 export async function POST(request: Request) {
