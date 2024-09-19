@@ -1,6 +1,6 @@
 import { addDietPlan, getDietPlan, updateDietPlan, removeDietPlan} from "@service/programs/dietplan";
 
-export async function POST(req: Response) {
+export async function POST(req: Request) {
     try {
         const data = await req.formData();
         const message = await addDietPlan(data);
