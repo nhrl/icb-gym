@@ -73,8 +73,9 @@ export default function SignupModal() {
 
   return (
     <>
-      <div className="bg-[#0a0a0a] text-foreground text-sm rounded-lg shadow-lg w-fit h-[fit] sm:h-full p-[64px] border border-zinc-800">
+      <div className="bg-background text-foreground text-sm rounded-lg shadow-lg w-fit h-[fit] sm:h-full p-[64px] border border-border">
         <Form {...form}>
+          
           <form onSubmit={form.handleSubmit(handleSubmit)} className="gap-4 flex flex-col">
 
             {/* Logo and Title */}

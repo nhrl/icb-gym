@@ -18,7 +18,7 @@ const Footer: React.FC<footProps> = ({ className }) => {
   ]);
 
   return (
-    <main className={`flex flex-col md:flex-row items-start w-full justify-between p-12 border border-zinc-800 rounded-2xl ${className}`}>
+    <main className={`flex flex-col md:flex-row items-start w-full justify-between p-12 border border-border rounded-2xl ${className}`}>
       
       {/* Left Column - Heading and Logo */}
       <div className='text-xl font-extrabold items-start flex flex-col gap-8'>
@@ -26,7 +26,7 @@ const Footer: React.FC<footProps> = ({ className }) => {
         <h1 className='text-3xl text-wrap w-full md:w-[340px]'>Start your Fitness Journey Today</h1>
         {/* Logo */}
         <div className='flex flex-row gap-2'>
-          <Image src={logo} alt="icblogo" className='inline h-8 w-8' />
+          <Image src={logo} alt="icblogo" className='inline h-8 w-8'  priority/>
           <div>Incredoball</div>
         </div>
       </div>
@@ -36,9 +36,9 @@ const Footer: React.FC<footProps> = ({ className }) => {
         {/* Links Heading */}
         <h1 className='text-xl font-semibold'>Links</h1>
         {/* Dynamic Links */}
-        <div className='flex flex-col gap-2 text-sm font text-zinc-600'>
+        <div className='flex flex-col gap-2 text-sm font text-muted-foreground'>
           {links.map((link, index) => (
-            <a key={index} href={link.href} className='hover:text-white'>
+            <a key={index} href={link.href} className='hover:text-foreground'>
               {link.name}
             </a>
           ))}

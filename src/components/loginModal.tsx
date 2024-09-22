@@ -42,7 +42,7 @@ export default function LoginModal() {
   }
 
   return (
-    <div className='bg-[#0a0a0a] text-foreground text-sm rounded-lg shadow-lg md:w-[500px] w-full h-fit p-[64px] border border-zinc-800'>
+    <div className='bg-background text-foreground text-sm rounded-lg shadow-lg md:w-[500px] w-full h-fit p-[64px] border border-border'>
       <Form {...form} >
         <form onSubmit={form.handleSubmit(handleLogin)} className='gap-4 flex flex-col'>
           
@@ -54,7 +54,7 @@ export default function LoginModal() {
 
           <div>
             <FormLabel className='text-xl font-md'>Login to your Account</FormLabel>
-            <p className='text-zinc-600 text-[12px]'>Please enter your details below</p>
+            <p className='text-muted-foreground text-[12px]'>Please enter your details below</p>
           </div>
 
           {/* Email and Password Fields */}
@@ -95,7 +95,7 @@ export default function LoginModal() {
               Log In
             </Button>
             <FormLabel className='font-thin text-[11px] gap-1 flex flex-row text-zinc-600'>
-              Don't have an account? 
+              Don&apos;t have an account? 
               <span 
                 className='font-md text-white cursor-pointer'
                 onClick={() => setIsSignupModal(true)} // Switch to signup modal
