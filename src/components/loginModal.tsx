@@ -1,14 +1,15 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react'; // Add useState for modal switching
 import * as zod from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField, FormItem, FormMessage, FormLabel, FormControl } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ArrowRightEndOnRectangleIcon } from '@heroicons/react/24/outline';
+import { ArrowRightEndOnRectangleIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import logo from '../assets/logos/logodark.png';
+import SignupModal from './signupModal'; // Import SignupModal
 
 // Define the login form schema
 const loginFormSchema = zod.object({
@@ -17,6 +18,8 @@ const loginFormSchema = zod.object({
 });
 
 export default function LoginModal() {
+  const [isSignupModal, setIsSignupModal] = useState(false); // State to toggle between login and signup
+
   const form = useForm<zod.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
@@ -29,25 +32,33 @@ export default function LoginModal() {
     console.log(data); // Handle login data here
   };
 
+  const handleRefresh = () => {
+    window.location.href = '/'; // Change the URL and refresh the page
+  };
+
+  // Toggle to show signup modal instead of login modal
+  if (isSignupModal) {
+    return <SignupModal />;
+  }
+
   return (
-    <div className='bg-[#0a0a0a] text-foreground text-sm rounded-lg shadow-lg md:w-[500px] w-full h-fit p-[64px] border border-zinc-800'>
+    <div className='bg-background text-foreground text-sm rounded-lg shadow-lg md:w-[500px] w-full h-fit p-[64px] border border-border'>
       <Form {...form} >
         <form onSubmit={form.handleSubmit(handleLogin)} className='gap-4 flex flex-col'>
           
           {/* Logo and Title */}
-          <div className='flex flex-col md:flex-row gap-2'>
+          <div className='flex md:flex-row lg:flex-row sm:flex-col gap-2 w-full items-center justify-between'>
             <Image src={logo} alt="icblogo" className='inline h-8 w-8' />
+            <ArrowLeftIcon className="h-6 w-6 cursor-pointer" onClick={handleRefresh} />
           </div>
 
           <div>
             <FormLabel className='text-xl font-md'>Login to your Account</FormLabel>
-            <p className='text-zinc-600 text-[12px]'>Please enter your details below</p>
+            <p className='text-muted-foreground text-[12px]'>Please enter your details below</p>
           </div>
 
           {/* Email and Password Fields */}
           <div className='flex flex-col gap-2'>
-            
-            {/* Email Field */}
             <FormField
               control={form.control}
               name="email"
@@ -62,7 +73,6 @@ export default function LoginModal() {
               )}
             />
 
-            {/* Password Field */}
             <FormField
               control={form.control}
               name="password"
@@ -85,8 +95,13 @@ export default function LoginModal() {
               Log In
             </Button>
             <FormLabel className='font-thin text-[11px] gap-1 flex flex-row text-zinc-600'>
-              Don't have an account? 
-              <span className='font-md text-white'> Sign Up </span>
+              Don&apos;t have an account? 
+              <span 
+                className='font-md text-white cursor-pointer'
+                onClick={() => setIsSignupModal(true)} // Switch to signup modal
+              > 
+                Sign Up
+              </span>
             </FormLabel>
           </div>
 
