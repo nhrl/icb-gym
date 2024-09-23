@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import logo from './../../../../assets/logos/logodark.png';
 import { useState, useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
@@ -8,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
+
 
 import { TrashIcon } from "@heroicons/react/24/outline";
 import {
@@ -23,7 +26,7 @@ import {
 } from "@/components/ui/alert-dialog"; // Ensure these components are imported
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
-
+import TrainerActions from "./actions"; 
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -224,9 +227,11 @@ export const columns: ColumnDef<Trainers>[] = [
     header: "Avatar",
     cell: ({ row }) => (
       <Avatar className="h-6 w-6">
-        <img
-          src={`https://ui-avatars.com/api/?name=${row.original.firstName}+${row.original.lastName}&background=random`}
+        <Image
+          src={logo}
           alt={`${row.original.firstName} ${row.original.lastName}`}
+          width={24}
+          height={24}
         />
       </Avatar>
     ),
@@ -279,73 +284,8 @@ export const columns: ColumnDef<Trainers>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => {
-      const trainer = row.original;
-      const [isOpen, setIsOpen] = useState(false); // State to control edit form visibility
-      const [isAssignOpen, setIsAssignOpen] = useState(false); // State to control assignment form visibility
-      const [isAssignmentsViewOpen, setIsAssignmentsViewOpen] = useState(false); // State to control assignments view visibility
-
-      const handleOpenEditForm = () => {
-        setIsOpen(true); // Open the edit form modal
-      };
-
-      const handleOpenAssignForm = () => {
-        setIsAssignOpen(true); // Open the assignment form modal
-      };
-
-      const handleOpenAssignmentsView = () => {
-        setIsAssignmentsViewOpen(true); // Open the assignments view modal
-      };
-
-      const handleCloseModals = () => {
-        setIsOpen(false); // Close all modals when necessary
-        setIsAssignOpen(false);
-        setIsAssignmentsViewOpen(false);
-      };
-
-      return (
-        <div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(trainer.trainer_id.toString())}>
-                Copy Trainer ID
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleOpenEditForm}>Edit</DropdownMenuItem>
-              <DropdownMenuItem onClick={handleOpenAssignForm}>Assign to Service</DropdownMenuItem>
-              <DropdownMenuItem onClick={handleOpenAssignmentsView}>View Assignments</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Modal for Editing Trainer */}
-          {isOpen && (
-            <Modal onClose={handleCloseModals}>
-              <TrainerEditForm trainerId={trainer.trainer_id} onClose={handleCloseModals} />
-            </Modal>
-          )}
-
-          {/* Modal for Assigning Trainer to a Service */}
-          {isAssignOpen && (
-            <Modal onClose={handleCloseModals}>
-              <TrainerAssignForm trainerId={trainer.trainer_id} onClose={handleCloseModals} />
-            </Modal>
-          )}
-
-          {/* Modal for Viewing Trainer Assignments */}
-          {isAssignmentsViewOpen && (
-            <Modal onClose={handleCloseModals}>
-              <AssignmentTable trainerId={trainer.trainer_id} />
-            </Modal>
-          )}
-        </div>
-      );
-    },
+    cell: ({ row }) => <TrainerActions trainer={row.original} />,
   },
 ];
+
+export { AssignmentTable, Modal };

@@ -1,6 +1,6 @@
 "use client"
 import * as React from "react"
-import {useState} from "react"
+import { useState, useEffect } from "react"
 import {
   ColumnDef,
   flexRender,
@@ -60,14 +60,17 @@ export function DataTable<TData, TValue>({
 
   const [sorting, setSorting] = React.useState<SortingState>([])
 
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
 
-  const [columnVisibility, setColumnVisibility] =
-  React.useState<VisibilityState>({})
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
 
   const [rowSelection, setRowSelection] = React.useState({})
+
+  const [isMounted, setIsMounted] = useState(false); // New state to track mounting
+
+  useEffect(() => {
+    setIsMounted(true); // Set mounted to true after client-side rendering
+  }, []);
 
   const table = useReactTable({
     data,
@@ -103,6 +106,11 @@ export function DataTable<TData, TValue>({
     setIsOpen(false); // Close the form modal
   };
 
+  // Don't render the table until after hydration (when the component has mounted)
+  if (!isMounted) {
+    return null; // Prevent rendering on the server to avoid mismatch
+  }
+
   return (
     <div className="flex flex-col gap-4">
 
@@ -122,38 +130,37 @@ export function DataTable<TData, TValue>({
         />
         <div className="flex flex-wrap sm:flex-row ml-auto gap-2">
           <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex ml-auto flex-row gap-2">
-                  <ViewColumnsIcon className="h-4 w-4" />
-                  Columns
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {table
-                  .getAllColumns()
-                  .filter(
-                    (column) => column.getCanHide()
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="flex ml-auto flex-row gap-2">
+                <ViewColumnsIcon className="h-4 w-4" />
+                Columns
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter(
+                  (column) => column.getCanHide()
+                )
+                .map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
                   )
-                  .map((column) => {
-                    return (
-                      <DropdownMenuCheckboxItem
-                        key={column.id}
-                        className="capitalize"
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) =>
-                          column.toggleVisibility(!!value)
-                        }
-                      >
-                        {column.id}
-                      </DropdownMenuCheckboxItem>
-                    )
-                  })}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-            {/* Add New Button */}
-            <div className="flex flex-col gap-4">
-            {/* Add New Button */}
+          {/* Add New Button */}
+          <div className="flex flex-col gap-4">
             <Button
               variant="secondary"
               className="flex ml-auto flex-row gap-2"
@@ -163,36 +170,35 @@ export function DataTable<TData, TValue>({
               Add New
             </Button>
 
-        {isOpen && (
+            {isOpen && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50">
                 <div className=" rounded-md  w-full max-w-lg">
                   <TrainerForm /> 
                 </div>
               </div>
             )}
-            </div>
-        
-            {/* Delete Button */}
-            <AlertDialog>
-              <AlertDialogTrigger className="border border-border p-2 rounded-sm hover:bg-muted">
-                <TrashIcon className="h-4 w-4" />
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure you want to delete this?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently remove your data from the database.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction>Continue</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
           </div>
-      </div>
 
+          {/* Delete Button */}
+          <AlertDialog>
+            <AlertDialogTrigger className="border border-border p-2 rounded-sm hover:bg-muted">
+              <TrashIcon className="h-4 w-4" />
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure you want to delete this?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently remove your data from the database.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction>Continue</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </div>
 
       <div className="rounded-md border">
         <Table>
