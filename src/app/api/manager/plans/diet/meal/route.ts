@@ -1,39 +1,40 @@
-import { addDietPlan, getDietPlan, updateDietPlan, removeDietPlan} from "../../../../../service/programs/dietplan";
+import { addMeal, getMeal, updateMeal, removeMeal } from "@service/programs/meals";
 
-export async function POST(req: Response) {
+export async function POST(req: Request) {
     try {
         const data = await req.formData();
-        const message = await addDietPlan(data);
+        const message = await addMeal(data);
         return Response.json(message);
     } catch (error) {
         return Response.json({ error: "Error processing request" }, { status: 500 });
     }
 }
 
-export async function GET() {
+export async function GET(req: Request) {
     try {
-        const message = await getDietPlan();
+        const { searchParams } = new URL(req.url);
+        const id = searchParams.get('id');
+        const message = await getMeal(id);
         return Response.json(message);
     } catch (error) {
         return Response.json({ error: "Error processing request" }, { status: 500 });
     }
 }
 
-export async function PUT(req :Request) {
+export async function PUT(req: Request) {
     try {
         const data = await req.formData();
-        const message = await updateDietPlan(data);
+        const message = await updateMeal(data);
         return Response.json(message);
     } catch (error) {
         return Response.json({ error: "Error processing request" }, { status: 500 });
     }
 }
 
-export async function DELETE(req :Request) {
+export async function DELETE(req: Request) {
     try {
-        const data = await req.json();
-        const {id} = data;
-        const message = await removeDietPlan(id);
+        const data = await req.formData();
+        const message = await removeMeal(data);
         return Response.json(message);
     } catch (error) {
         return Response.json({ error: "Error processing request" }, { status: 500 });

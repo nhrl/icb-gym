@@ -1,4 +1,4 @@
-import { uploadImage, getFilePathFromUrl, removeImage } from "../imageUpload/imageUploader";
+import { uploadImage, getFilePathFromUrl, removeImage } from "@service/imageUpload/imageUploader";
 import supabase from "../../database/db";
 
 // For image folder directory
@@ -79,12 +79,8 @@ export async function getTrainer() {
             message: "Trainers retrieved successfully",
             trainers: data
         };
-    } catch (err: any) {
-        return {
-            success: false,
-            message: "An unexpected error occurred. Please try again.",
-            error: err.message
-        };
+    } catch (error: any) {
+        return { success: false, message: "An error occurred. Please try again.", error: error.message };
     }
 }
 
@@ -161,70 +157,69 @@ export async function updateTrainer(data: any) {
             }
             return {
                 success: false,
-                message: "Failed to add trainer. Please try again.",
+                message: "Failed to update trainer. Please try again.",
                 error: updateError.message
             };
         }
         return {success: true, message: "Trainer updated successfully"};
-
     } catch (error:any) {
-        return {
-            success: false,
-            messages: "An unexpected error occurred. Please try again. ",
-            error: error.message
-        }
+        return { success: false, message: "An error occurred. Please try again.", error: error.message };
     }
 }
 
 
 export async function deleteTrainer(id:number) {
-    let fileName: string;
+    try {
+        let fileName: string;
 
-    //Get trainer data
-    const { data, error } = await supabase
-        .from('trainer')
-        .select()
-        .eq('trainer_id', id);
-
-    if(error) {
-        return {
-            success: false,
-            message: error.message
+        //Get trainer data
+        const { data, error } = await supabase
+            .from('trainer')
+            .select()
+            .eq('trainer_id', id);
+    
+        if(error) {
+            return {
+                success: false,
+                message: error.message
+            }
         }
-    }
-
-    //Remove trainer image
-    if(data && data.length > 0) {
-        const path = data[0].trainer_img;
-        fileName = getFilePathFromUrl(path);
-        const imageRemovalResult = await removeImage(fileName);
-
-        if(!imageRemovalResult) {
+    
+        //Remove trainer image
+        if(data && data.length > 0) {
+            const path = data[0].trainer_img;
+            fileName = getFilePathFromUrl(path);
+            const imageRemovalResult = await removeImage(fileName);
+    
+            if(!imageRemovalResult) {
+                return {
+                    success: false,
+                    message: "Cannot delete trainer"
+                }
+            }
+        } else {
+            return {
+                message: "Cannot find trainer"
+            }
+        }
+    
+        //Delete trainer data
+        const {error: deleteTrainerError} = await supabase
+            .from('trainer')
+            .delete()
+            .eq('trainer_id',id);
+        
+        if(deleteTrainerError) {
             return {
                 success: false,
                 message: "Cannot delete trainer"
             }
         }
-    } else {
         return {
-            message: "Cannot find trainer"
+            success: true,
+            message: "Trainer deleted successfully"
         }
-    }
-
-    //Delete trainer data
-    const {error: deleteTrainerError} = await supabase
-        .from('trainer')
-        .delete()
-        .eq('trainer_id',id);
-    
-    if(deleteTrainerError) {
-        return {
-            success: false,
-            message: "Cannot delete trainer"
-        }
-    }
-    return {
-        success: true,
-        message: "Trainer deleted successfully"
+    } catch (error:any) {
+        return { success: false, message: "An error occurred. Please try again.", error: error.message };
     }
 }

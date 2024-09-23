@@ -1,4 +1,4 @@
-import { addProgram, getProgram, updateProgram, removeProgram} from "../../../../../service/programs/workout";
+import { addProgram, getProgram, updateProgram, removeProgram} from "@service/programs/workout";
 
 export async function POST(req: Request) {
     try {
@@ -29,7 +29,7 @@ export async function PUT(req: Request) {
     }
 }
 
-export async function DELETE(req: Response) {
+export async function DELETE(req: Request) {
     try {
         const data = await req.json();
         const {id} = data;

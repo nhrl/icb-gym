@@ -1,6 +1,6 @@
 import supabase from "../../database/db";
 import { encryptPassword } from "../encryption/hash";
-import { uploadImage,getFilePathFromUrl,removeImage} from "../imageUpload/imageUploader";
+import { uploadImage,getFilePathFromUrl,removeImage} from "@service/imageUpload/imageUploader";
 
 const FEMALE_IMG_URL = "https://mplhgifjydkvnfsofsoc.supabase.co/storage/v1/object/public/images/profile/female.jpg";
 const MALE_IMG_URL = "https://mplhgifjydkvnfsofsoc.supabase.co/storage/v1/object/public/images/profile/male.jpg";
