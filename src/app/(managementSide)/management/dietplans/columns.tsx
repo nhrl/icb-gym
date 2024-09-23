@@ -55,6 +55,19 @@ const mealsData: Meals[] = [
     fats: 10,
     calories: 300,
   },
+  {
+    mealid: 1,
+    dietplan_id: 1,
+    meal: "Breakfast",
+    food: "Oatmeal",
+    food_desc: "Oatmeal with fruits and nuts",
+    recipe: "Mix oats with milk, add fruits",
+    food_prep: "Boil oats, stir fruits",
+    protein: 15,
+    carbs: 30,
+    fats: 10,
+    calories: 300,
+  },
 ];
 
 // Define the columns for your Dietplans table

@@ -46,7 +46,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import ServiceForm from "@/components/mngComponents/serviceForm"; // Update to ServiceForm
+import ServiceAddForm from "@/components/mngComponents/serviceForm"; // Make sure this path is correct
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -58,12 +58,10 @@ export function DataTable<TData, TValue>({
   data,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-
   const [rowSelection, setRowSelection] = React.useState({});
+  const [isModalOpen, setIsModalOpen] = useState(false); // Single state to control modal visibility
 
   const table = useReactTable({
     data,
@@ -89,15 +87,11 @@ export function DataTable<TData, TValue>({
     description: "Manage your services",
   };
 
-  const [isOpen, setIsOpen] = useState(false); // State to control modal visibility
+  // Function to open modal
+  const openModal = () => setIsModalOpen(true);
 
-  const handleOpenForm = () => {
-    setIsOpen(true); // Open the form modal
-  };
-
-  const handleCloseForm = () => {
-    setIsOpen(false); // Close the form modal
-  };
+  // Function to close modal
+  const closeModal = () => setIsModalOpen(false);
 
   return (
     <div className="flex flex-col gap-4">
@@ -147,16 +141,17 @@ export function DataTable<TData, TValue>({
             <Button
               variant="secondary"
               className="flex ml-auto flex-row gap-2"
-              onClick={handleOpenForm} // Open form on button click
+              onClick={openModal} // Open form on button click
             >
               <PlusCircleIcon className="h-4 w-4" />
               Add New
             </Button>
 
-            {isOpen && (
+            {/* Modal for adding service */}
+            {isModalOpen && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50">
                 <div className="rounded-md w-full max-w-lg">
-                  <ServiceForm/>
+                  <ServiceAddForm onClose={closeModal} /> {/* Close modal on form submission */}
                 </div>
               </div>
             )}

@@ -22,7 +22,7 @@ import {
   SelectGroup,
   SelectLabel,
 } from "@/components/ui/select";
-import { ArrowLeftIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 
 // Define the form schema for Trainers
 const formSchema = zod.object({
@@ -47,7 +47,11 @@ const availabilities = [
   { label: "Full", value: "Full" },
 ];
 
-export default function TrainerForm() {
+interface TrainerFormProps {
+  onClose: () => void; // Close modal function
+}
+
+export default function TrainerForm({ onClose }: TrainerFormProps) {
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
 
   const form = useForm<zod.infer<typeof formSchema>>({
@@ -88,7 +92,7 @@ export default function TrainerForm() {
           <div className="flex w-full items-center">
             <ArrowLeftIcon 
               className="h-6 w-6 ml-auto cursor-pointer"
-              onClick={() => window.location.reload()} // Reloads the current page
+              onClick={onClose} // Trigger the onClose callback when clicked
             />
           </div>
 
@@ -199,11 +203,12 @@ export default function TrainerForm() {
           {/* Submit Button */}
           <div className="items-center gap-4 flex flex-col">
             <Button 
+              variant="secondary"
               type="submit" 
               className="py-2 px-4 rounded w-full flex flex-row gap-2"
             >
-              <PlusCircleIcon className="h-4 w-4" />
-              Add New Trainer
+              <CheckCircleIcon className="h-4 w-4" />
+              Submit New Trainer
             </Button>
           </div>
         </form>

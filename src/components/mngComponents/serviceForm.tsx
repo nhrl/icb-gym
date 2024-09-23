@@ -15,16 +15,21 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, PlusCircleIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
 
 // Define the form schema for adding a new service
 const serviceSchema = zod.object({
   name: zod.string().min(1, "Service Name is required").max(50, "Name must be less than 50 characters"),
   desc: zod.string().min(1, "Description is required").max(150, "Description must be less than 150 characters"),
+  photo: zod.instanceof(File).optional(), // Optional file input for photo
 });
 
-export default function ServiceAddForm() {
+interface ServiceAddFormProps {
+  onClose: () => void; // Close modal function
+}
+
+export default function ServiceAddForm({ onClose }: ServiceAddFormProps) {
   const form = useForm<zod.infer<typeof serviceSchema>>({
     resolver: zodResolver(serviceSchema),
     defaultValues: {
@@ -36,6 +41,13 @@ export default function ServiceAddForm() {
   const handleFormSubmit = (data: zod.infer<typeof serviceSchema>) => {
     console.log(data); // Handle adding service data here
     // Logic to submit the service data to the server or database goes here
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    if (file) {
+      form.setValue("photo", file);
+    }
   };
 
   const metadata = {
@@ -51,7 +63,7 @@ export default function ServiceAddForm() {
           <div className="flex w-full items-center">
             <ArrowLeftIcon
               className="h-6 w-6 ml-auto cursor-pointer"
-              onClick={() => window.location.reload()} // Reloads the current page
+              onClick={onClose} // Trigger the onClose callback when clicked
             />
           </div>
 
@@ -91,13 +103,33 @@ export default function ServiceAddForm() {
                 </FormItem>
               )}
             />
+
+            {/* Photo Upload */}
+            <FormField
+              control={form.control}
+              name="photo"
+              render={() => (
+                <FormItem>
+                  <FormLabel>Photo</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      className="border p-2 w-full rounded cursor-pointer file:rounded-md file:text-sm file:font-regular file:border-0 file:bg-muted file:mr-2 file:text-muted-foreground"
+                    />
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.photo?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
           </div>
 
           {/* Submit Button */}
           <div className="items-center gap-4 flex flex-col">
-            <Button type="submit" className="py-2 px-4 rounded w-full flex flex-row gap-2">
-              <PlusCircleIcon className="h-4 w-4" />
-              Add Service
+            <Button variant="secondary" type="submit" className="py-2 px-4 rounded w-full flex flex-row gap-2">
+              <CheckCircleIcon className="h-4 w-4" />
+              Submit Service
             </Button>
           </div>
         </form>

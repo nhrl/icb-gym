@@ -14,14 +14,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftIcon, ArrowRightIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, ArrowRightIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
 
 // Define the form schema for Equipment
 const equipmentSchema = zod.object({
   equipment_id: zod.string().optional(), // Assuming the ID is auto-generated or optional
   name: zod.string().min(1, "Equipment Name is required").max(50, "Name must be less than 50 characters"),
-  quantity: zod.number().min(1, "Quantity must be at least 1"),
+  // Preprocess the input to convert it into a number before validating
+  quantity: zod.preprocess((val) => Number(val), zod.number().min(1, "Quantity must be at least 1")),
   purchase_date: zod.string().min(1, "Purchase Date is required"), // For simplicity, using string
 });
 
@@ -32,7 +33,11 @@ const maintenanceSchema = zod.object({
   maintenance_date: zod.string().min(1, "Maintenance Date is required"), // Also using string for simplicity
 });
 
-export default function EquipmentForm() {
+interface EquipmentFormProps {
+  onClose: () => void; // Function to close the form modal
+}
+
+export default function EquipmentForm({ onClose }: EquipmentFormProps) {
   const [step, setStep] = useState(1); // Step to track which form to show
   const [formKey, setFormKey] = useState(Date.now()); // Unique key for each step
 
@@ -89,7 +94,7 @@ export default function EquipmentForm() {
             <div className="flex w-full items-center">
               <ArrowLeftIcon 
                 className="h-6 w-6 ml-auto cursor-pointer"
-                onClick={() => window.location.reload()} // Reloads the current page
+                onClick={onClose} // Close modal without page reload
               />
             </div>
 
@@ -199,11 +204,12 @@ export default function EquipmentForm() {
             {/* Submit Button */}
             <div className="items-center gap-4 flex flex-col">
               <Button 
+                variant="secondary"
                 type="submit"
                 className="py-2 px-4 rounded w-full flex flex-row gap-2"
               >
-                <PlusCircleIcon className="h-4 w-4" />
-                Submit Maintenance
+                <CheckCircleIcon className="h-4 w-4" />
+                Submit Equipment
               </Button>
             </div>
           </form>

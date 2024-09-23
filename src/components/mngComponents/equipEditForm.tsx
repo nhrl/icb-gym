@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { PlusCircleIcon } from "@heroicons/react/24/outline";
+import { PlusCircleIcon, ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 
 // Define the form schema for Maintenance
 const maintenanceSchema = zod.object({
@@ -22,7 +22,12 @@ const maintenanceSchema = zod.object({
   maintenance_date: zod.string().min(1, "Maintenance Date is required"), // Using string to capture date input
 });
 
-export default function EquipEditForm({ equipment_id }: { equipment_id: string }) {
+interface EquipEditFormProps {
+  equipment_id: string;
+  onClose: () => void; // Function to handle back or close action
+}
+
+export default function EquipEditForm({ equipment_id, onClose }: EquipEditFormProps) {
   // Initialize the form with validation schema
   const maintenanceForm = useForm<zod.infer<typeof maintenanceSchema>>({
     resolver: zodResolver(maintenanceSchema),
@@ -42,6 +47,19 @@ export default function EquipEditForm({ equipment_id }: { equipment_id: string }
       {/* Maintenance Form */}
       <Form {...maintenanceForm}>
         <form onSubmit={maintenanceForm.handleSubmit(handleMaintenanceSubmit)} className="gap-4 flex flex-col">
+          
+          {/* Back Button */}
+          <div className="flex w-full items-center">
+            <Button
+              variant="ghost"
+              onClick={onClose} // Use the onClose function to handle back or close
+              className="p-0"
+            >
+              <ArrowLeftIcon className="h-6 w-6 mr-2" />
+              Back
+            </Button>
+          </div>
+
           <div>
             <FormLabel className="font-bold text-xl">Set Maintenance Date</FormLabel>
             <p className="text-muted-foreground text-[12px]">Please set the maintenance date for this equipment.</p>
@@ -66,11 +84,12 @@ export default function EquipEditForm({ equipment_id }: { equipment_id: string }
 
           {/* Submit Button */}
           <div className="items-center gap-4 flex flex-col">
-            <Button 
+            <Button
+              variant="secondary"
               type="submit"
               className="py-2 px-4 rounded w-full flex flex-row gap-2"
             >
-              <PlusCircleIcon className="h-4 w-4" />
+              <CheckCircleIcon className="h-4 w-4" />
               Set Maintenance
             </Button>
           </div>
