@@ -43,7 +43,7 @@ const NavBar: React.FC<navProps> = ({ className }) => {
 
       {/* Signup Modal */}
       {isSignupModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-[100] bg-background bg-opacity-50">
+        <div className="fixed inset-0 flex items-center justify-center z-[100] bg-background/50">
           <div className="relative">
             <SignupModal />  {/* Render the signup modal */}
           </div>
@@ -52,7 +52,7 @@ const NavBar: React.FC<navProps> = ({ className }) => {
 
       {/* Login Modal */}
       {isLoginModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-[100] bg-background bg-opacity-50">
+        <div className="fixed inset-0 flex items-center justify-center z-[100] bg-background/50">
           <div className="relative">
             <LoginModal />  {/* Render the login modal */}
           </div>
