@@ -1,5 +1,5 @@
 import supabase from "../../database/db";
-import { getFilePathFromUrl, removeImage, uploadImage } from "../imageUpload/imageUploader";
+import { getFilePathFromUrl, removeImage, uploadImage } from "@service/imageUpload/imageUploader";
 
 //Dietpan images directory folder
 const folder = 'dietplan';

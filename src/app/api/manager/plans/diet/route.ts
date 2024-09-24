@@ -1,10 +1,9 @@
-import { addTrainer, getTrainer, deleteTrainer, updateTrainer} from "../../../../service/trainer/trainer";
-
+import { addDietPlan, getDietPlan, updateDietPlan, removeDietPlan} from "@service/programs/dietplan";
 
 export async function POST(req: Request) {
     try {
-        const formData = await req.formData();
-        const message = await addTrainer(formData);
+        const data = await req.formData();
+        const message = await addDietPlan(data);
         return Response.json(message);
     } catch (error) {
         return Response.json({ error: "Error processing request" }, { status: 500 });
@@ -13,28 +12,28 @@ export async function POST(req: Request) {
 
 export async function GET() {
     try {
-        const data = await getTrainer();
-        return Response.json(data);
+        const message = await getDietPlan();
+        return Response.json(message);
     } catch (error) {
         return Response.json({ error: "Error processing request" }, { status: 500 });
     }
 }
 
-export async function PUT(req: Request) {
+export async function PUT(req :Request) {
     try {
-        const formdata = await req.formData();
-        const message = await updateTrainer(formdata);
+        const data = await req.formData();
+        const message = await updateDietPlan(data);
         return Response.json(message);
     } catch (error) {
-        return Response.json({error: "Error processign request"}, {status: 500});
+        return Response.json({ error: "Error processing request" }, { status: 500 });
     }
 }
 
-export async function DELETE(req : Request) {
+export async function DELETE(req :Request) {
     try {
         const data = await req.json();
         const {id} = data;
-        const message = await deleteTrainer(id);
+        const message = await removeDietPlan(id);
         return Response.json(message);
     } catch (error) {
         return Response.json({ error: "Error processing request" }, { status: 500 });
