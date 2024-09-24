@@ -24,10 +24,11 @@ import {
   SelectGroup,
   SelectLabel,
 } from "@/components/ui/select";
-import { ArrowLeftIcon, ArrowRightIcon, PlusCircleIcon, MinusCircleIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, ArrowRightIcon, PlusCircleIcon, TrashIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
 
-// Define the form schema for Program
+
+// Define the form schema for Program with required photo
 const programSchema = zod.object({
   program_id: zod.string().optional(), // Assuming the ID is auto-generated or optional
   title: zod.string().min(1, "Title is required").max(50, "Title must be less than 50 characters"),
@@ -38,21 +39,8 @@ const programSchema = zod.object({
   fitness_goal: zod.enum(["Weight Loss", "Muscle Gain", "General Health", "Endurance"], {
     required_error: "Fitness goal is required",
   }),
+  photo: zod.instanceof(File, { message: "Photo is required" }), // Required photo field
 });
-
-// Fitness levels and goals
-const fitnessLevels = [
-  { label: "Beginner", value: "Beginner" },
-  { label: "Intermediate", value: "Intermediate" },
-  { label: "Advanced", value: "Advanced" },
-];
-
-const fitnessGoals = [
-  { label: "Weight Loss", value: "Weight Loss" },
-  { label: "Muscle Gain", value: "Muscle Gain" },
-  { label: "General Health", value: "General Health" },
-  { label: "Endurance", value: "Endurance" },
-];
 
 // Exercise form schema
 const exerciseSchema = zod.object({
@@ -64,9 +52,13 @@ const exerciseSchema = zod.object({
   reps: zod.number().min(1, "Reps are required"),
 });
 
-export default function ProgramForm() {
+interface ProgramFormProps {
+  onClose: () => void; // Close modal function
+}
+
+export default function ProgramForm({ onClose }: ProgramFormProps) {
   const [step, setStep] = useState(1); // Step to track which form to show
-  const [programData, setProgramData] = useState<zod.infer<typeof programSchema> | null>(null); // Store program data
+  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null); // Store the selected photo
 
   const programForm = useForm<zod.infer<typeof programSchema>>({
     resolver: zodResolver(programSchema),
@@ -76,15 +68,18 @@ export default function ProgramForm() {
       desc: "",
       fitness_level: "Beginner",
       fitness_goal: "Weight Loss",
+      photo: undefined,
     },
   });
 
   const exercisesForm = useForm<{
     exercises: zod.infer<typeof exerciseSchema>[];
   }>({
-    resolver: zodResolver(zod.object({
-      exercises: zod.array(exerciseSchema),
-    })),
+    resolver: zodResolver(
+      zod.object({
+        exercises: zod.array(exerciseSchema),
+      })
+    ),
     defaultValues: {
       exercises: [{ exercise_id: "", program_id: "", name: "", desc: "", sets: 1, reps: 1 }],
     },
@@ -97,12 +92,19 @@ export default function ProgramForm() {
 
   const handleProgramSubmit = (data: zod.infer<typeof programSchema>) => {
     console.log(data); // Handle program data here
-    setProgramData(data); // Store program data
     setStep(2); // Move to the next form step
   };
 
   const handleExerciseSubmit = (data: { exercises: zod.infer<typeof exerciseSchema>[] }) => {
-    console.log({ programData, exercises: data.exercises }); // Submit both program and exercises
+    console.log({ programData: programForm.getValues(), exercises: data.exercises }); // Submit both program and exercises
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    if (file) {
+      setSelectedPhoto(file);
+      programForm.setValue("photo", file); // Set the file in the form data
+    }
   };
 
   const metadata = {
@@ -120,7 +122,7 @@ export default function ProgramForm() {
             <div className="flex w-full items-center">
               <ArrowLeftIcon 
                 className="h-6 w-6 ml-auto cursor-pointer"
-                onClick={() => window.location.reload()} // Reloads the current page
+                onClick={onClose} // Trigger the onClose callback to close the modal
               />
             </div>
 
@@ -175,10 +177,9 @@ export default function ProgramForm() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
-                            <SelectLabel>Fitness Levels</SelectLabel>
-                            {fitnessLevels.map((level) => (
-                              <SelectItem key={level.value} value={level.value}>
-                                {level.label}
+                            {["Beginner", "Intermediate", "Advanced"].map((level) => (
+                              <SelectItem key={level} value={level}>
+                                {level}
                               </SelectItem>
                             ))}
                           </SelectGroup>
@@ -204,10 +205,9 @@ export default function ProgramForm() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
-                            <SelectLabel>Fitness Goals</SelectLabel>
-                            {fitnessGoals.map((goal) => (
-                              <SelectItem key={goal.value} value={goal.value}>
-                                {goal.label}
+                            {["Weight Loss", "Muscle Gain", "General Health", "Endurance"].map((goal) => (
+                              <SelectItem key={goal} value={goal}>
+                                {goal}
                               </SelectItem>
                             ))}
                           </SelectGroup>
@@ -215,6 +215,29 @@ export default function ProgramForm() {
                       </Select>
                     </FormControl>
                     <FormMessage>{programForm.formState.errors.fitness_goal?.message}</FormMessage>
+                  </FormItem>
+                )}
+              />
+
+              {/* Photo Upload */}
+              <FormField
+                control={programForm.control}
+                name="photo"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Upload Photo</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoChange}
+                        className="border p-2 w-full rounded cursor-pointer file:rounded-md file:text-sm file:font-regular file:border-0 file:bg-muted file:mr-2 file:text-muted-foreground"
+                      />
+                    </FormControl>
+                    {selectedPhoto && (
+                      <p className="text-muted-foreground text-[12px]">Selected photo: {selectedPhoto.name}</p>
+                    )}
+                    <FormMessage>{programForm.formState.errors.photo?.message}</FormMessage>
                   </FormItem>
                 )}
               />
@@ -249,16 +272,22 @@ export default function ProgramForm() {
             </div>
 
             {/* Exercise Form Fields */}
-            <div>
-              <FormLabel className="font-bold text-xl font-md">{metadata.title}</FormLabel>
-              <p className="text-muted-foreground text-[12px]">{metadata.description}</p>
-            </div>
-
-            {/* Scrollable Container for Exercises */}
             <div className="max-h-[400px] overflow-y-auto space-y-4">
-              {/* Render dynamic exercise forms */}
               {fields.map((field, index) => (
-                <div key={field.id} className="flex flex-col gap-2 border p-2 rounded-md">
+                <div key={field.id} className="flex flex-col gap-2 border p-4 rounded-md mb-2">
+                  <div className="flex justify-between">
+                    <h3 className="font-semibold">Exercise {index + 1}</h3>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="p-2"
+                      onClick={() => remove(index)}
+                    >
+                      <TrashIcon className="h-4 w-4 text-red-600" />
+                    </Button>
+                  </div>
+
+                  {/* Exercise Name */}
                   <FormField
                     control={exercisesForm.control}
                     name={`exercises.${index}.name`}
@@ -273,6 +302,7 @@ export default function ProgramForm() {
                     )}
                   />
 
+                  {/* Description */}
                   <FormField
                     control={exercisesForm.control}
                     name={`exercises.${index}.desc`}
@@ -316,21 +346,25 @@ export default function ProgramForm() {
                       )}
                     />
                   </div>
-
-                  {/* Remove Button */}
-                  <Button variant="destructive" onClick={() => remove(index)} className="mt-2">
-                    <MinusCircleIcon className="h-4 w-4 mr-2" />
-                    Remove Exercise
-                  </Button>
                 </div>
               ))}
             </div>
 
-            {/* Add More Exercises Button */}
-            <Button 
+            {/* Add Another Exercise Button */}
+            <Button
+              type="button"
               variant="outline"
-              onClick={() => append({ exercise_id: "", program_id: programData?.program_id || "", name: "", desc: "", sets: 1, reps: 1 })}
-              className="mt-4"
+              className="mt-2"
+              onClick={() =>
+                append({
+                  exercise_id: "",
+                  program_id: programForm.getValues().program_id || "",
+                  name: "",
+                  desc: "",
+                  sets: 1,
+                  reps: 1,
+                })
+              }
             >
               <PlusCircleIcon className="h-4 w-4 mr-2" />
               Add Another Exercise
@@ -339,11 +373,12 @@ export default function ProgramForm() {
             {/* Submit All Exercises Button */}
             <div className="items-center gap-4 flex flex-col mt-4">
               <Button 
+                variant="secondary"
                 type="submit"
                 className="py-2 px-4 rounded w-full flex flex-row gap-2"
               >
-                <PlusCircleIcon className="h-4 w-4" />
-                Submit All Exercises
+                <CheckCircleIcon className="h-4 w-4" />
+                Submit Workout Program
               </Button>
             </div>
           </form>

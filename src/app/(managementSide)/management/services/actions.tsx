@@ -14,7 +14,7 @@ import { Service } from "./columns"; // Ensure you have a Service type
 
 // Define props for the ServiceActions component
 type ServiceActionsProps = {
-  service: Service;
+  service: Service; // Expecting the full service object
 };
 
 const ServiceActions: React.FC<ServiceActionsProps> = ({ service }) => {
@@ -39,9 +39,7 @@ const ServiceActions: React.FC<ServiceActionsProps> = ({ service }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => navigator.clipboard.writeText(service.id)}
-          >
+          <DropdownMenuItem onClick={() => navigator.clipboard.writeText(service.id)}>
             Copy Service ID
           </DropdownMenuItem>
           <DropdownMenuSeparator />
@@ -53,7 +51,7 @@ const ServiceActions: React.FC<ServiceActionsProps> = ({ service }) => {
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50">
           <div className="rounded-md w-full max-w-lg">
-            <ServiceEditForm serviceId={service.id} />
+            <ServiceEditForm onClose={handleCloseForm} serviceData={service} />
           </div>
         </div>
       )}

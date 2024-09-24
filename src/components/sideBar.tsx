@@ -53,7 +53,7 @@ const SideBar: React.FC<SideProps> = ({ className }) => {
 
   // Account Module
   const accountModule = () => {
-    const buttons = [{ name: "Account", path: "/account" }];
+    const buttons = [{ name: "Account", path: "/management/account" }];
     return buttons.map((button) => (
       <Link href={button.path} key={button.name}>
         <Button

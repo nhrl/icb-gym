@@ -15,34 +15,54 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, PlusCircleIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
 
 // Define the form schema for Service
 const serviceSchema = zod.object({
-  id: zod.string().optional(), // ID is optional if it's auto-generated
+  id: zod.string().optional(),
   name: zod.string().min(1, "Name is required").max(50, "Name must be less than 50 characters"),
   desc: zod.string().min(1, "Description is required").max(150, "Description must be less than 150 characters"),
+  photo: zod.instanceof(File).optional(),
 });
 
-export default function ServiceEditForm({ serviceId }: { serviceId: string }) {
+interface ServiceEditFormProps {
+  serviceData: {
+    id: string;
+    name: string;
+    desc: string;
+    photo?: string; // Assuming photo can be a URL or path
+  };
+  onClose: () => void;
+}
+
+export default function ServiceEditForm({ serviceData, onClose }: ServiceEditFormProps) {
+  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+
   const form = useForm<zod.infer<typeof serviceSchema>>({
     resolver: zodResolver(serviceSchema),
     defaultValues: {
-      id: serviceId || "", // Use passed service ID if available
-      name: "",
-      desc: "",
+      id: serviceData.id,
+      name: serviceData.name,
+      desc: serviceData.desc,
+      photo: undefined,
     },
   });
 
   const handleFormSubmit = (data: zod.infer<typeof serviceSchema>) => {
     console.log(data); // Handle service data here
-    // Add logic to submit or update the service details in the database
+    if (selectedPhoto) {
+      console.log("Uploaded Photo:", selectedPhoto); // Handle photo upload
+    }
+    onClose(); // Close the form after submission
   };
 
-  const metadata = {
-    title: "Edit Service",
-    description: "Please update the service details below",
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    if (file) {
+      setSelectedPhoto(file);
+      form.setValue("photo", file);
+    }
   };
 
   return (
@@ -53,18 +73,17 @@ export default function ServiceEditForm({ serviceId }: { serviceId: string }) {
           <div className="flex w-full items-center">
             <ArrowLeftIcon
               className="h-6 w-6 ml-auto cursor-pointer"
-              onClick={() => window.location.reload()} // Reloads the current page
+              onClick={onClose} // Close the modal
             />
           </div>
 
           <div>
-            <FormLabel className="font-bold text-xl font-md">{metadata.title}</FormLabel>
-            <p className="text-muted-foreground text-[12px]">{metadata.description}</p>
+            <FormLabel className="font-bold text-xl font-md">Edit Service</FormLabel>
+            <p className="text-muted-foreground text-[12px]">Please update the service details below.</p>
           </div>
 
           {/* Form Fields */}
           <div className="flex flex-col gap-2">
-            {/* Service Name */}
             <FormField
               control={form.control}
               name="name"
@@ -79,7 +98,6 @@ export default function ServiceEditForm({ serviceId }: { serviceId: string }) {
               )}
             />
 
-            {/* Description */}
             <FormField
               control={form.control}
               name="desc"
@@ -93,13 +111,36 @@ export default function ServiceEditForm({ serviceId }: { serviceId: string }) {
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="photo"
+              render={() => (
+                <FormItem>
+                  <FormLabel>Photo</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      className="border p-2 w-full rounded cursor-pointer file:rounded-md file:text-sm file:font-regular file:border-0 file:bg-muted file:mr-2 file:text-muted-foreground"
+                    />
+                  </FormControl>
+                  {selectedPhoto && (
+                    <p className="text-muted-foreground text-[12px]">
+                      Selected photo: {selectedPhoto.name}
+                    </p>
+                  )}
+                </FormItem>
+              )}
+            />
           </div>
 
           {/* Submit Button */}
           <div className="items-center gap-4 flex flex-col">
-            <Button type="submit" className="py-2 px-4 rounded w-full flex flex-row gap-2">
-              <PlusCircleIcon className="h-4 w-4" />
-              Update Service
+            <Button variant="secondary" type="submit" className="py-2 px-4 rounded w-full flex flex-row gap-2">
+              <CheckCircleIcon className="h-4 w-4" />
+              Submit Changes
             </Button>
           </div>
         </form>

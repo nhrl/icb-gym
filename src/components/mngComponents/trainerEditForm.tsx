@@ -1,6 +1,7 @@
 "use client";
-import React from "react";
+
 import { useState } from "react";
+import React from "react";
 import * as zod from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,10 +24,12 @@ import {
   SelectGroup,
   SelectLabel,
 } from "@/components/ui/select";
-import { ArrowLeftIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { Textarea } from "@/components/ui/textarea";
 
 // Define the form schema for Trainers
 const formSchema = zod.object({
+  trainer_id: zod.number().optional(),
   firstName: zod.string().max(25, "First name must be less than 25 characters"),
   lastName: zod.string().max(25, "Last name must be less than 25 characters"),
   email: zod.string().email("Invalid email address"),
@@ -34,7 +37,6 @@ const formSchema = zod.object({
   availability: zod.enum(["Available", "Full"]),
   profilePicture: zod.instanceof(File).optional(),
 });
-
 
 // Specialities
 const specialities = [
@@ -49,20 +51,31 @@ const availabilities = [
   { label: "Full", value: "Full" },
 ];
 
+interface Trainer {
+  trainer_id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  speciality: string;
+  availability: "Available" | "Full";
+  profilePicture?: string; // Assuming this could be a URL or file path
+}
+
 interface TrainerEditFormProps {
-  trainerId: number;
+  trainerData: Trainer;
   onClose: () => void; // Close modal function
 }
 
-export default function TrainerEditForm({ trainerId, onClose }: TrainerEditFormProps) {
+export default function TrainerEditForm({ trainerData, onClose }: TrainerEditFormProps) {
   const form = useForm<zod.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      speciality: "",
-      availability: "Available",
+      trainer_id: trainerData.trainer_id,
+      firstName: trainerData.firstName,
+      lastName: trainerData.lastName,
+      email: trainerData.email,
+      speciality: trainerData.speciality,
+      availability: trainerData.availability,
     },
   });
 
@@ -73,15 +86,15 @@ export default function TrainerEditForm({ trainerId, onClose }: TrainerEditFormP
     if (profilePicture) {
       console.log("Profile Picture:", profilePicture);
     }
+    onClose(); // Close the modal after submission
   };
-
 
   const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setProfilePicture(e.target.files[0]);
+      form.setValue("profilePicture", e.target.files[0]);
     }
   };
-
 
   const metadata = {
     title: "Edit Trainer",
@@ -180,7 +193,35 @@ export default function TrainerEditForm({ trainerId, onClose }: TrainerEditFormP
               )}
             />
 
-             {/* Profile Picture Upload */}
+            {/* Availability */}
+            <FormField
+              control={form.control}
+              name="availability"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Availability</FormLabel>
+                  <FormControl>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Availability" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {availabilities.map((availability) => (
+                            <SelectItem key={availability.value} value={availability.value}>
+                              {availability.label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage>{form.formState.errors.availability?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            {/* Profile Picture Upload */}
             <FormField
               control={form.control}
               name="profilePicture"
@@ -203,9 +244,9 @@ export default function TrainerEditForm({ trainerId, onClose }: TrainerEditFormP
 
           {/* Submit Button */}
           <div className="items-center gap-4 flex flex-col">
-            <Button type="submit" className="py-2 px-4 rounded w-full flex flex-row gap-2">
-              <PlusCircleIcon className="h-4 w-4" />
-              Update Trainer
+            <Button variant="secondary" type="submit" className="py-2 px-4 rounded w-full flex flex-row gap-2">
+              <CheckCircleIcon className="h-4 w-4" />
+              Submit Changes
             </Button>
           </div>
         </form>

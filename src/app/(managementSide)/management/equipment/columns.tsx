@@ -125,25 +125,52 @@ export const columns: ColumnDef<Equipment>[] = [
     header: "Status",
     cell: ({ row }) => {
       const equipment = row.original;
-
+  
       // Find the latest maintenance date for the current equipment
       const latestMaintenance = maintenanceData
         .filter((maintenance) => maintenance.equipment_id === equipment.equipment_id)
         .sort((a, b) => new Date(b.maintenance_date).getTime() - new Date(a.maintenance_date).getTime())[0];
-
-      if (!latestMaintenance) return <Badge className="rounded-full" variant="outline">No Maintenance</Badge>;
-
+  
+      if (!latestMaintenance) {
+        return (
+          <Badge className="rounded-full w-fit flex items-center gap-2" variant="outline">
+            {/* Dot */}
+            <span className="w-1 h-1 rounded-full bg-gray-500"></span>
+            No Maintenance
+          </Badge>
+        );
+      }
+  
       const daysSinceMaintenance = daysBetweenDates(new Date(), new Date(latestMaintenance.maintenance_date));
-
+  
       if (daysSinceMaintenance <= 30) {
-        return <Badge className="rounded-full" variant="success">Newly Maintained</Badge>;
+        return (
+          <Badge className="rounded-full w-fit flex items-center gap-2" variant="success">
+            {/* Green Dot for Newly Maintained */}
+            <span className="w-1 h-1 rounded-full bg-green-500"></span>
+            Newly Maintained
+          </Badge>
+        );
       } else if (daysSinceMaintenance > 90) {
-        return <Badge className="rounded-full" variant="destructive">Needs Maintenance</Badge>;
+        return (
+          <Badge className="rounded-full w-fit flex items-center gap-2" variant="destructive">
+            {/* Red Dot for Needs Maintenance */}
+            <span className="w-1 h-1 rounded-full bg-background"></span>
+            Needs Maintenance
+          </Badge>
+        );
       } else {
-        return <Badge className="rounded-full" variant="pending">Maintenance Due Soon</Badge>;
+        return (
+          <Badge className="rounded-full w-fit flex items-center gap-2" variant="pending">
+            {/* Yellow Dot for Maintenance Due Soon */}
+            <span className="w-1 h-1 rounded-full bg-yellow-500"></span>
+            Maintenance Due Soon
+          </Badge>
+        );
       }
     },
   },
+  
   {
     id: "actions",
     cell: ({ row }) => (

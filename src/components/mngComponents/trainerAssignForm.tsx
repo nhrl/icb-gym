@@ -22,7 +22,7 @@ import {
   SelectGroup,
   SelectLabel,
 } from "@/components/ui/select";
-import { ArrowLeftIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Checkbox } from "@/components/ui/checkbox";
 
 // Define the form schema for Assignment
@@ -221,8 +221,8 @@ export default function TrainerAssignForm({ trainerId, onClose }: TrainerAssignF
 
           {/* Submit Button */}
           <div className="items-center gap-4 flex flex-col">
-            <Button type="submit" className="py-2 px-4 rounded w-full flex flex-row gap-2">
-              <PlusCircleIcon className="h-4 w-4" />
+            <Button variant="secondary"type="submit" className="py-2 px-4 rounded w-full flex flex-row gap-2">
+              <CheckCircleIcon className="h-4 w-4" />
               Assign Trainer
             </Button>
           </div>

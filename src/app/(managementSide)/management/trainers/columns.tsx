@@ -106,7 +106,7 @@ const AssignmentTable = ({ trainerId }: { trainerId: number }) => {
   }, [trainerId]);
 
   return (
-    <div className="p-4">
+    <div>
       {assignments.length > 0 ? (
         <div className="flex flex-col gap-4">
           {assignments.map((assignment) => (
@@ -121,7 +121,7 @@ const AssignmentTable = ({ trainerId }: { trainerId: number }) => {
                   <div>
                     <AlertDialog>
                       <AlertDialogTrigger className="border border-border p-2 rounded-sm hover:bg-muted">
-                        <TrashIcon className="h-4 w-4" />
+                        <TrashIcon className="h-4 w-4 text-destructive/80" />
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
@@ -275,8 +275,12 @@ export const columns: ColumnDef<Trainers>[] = [
         Full: "destructive",
       };
       const variant = availabilityToVariantMap[availability] || "secondary";
+      const dotColor = variant === "success" ? "bg-green-500" : variant === "destructive" ? "bg-background" : "bg-gray-500";
+  
       return (
-        <Badge className="rounded-full" variant={variant}>
+        <Badge className="rounded-full w-fit flex items-center gap-2" variant={variant}>
+          {/* Dot or Circle */}
+          <span className={`w-1 h-1 rounded-full ${dotColor}`}></span>
           {availability}
         </Badge>
       );
