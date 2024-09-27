@@ -6,8 +6,9 @@ const folder = `service`;
 export async function addService(data:any) {
     try {
         //Extract service data
-        const serviceName = data.get('serviceName') as string;
-        const file = data.get('image') as File;
+        const serviceName = data.get('name') as string;
+        const desc = data.get('desc') as string;
+        const file = data.get('photo') as File;
 
         //Upload Image
         const imageUrl = await uploadImage(file,folder);
@@ -18,6 +19,7 @@ export async function addService(data:any) {
         .insert([
             { 
                 service_name:serviceName,
+                desc:desc,
                 service_img:imageUrl  
             }
         ]);
@@ -59,8 +61,9 @@ export async function updateService(data:any) {
     try {
         //extract service data
         const serviceId = data.get('id') as number;
-        const serviceName = data.get('serviceName') as string;
-        const file = data.get('image') as File;
+        const serviceName = data.get('name') as string;
+        const desc = data.get('desc') as string;
+        const file = data.get('photo') as File;
 
         const { data: currentServiceData, error: fetchError } = await supabase
             .from('service')
@@ -101,7 +104,8 @@ export async function updateService(data:any) {
         //Updateting service data
         const updateServiceData = {
             service_name: serviceName,
-            service_img: newImageUrl 
+            service_img: newImageUrl,
+            desc: desc 
         };
 
         const { error: updateError } = await supabase
@@ -123,56 +127,60 @@ export async function updateService(data:any) {
 }
 
 
-export async function deleteService(id: number) {
+export async function deleteService(info: any) {
     try {
-        //Get service data
+        const {ids} = info;
+        // Fetch service data for each ID to get the image paths
         const { data, error } = await supabase
-        .from('service')
-        .select()
-        .eq('service_id', id);
-
+            .from('service')
+            .select('service_id, service_img')
+            .in('service_id', ids); // Use 'in' to get services matching the provided ids
         if (error) {
             return {
                 success: false,
                 message: "Error getting service data",
                 error: error.message
-            }
+            };
+        }
+        
+        if (!data || data.length === 0) {
+            return {
+                success: false,
+                message: "No services found with the given IDs"
+            };
         }
 
-        //Delete image from storage
-        let fileName: string;
-        if (data && data.length > 0) {
-            const path = data[0].service_img;
-            fileName = getFilePathFromUrl(path);
+        // Loop through each service and delete associated images
+        for (const service of data) {
+            const path = service.service_img; // Get the image path
+            const fileName = getFilePathFromUrl(path); // Extract the file name from the URL
+
             // Remove the image from storage
             const imageRemovalResult = await removeImage(fileName);
             if (!imageRemovalResult.success) {
                 return {
                     success: false,
-                    message: "Error removing image from the storage",
-                }
+                    message: `Error removing image ${fileName} from storage`
+                };
             }
-        } else {
-            return { 
-                message: "No service found with the given ID" 
-            };
         }
 
-        //Delete service data
-        const { error: deleteServiceError } = await supabase
-        .from('service')
-        .delete()
-        .eq('service_id', id);
+        // Now delete all the service records from the database
+        const { error: deleteServicesError } = await supabase
+            .from('service')
+            .delete()
+            .in('service_id', ids); // Delete all services with the provided ids
 
-        if (deleteServiceError) {
+        if (deleteServicesError) {
             return {
                 success: false,
                 message: 'Error deleting the service data',
-                error: deleteServiceError.message
-            }
+                error: deleteServicesError.message
+            };
         }
-        return { success: true, message: 'Service remove successfully'};
-    } catch (error:any) {
+
+        return { success: true, message: 'Services and associated images removed successfully' };
+    } catch (error: any) {
         return { success: false, message: "An error occurred. Please try again.", error: error.message };
     }
 }

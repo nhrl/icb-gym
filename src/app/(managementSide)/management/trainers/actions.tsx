@@ -91,7 +91,7 @@ const TrainerActions: React.FC<TrainerActionsProps> = ({ trainer }) => {
             className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
           >
             <h2 className="text-xl font-semibold mb-4">
-              Assignments for {trainer.firstName} {trainer.lastName}
+              Assignments for {trainer.firstname} {trainer.lastname}
             </h2>
             <AssignmentTable trainerId={trainer.trainer_id} />
           </div>

@@ -1,4 +1,4 @@
-import { registerManager, getManagerInfo, updateManagerInfo} from '@service/register/manager';
+import { registerManager, getManagerInfo, updateManagerInfo} from '@service/auth/register/manager';
 
 export async function POST(request: Request) {
     try {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import {
@@ -32,9 +32,10 @@ const EquipmentActions: React.FC<EquipmentActionsProps> = ({ equipment, maintena
     setIsMaintenanceOpen(true);
   };
 
-  const handleOpenEditForm = () => {
-    setSelectedEquipmentId(equipment.equipment_id); // Store the selected equipment ID
+  const handleOpenEditForm = (id: any) => {
+    setSelectedEquipmentId(id); // Store the selected equipment ID
     setIsEditOpen(true); // Open the edit form modal
+
   };
 
   const handleCloseMaintenanceModal = () => {
@@ -62,7 +63,9 @@ const EquipmentActions: React.FC<EquipmentActionsProps> = ({ equipment, maintena
             Copy Equipment ID
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleOpenEditForm}>Set Maintenance</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleOpenEditForm(equipment.equipment_id)}>
+            Set Maintenance
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -74,7 +77,10 @@ const EquipmentActions: React.FC<EquipmentActionsProps> = ({ equipment, maintena
             <ul className="space-y-2">
               {selectedMaintenance.map((maintenance) => (
                 <li key={maintenance.maint_id} className="border-b pb-2 mb-2">
-                  <p><strong>Maintenance Date:</strong> {new Date(maintenance.maintenance_date).toLocaleDateString()}</p>
+                  <p>
+                    <strong>Maintenance Date:</strong>{" "}
+                    {new Date(maintenance.maintenance_date).toLocaleDateString()}
+                  </p>
                 </li>
               ))}
             </ul>

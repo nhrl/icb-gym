@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import ServiceAddForm from "@/components/mngComponents/serviceForm"; // Make sure this path is correct
+import { Service } from "./columns";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -92,7 +93,33 @@ export function DataTable<TData, TValue>({
 
   // Function to close modal
   const closeModal = () => setIsModalOpen(false);
-
+  const handleDelete = async () => {
+    const api = process.env.NEXT_PUBLIC_API_URL;
+    const ids = table
+      .getSelectedRowModel()
+      .rows.map((row) => (row.original as Service).service_id); // Cast to Service
+      try {
+        const response = await fetch(`${api}/api/manager/service`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ids }),  // Send the IDs to the server as JSON
+        });
+    
+        const result = await response.json();
+        if (response.ok) {
+          console.log("Successfully deleted service: ", result);
+          // You might want to refresh the table or show a success message here
+        } else {
+          console.error("Failed to delete service: ", result.message);
+          // Handle the error, possibly display it to the user
+        }
+      } catch (error) {
+        console.error("An error occurred during deletion: ", error);
+        // Handle the error, possibly display it to the user
+      }
+  }
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -103,9 +130,9 @@ export function DataTable<TData, TValue>({
       <div className="flex sm:flex-row flex-col items-center gap-2">
         <Input
           placeholder="Filter services..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          value={(table.getColumn("service_name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
+            table.getColumn("service_name")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -171,7 +198,7 @@ export function DataTable<TData, TValue>({
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction>Continue</AlertDialogAction>
+                <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

@@ -13,6 +13,7 @@ import {
   ColumnFiltersState,
   getFilteredRowModel,
   getPaginationRowModel,
+  RowSelectionState,
 } from "@tanstack/react-table";
 
 import {
@@ -48,6 +49,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import EquipmentForm from "@/components/mngComponents/equipForm"; // Replace with your Equipment form component
+import { Equipment } from "./columns";
+
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -61,8 +64,7 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
-
+  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
   const table = useReactTable({
     data,
     columns,
@@ -79,7 +81,7 @@ export function DataTable<TData, TValue>({
       columnFilters,
       columnVisibility,
       rowSelection,
-    },
+    }
   });
 
   const metadata = {
@@ -95,6 +97,36 @@ export function DataTable<TData, TValue>({
 
   const handleCloseForm = () => {
     setIsOpen(false); // Close the form modal
+  };
+
+  const handleDelete = async () => {
+    const api = process.env.NEXT_PUBLIC_API_URL;
+    const ids = table
+      .getSelectedRowModel()
+      .rows.map((row) => (row.original as Equipment).equipment_id); // Cast to Equipment
+    
+    try {
+      const response = await fetch(`${api}/api/manager/equipment`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ids }),  // Send the IDs to the server as JSON
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok) {
+        console.log("Successfully deleted equipment: ", result);
+        // You might want to refresh the table or show a success message here
+      } else {
+        console.error("Failed to delete equipment: ", result.message);
+        // Handle the error, possibly display it to the user
+      }
+    } catch (error) {
+      console.error("An error occurred during deletion: ", error);
+      // Handle the error, possibly display it to the user
+    }
   };
 
   return (
@@ -176,7 +208,7 @@ export function DataTable<TData, TValue>({
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction>Continue</AlertDialogAction>
+                <AlertDialogAction onClick={handleDelete} >Continue</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

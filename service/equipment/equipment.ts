@@ -4,7 +4,7 @@ export async function addEquipment(data:any) {
     try {
         const {name, quantity, purchase_date } = data;
         //insert equipment data
-        const {error} = await supabase
+        const {data:equipment ,error} = await supabase
         .from('equipment')
         .insert([
             {
@@ -12,7 +12,7 @@ export async function addEquipment(data:any) {
                 quantity: quantity,
                 purchase_date: purchase_date
             }
-        ])
+        ]).select();
 
         if(error) {
             return {
@@ -21,7 +21,7 @@ export async function addEquipment(data:any) {
                 error: error.message
             };
         }
-        return { success: true, message: "New Equipment added successfully"};
+        return { success: true, message: "New Equipment added successfully", data: equipment};
     } catch (error: any) {
         return { success: false, message: "An error occurred. Please try again.", error: error.message };
     }
@@ -29,19 +29,55 @@ export async function addEquipment(data:any) {
 
 export async function getEquipment() {
     try {
-        //fetch equipment data
-        const {data, error} = await supabase
+      // Fetch equipment along with its latest maintenance date
+      const { data, error } = await supabase
         .from('equipment')
-        .select()
-
-        if(error) {
-            return { success: false, message: "An error occurred while fetching the data.", error: error.message }; 
-        }
-        return { success: true, message: "Equipment fetch successfully", data};
+        .select(`
+          *,
+          maintenance (
+            maintenance_date
+          )
+        `)
+        .order('maintenance_date', { foreignTable: 'maintenance', ascending: false });
+  
+      if (error) {
+        return {
+          success: false,
+          message: 'An error occurred while fetching the data.',
+          error: error.message,
+        };
+      }
+  
+      // Transform the data to extract the latest maintenance date
+      const transformedData = data.map((equipment) => {
+        // Check if there are any maintenance records
+        const latestMaintenanceDate = equipment.maintenance?.[0]?.maintenance_date || null;
+  
+        // Return equipment data with the latest maintenance date as a string
+        return {
+          equipment_id: equipment.equipment_id,
+          name: equipment.name,
+          quantity: equipment.quantity,
+          purchase_date: equipment.purchase_date,
+          maintenance_date: latestMaintenanceDate, // Returns the latest date or null if no maintenance records
+        };
+      });
+  
+      return {
+        success: true,
+        message: 'Equipment and latest maintenance fetched successfully',
+        data: transformedData,
+      };
     } catch (error: any) {
-        return { success: false, message: "An error occurred. Please try again.", error: error.message };
+      return {
+        success: false,
+        message: 'An error occurred. Please try again.',
+        error: error.message,
+      };
     }
-}
+  }
+  
+  
 
 export async function updateEquipment(data:any) {
     try {
@@ -68,24 +104,26 @@ export async function updateEquipment(data:any) {
     }
 }
 
-export async function deleteEquipment(data:any) {
-    try {
-        const {id} = data;
-        //remove equipment
-        const {error} = await supabase
-        .from('equipment')
-        .delete()
-        .eq('equipment_id', id)
+export async function deleteEquipment(data: any) {
+  try {
+      const { ids } = data; // Expect an array of equipment IDs
 
-        if(error) {
-            return {
-                success: false,
-                message: "Failed to remove equipment. Please try again.",
-                error: error.message
-            };
-        }
-        return { success: true, message: "Equipment remove successfully"};
-    } catch (error: any) {
-        return { success: false, message: "An error occurred. Please try again.", error: error.message };
-    }
+      // Remove multiple equipment items using the `in` method for array of ids
+      const { error } = await supabase
+          .from('equipment')
+          .delete()
+          .in('equipment_id', ids); // Use `.in()` to delete multiple equipment
+
+      if (error) {
+          return {
+              success: false,
+              message: "Failed to remove equipment. Please try again.",
+              error: error.message
+          };
+      }
+      
+      return { success: true, message: "Equipment removed successfully" };
+  } catch (error: any) {
+      return { success: false, message: "An error occurred. Please try again.", error: error.message };
+  }
 }

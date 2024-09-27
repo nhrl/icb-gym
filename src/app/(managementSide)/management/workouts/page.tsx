@@ -4,38 +4,12 @@ import { DataTable } from "./datatable"
 import { SideBar } from '@/components/sideBar';
 
 
+const api = process.env.NEXT_PUBLIC_API_URL;
 async function getData(): Promise<Program[]> {
   // Fetch data from your API here.
-  return [
-    {
-      program_id: 1,
-      title: 'Weight Loss Plan',
-      desc: 'A balanced meal plan focused on reducing calorie intake and burning fat.',
-      fitness_level: 'Beginner',
-      fitness_goal: 'Weight Loss',
-    },
-    {
-      program_id: 2,
-      title: 'Muscle Gain Plan',
-      desc: 'A high-protein plan designed to help build muscle mass.',
-      fitness_level: 'Intermediate',
-      fitness_goal: 'Muscle Gain',
-    },
-    {
-      program_id: 3,
-      title: 'General Health Plan',
-      desc: 'A comprehensive workout program to improve overall health and fitness.',
-      fitness_level: 'Advanced',
-      fitness_goal: 'General Health',
-    },
-    {
-      program_id: 4,
-      title: 'Endurance Training',
-      desc: 'A cardio-intensive plan for boosting stamina and endurance.',
-      fitness_level: 'Advanced',
-      fitness_goal: 'Endurance',
-    },
-  ]
+  const res = await fetch(`${api}/api/manager/plans/workout?timestamp=${new Date().getTime()}`);
+  const data = await res.json();
+  return data.program;
 }
 
 export default async function Page() {

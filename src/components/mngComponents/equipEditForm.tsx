@@ -27,6 +27,8 @@ interface EquipEditFormProps {
   onClose: () => void; // Function to handle back or close action
 }
 
+
+const api = process.env.NEXT_PUBLIC_API_URL;
 export default function EquipEditForm({ equipment_id, onClose }: EquipEditFormProps) {
   // Initialize the form with validation schema
   const maintenanceForm = useForm<zod.infer<typeof maintenanceSchema>>({
@@ -37,9 +39,19 @@ export default function EquipEditForm({ equipment_id, onClose }: EquipEditFormPr
     },
   });
 
-  const handleMaintenanceSubmit = (data: zod.infer<typeof maintenanceSchema>) => {
-    console.log(data); // Handle the submitted maintenance data here
+  const handleMaintenanceSubmit = async (data: zod.infer<typeof maintenanceSchema>) => {
+    // Handle the submitted maintenance data here
     // Add logic to send data to the server or handle it in your application
+    const response = await fetch(`${api}/api/manager/equipment/maintenance`, { // Replace with your API endpoint
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json', // Sending data as JSON
+      },
+      body: JSON.stringify(data), // Convert the form data to JSON
+    });
+    const message = await response.json();
+    console.log(message.message);
+    onClose();
   };
 
   return (
