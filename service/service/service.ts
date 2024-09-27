@@ -129,12 +129,14 @@ export async function updateService(data:any) {
 
 export async function deleteService(info: any) {
     try {
-        const {ids} = info;
+        const { ids } = info;
+        
         // Fetch service data for each ID to get the image paths
         const { data, error } = await supabase
             .from('service')
             .select('service_id, service_img')
             .in('service_id', ids); // Use 'in' to get services matching the provided ids
+
         if (error) {
             return {
                 success: false,
@@ -142,7 +144,7 @@ export async function deleteService(info: any) {
                 error: error.message
             };
         }
-        
+
         if (!data || data.length === 0) {
             return {
                 success: false,
@@ -153,18 +155,22 @@ export async function deleteService(info: any) {
         // Loop through each service and delete associated images
         for (const service of data) {
             const path = service.service_img; // Get the image path
-            const fileName = getFilePathFromUrl(path); // Extract the file name from the URL
-
-            // Remove the image from storage
-            const imageRemovalResult = await removeImage(fileName);
-            if (!imageRemovalResult.success) {
-                return {
-                    success: false,
-                    message: `Error removing image ${fileName} from storage`
-                };
+            if (path && path.trim() !== "") {
+                // Only proceed if service_img is not empty or null
+                const fileName = getFilePathFromUrl(path); // Extract the file name from the URL
+                // Remove the image from storage
+                const imageRemovalResult = await removeImage(fileName);
+                if (!imageRemovalResult.success) {
+                    return {
+                        success: false,
+                        message: `Error removing image ${fileName} from storage`
+                    };
+                }
+            } else {
+                console.log(`No image found for service with ID: ${service.service_id}, skipping...`);
             }
         }
-
+       
         // Now delete all the service records from the database
         const { error: deleteServicesError } = await supabase
             .from('service')
