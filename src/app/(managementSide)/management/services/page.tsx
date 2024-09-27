@@ -1,3 +1,4 @@
+'use client'
 import React from 'react';
 import { Service, columns } from "./columns";
 import { DataTable } from "./datatable";
@@ -12,7 +13,6 @@ async function getData(): Promise<Service[]> {
 export default async function Page() {
   
   const data = await getData();
-  console.log(data);
   return (
     <div className="flex flex-col w-full p-[16px] justify-center sm:p-[32px] h-fit">
       {/* Main content */}
