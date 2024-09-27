@@ -63,13 +63,13 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="p-4 border w-full border-border rounded-2xl h-auto overflow-hidden text-center">
-        <h1 className="font-black text-[64px] md:text-[350px] whitespace-nowrap flex items-center animate-scroll">
+        <div className="font-black text-[64px] md:text-[350px] whitespace-nowrap flex items-center animate-scroll">
           <div className="flex items-center">
             <BoltIcon className="h-[64px] md:h-[300px] fill-yellow-400 stroke-yellow-400" />
             {herosection[0].title}
             <BoltIcon className="h-[64px] md:h-[300px] fill-yellow-400 stroke-yellow-400" />
           </div>
-        </h1>
+        </div>
 
         <div className="flex flex-col md:flex-row items-center justify-between">
           <p className="w-full md:w-[1000px] h-auto mt-4 text-sm text-left">
