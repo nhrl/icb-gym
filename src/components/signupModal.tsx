@@ -36,6 +36,9 @@ const formSchema = zod.object({
   email: zod.string().email(),
   password: zod.string().min(8),
   confirmPassword: zod.string().min(8),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match", 
+  path: ["confirmPassword"], // Set the error on confirmPassword field
 });
 
 const genders = [
@@ -44,6 +47,7 @@ const genders = [
   { label: "Prefer not to say", value: "other" }
 ] as const;
 
+const api = process.env.NEXT_PUBLIC_API_URL;
 export default function SignupModal() {
   const [isLoginModal, setIsLoginModal] = useState(false); // State to switch between modals
 
@@ -58,9 +62,20 @@ export default function SignupModal() {
     },
   });
 
-  const handleSubmit = (data: zod.infer<typeof formSchema>) => {
-    console.log(data); // Handle form data here
+  const handleSubmit = async (data: zod.infer<typeof formSchema>) => {
+    const response = await fetch(`${api}/api/register/customer`, { // Replace with your API endpoint
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json', // Sending data as JSON
+      },
+      body: JSON.stringify(data), // Convert the form data to JSON
+    });
+
+    const result = await response.json();
+    console.log(result.message);
+    setIsLoginModal(true);
   };
+
 
   const handleRefresh = () => {
     window.location.href = '/'; // Change the URL and refresh the page
@@ -157,7 +172,10 @@ export default function SignupModal() {
                     <FormItem className="flex-1">
                       <FormLabel>Gender</FormLabel>
                       <FormControl>
-                        <Select>
+                        <Select
+                          onValueChange={(value) => form.setValue("gender", value)}  // Update form state with selected value
+                          value={field.value}  // Bind to the current form value
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Select a Gender" />
                           </SelectTrigger>

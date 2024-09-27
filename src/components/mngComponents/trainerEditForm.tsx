@@ -30,10 +30,10 @@ import { Textarea } from "@/components/ui/textarea";
 // Define the form schema for Trainers
 const formSchema = zod.object({
   trainer_id: zod.number().optional(),
-  firstName: zod.string().max(25, "First name must be less than 25 characters"),
-  lastName: zod.string().max(25, "Last name must be less than 25 characters"),
+  firstname: zod.string().max(25, "First name must be less than 25 characters"),
+  lastname: zod.string().max(25, "Last name must be less than 25 characters"),
   email: zod.string().email("Invalid email address"),
-  speciality: zod.string().min(1, "Speciality is required"),
+  specialty: zod.string().min(1, "specialty is required"),
   availability: zod.enum(["Available", "Full"]),
   profilePicture: zod.instanceof(File).optional(),
 });
@@ -53,10 +53,10 @@ const availabilities = [
 
 interface Trainer {
   trainer_id: number;
-  firstName: string;
-  lastName: string;
+  firstname: string;
+  lastname: string;
   email: string;
-  speciality: string;
+  specialty: string;
   availability: "Available" | "Full";
   profilePicture?: string; // Assuming this could be a URL or file path
 }
@@ -71,10 +71,10 @@ export default function TrainerEditForm({ trainerData, onClose }: TrainerEditFor
     resolver: zodResolver(formSchema),
     defaultValues: {
       trainer_id: trainerData.trainer_id,
-      firstName: trainerData.firstName,
-      lastName: trainerData.lastName,
+      firstname: trainerData.firstname,
+      lastname: trainerData.lastname,
       email: trainerData.email,
-      speciality: trainerData.speciality,
+      specialty: trainerData.specialty,
       availability: trainerData.availability,
     },
   });
@@ -121,14 +121,14 @@ export default function TrainerEditForm({ trainerData, onClose }: TrainerEditFor
               {/* First Name */}
               <FormField
                 control={form.control}
-                name="firstName"
+                name="firstname"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>First Name</FormLabel>
                     <FormControl>
                       <Input {...field} type="text" className="border p-2 w-full rounded" />
                     </FormControl>
-                    <FormMessage>{form.formState.errors.firstName?.message}</FormMessage>
+                    <FormMessage>{form.formState.errors.firstname?.message}</FormMessage>
                   </FormItem>
                 )}
               />
@@ -136,14 +136,14 @@ export default function TrainerEditForm({ trainerData, onClose }: TrainerEditFor
               {/* Last Name */}
               <FormField
                 control={form.control}
-                name="lastName"
+                name="lastname"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Last Name</FormLabel>
                     <FormControl>
                       <Input {...field} type="text" className="border p-2 w-full rounded" />
                     </FormControl>
-                    <FormMessage>{form.formState.errors.lastName?.message}</FormMessage>
+                    <FormMessage>{form.formState.errors.lastname?.message}</FormMessage>
                   </FormItem>
                 )}
               />
@@ -164,31 +164,31 @@ export default function TrainerEditForm({ trainerData, onClose }: TrainerEditFor
               )}
             />
 
-            {/* Speciality */}
+            {/* specialty */}
             <FormField
               control={form.control}
-              name="speciality"
+              name="specialty"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Speciality</FormLabel>
+                  <FormLabel>specialty</FormLabel>
                   <FormControl>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a Speciality" />
+                        <SelectValue placeholder="Select a specialty" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
                           <SelectLabel>Specialities</SelectLabel>
-                          {specialities.map((speciality) => (
-                            <SelectItem key={speciality.value} value={speciality.value}>
-                              {speciality.label}
+                          {specialities.map((specialty) => (
+                            <SelectItem key={specialty.value} value={specialty.value}>
+                              {specialty.label}
                             </SelectItem>
                           ))}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
                   </FormControl>
-                  <FormMessage>{form.formState.errors.speciality?.message}</FormMessage>
+                  <FormMessage>{form.formState.errors.specialty?.message}</FormMessage>
                 </FormItem>
               )}
             />

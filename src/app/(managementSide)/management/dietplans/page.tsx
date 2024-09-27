@@ -4,16 +4,12 @@ import { DataTable } from "./datatable"
 import { SideBar } from '@/components/sideBar';
 
 
+const api = process.env.NEXT_PUBLIC_API_URL;
 async function getData(): Promise<Dietplans[]> {
   // Fetch data from your API here.
-  return [
-    {
-      id: 1,
-      name: 'Weight Loss Plan',
-      desc: 'A balanced meal plan focused on reducing calorie intake',
-      fitness_goal: 'Weight Loss',
-    },
-  ]
+  const res = await fetch(`${api}/api/manager/plans/diet?timestamp=${new Date().getTime()}`);
+  const data = await res.json();
+  return data.dietplan;
 }
 
 export default async function Page() {

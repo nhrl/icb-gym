@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect} from "react";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import {
@@ -19,10 +19,20 @@ type ServiceActionsProps = {
 
 const ServiceActions: React.FC<ServiceActionsProps> = ({ service }) => {
   const [isOpen, setIsOpen] = useState(false); // State to control modal visibility
+  const [serviceId, setServiceID] = useState<number | null>(null);
 
-  const handleOpenForm = () => {
+  const handleOpenForm = (id: any) => {
+    setServiceID(id); // Asynchronously updates the state
     setIsOpen(true); // Open the form modal
   };
+
+  // useEffect to log the updated serviceId after it changes
+  useEffect(() => {
+    if (serviceId !== null) {
+      console.log("Updated serviceId:", serviceId);
+    }
+  }, [serviceId]); // This effect runs when serviceId changes
+
 
   const handleCloseForm = () => {
     setIsOpen(false); // Close the form modal
@@ -39,11 +49,11 @@ const ServiceActions: React.FC<ServiceActionsProps> = ({ service }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => navigator.clipboard.writeText(service.id)}>
+          <DropdownMenuItem onClick={() => navigator.clipboard.writeText(service.service_id)}>
             Copy Service ID
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleOpenForm}>Edit</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleOpenForm(service.service_id)}>Edit</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -51,7 +61,7 @@ const ServiceActions: React.FC<ServiceActionsProps> = ({ service }) => {
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50">
           <div className="rounded-md w-full max-w-lg">
-            <ServiceEditForm onClose={handleCloseForm} serviceData={service} />
+            <ServiceEditForm onClose={handleCloseForm} serviceId={serviceId} serviceData={service} />
           </div>
         </div>
       )}

@@ -42,11 +42,12 @@ import TrainerAssignForm from "@/components/mngComponents/trainerAssignForm"; //
 // Define the shape of your data based on the Trainers type
 export type Trainers = {
   trainer_id: number;
-  firstName: string;
-  lastName: string;
+  firstname: string;
+  lastname: string;
   email: string;
-  speciality: string;
+  specialty: string;
   availability: "Available" | "Full";
+  trainer_img: string
 };
 
 // Define the shape of your data based on the Assignment type
@@ -228,8 +229,8 @@ export const columns: ColumnDef<Trainers>[] = [
     cell: ({ row }) => (
       <Avatar className="h-6 w-6">
         <Image
-          src={logo}
-          alt={`${row.original.firstName} ${row.original.lastName}`}
+          src={row.original.trainer_img}
+          alt={`${row.original.firstname} ${row.original.lastname}`}
           width={24}
           height={24}
         />
@@ -239,12 +240,12 @@ export const columns: ColumnDef<Trainers>[] = [
   {
     accessorKey: "firstName",
     header: "First Name",
-    cell: ({ row }) => <span>{row.original.firstName}</span>,
+    cell: ({ row }) => <span>{row.original.firstname}</span>,
   },
   {
     accessorKey: "lastName",
     header: "Last Name",
-    cell: ({ row }) => <span>{row.original.lastName}</span>,
+    cell: ({ row }) => <span>{row.original.lastname}</span>,
   },
   {
     accessorKey: "email",
@@ -263,7 +264,7 @@ export const columns: ColumnDef<Trainers>[] = [
   {
     accessorKey: "speciality",
     header: "Speciality",
-    cell: ({ row }) => <span>{row.original.speciality}</span>,
+    cell: ({ row }) => <span>{row.original.specialty}</span>,
   },
   {
     accessorKey: "availability",

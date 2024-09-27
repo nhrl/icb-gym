@@ -38,9 +38,27 @@ export default function ServiceAddForm({ onClose }: ServiceAddFormProps) {
     },
   });
 
-  const handleFormSubmit = (data: zod.infer<typeof serviceSchema>) => {
-    console.log(data); // Handle adding service data here
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  const handleFormSubmit = async (data: zod.infer<typeof serviceSchema>) => {
+    // Handle adding service data here
     // Logic to submit the service data to the server or database goes here
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('desc', data.desc);
+
+    // Only append the photo if it exists
+    if (data.photo) {
+      formData.append('photo', data.photo); 
+    }
+
+    const message = await fetch(`${api}/api/manager/service`, {
+      method: 'POST',
+      body:formData
+    })
+
+    //success message
+    console.log(message);
+    onClose();
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {

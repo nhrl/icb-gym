@@ -10,6 +10,8 @@ import { ArrowRightEndOnRectangleIcon, ArrowLeftIcon } from '@heroicons/react/24
 import Image from 'next/image';
 import logo from '../assets/logos/logodark.png';
 import SignupModal from './signupModal'; // Import SignupModal
+import Cookies from 'js-cookie';
+import CryptoJS from 'crypto-js'; // Import the crypto-js library
 
 // Define the login form schema
 const loginFormSchema = zod.object({
@@ -19,7 +21,6 @@ const loginFormSchema = zod.object({
 
 export default function LoginModal() {
   const [isSignupModal, setIsSignupModal] = useState(false); // State to toggle between login and signup
-
   const form = useForm<zod.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
@@ -28,10 +29,50 @@ export default function LoginModal() {
     },
   });
 
-  const handleLogin = (data: zod.infer<typeof loginFormSchema>) => {
-    console.log(data); // Handle login data here
-  };
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || 'lhS7aOXRUPGPDId6mmHJdA00p39HAfU4';
 
+  const handleLogin = async (data: zod.infer<typeof loginFormSchema>) => {
+    const response = await fetch(`${api}/api/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+  
+    const result = await response.json();
+    const user = result.user;
+    const accessToken = result.session.access_token;
+  
+    if (user && accessToken) {
+      // Encrypt the user data and access token
+      const encryptedUserData = CryptoJS.AES.encrypt(
+        JSON.stringify({
+          id: user.user_metadata.id,
+          role: user.user_metadata.role,
+          displayName: user.user_metadata.display_name,
+          email: user.email,
+        }),
+        secretKey
+      ).toString();
+  
+      const encryptedAccessToken = CryptoJS.AES.encrypt(accessToken, secretKey).toString();
+  
+      // Store encrypted user data in cookies
+      Cookies.set('user', encryptedUserData, { expires: 7 });
+  
+      // Store encrypted access token in cookies
+      Cookies.set('access_token', encryptedAccessToken, { expires: 7 });
+  
+      // Redirect based on role
+      if (user.user_metadata.role === 'manager') {
+        window.location.href = '/management/account';
+      } else if (user.user_metadata.role === 'customer') {
+        window.location.href = '/customer/account';
+      }
+    }
+  };
   const handleRefresh = () => {
     window.location.href = '/'; // Change the URL and refresh the page
   };
