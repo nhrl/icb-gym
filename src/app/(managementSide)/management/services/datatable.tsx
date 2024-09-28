@@ -52,11 +52,13 @@ import { Service } from "./columns";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  mutate: () => void;   
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  mutate
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -108,9 +110,9 @@ export function DataTable<TData, TValue>({
         });
     
         const result = await response.json();
-        if (response.ok) {
+        if (result.success) {
           console.log("Successfully deleted service: ", result);
-          // You might want to refresh the table or show a success message here
+          mutate();
         } else {
           console.error("Failed to delete service: ", result.message);
           // Handle the error, possibly display it to the user
@@ -178,7 +180,7 @@ export function DataTable<TData, TValue>({
             {isModalOpen && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50">
                 <div className="rounded-md w-full max-w-lg">
-                  <ServiceAddForm onClose={closeModal} /> {/* Close modal on form submission */}
+                  <ServiceAddForm onClose={closeModal} mutate={mutate}/> {/* Close modal on form submission */}
                 </div>
               </div>
             )}

@@ -12,12 +12,14 @@ import {
 import ServiceEditForm from "@/components/mngComponents/serviceEditForm"; // Ensure you have a Service edit form
 import { Service } from "./columns"; // Ensure you have a Service type
 
+
 // Define props for the ServiceActions component
 type ServiceActionsProps = {
   service: Service; // Expecting the full service object
+  mutate: () => void;
 };
 
-const ServiceActions: React.FC<ServiceActionsProps> = ({ service }) => {
+const ServiceActions: React.FC<ServiceActionsProps> = ({ service, mutate }) => {
   const [isOpen, setIsOpen] = useState(false); // State to control modal visibility
   const [serviceId, setServiceID] = useState<number | null>(null);
 
@@ -61,7 +63,7 @@ const ServiceActions: React.FC<ServiceActionsProps> = ({ service }) => {
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50">
           <div className="rounded-md w-full max-w-lg">
-            <ServiceEditForm onClose={handleCloseForm} serviceId={serviceId} serviceData={service} />
+            <ServiceEditForm onClose={handleCloseForm} serviceId={serviceId} serviceData={service} mutate={mutate}/>
           </div>
         </div>
       )}

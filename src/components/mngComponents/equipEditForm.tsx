@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PlusCircleIcon, ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { mutate } from "swr";
 
 // Define the form schema for Maintenance
 const maintenanceSchema = zod.object({
@@ -25,6 +26,7 @@ const maintenanceSchema = zod.object({
 interface EquipEditFormProps {
   equipment_id: string;
   onClose: () => void; // Function to handle back or close action
+  mutate: () => void;
 }
 
 
@@ -50,7 +52,11 @@ export default function EquipEditForm({ equipment_id, onClose }: EquipEditFormPr
       body: JSON.stringify(data), // Convert the form data to JSON
     });
     const message = await response.json();
-    console.log(message.message);
+    if(message.success) {
+      mutate(`${api}/api/manager/equipment`);
+    } else {
+      //display error here
+    }
     onClose();
   };
 

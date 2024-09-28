@@ -5,6 +5,7 @@ import React from "react";
 import * as zod from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+
 import {
   Form,
   FormField,
@@ -17,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon, PlusCircleIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
+import { mutate } from "swr";
 
 // Define the form schema for adding a new service
 const serviceSchema = zod.object({
@@ -27,6 +29,7 @@ const serviceSchema = zod.object({
 
 interface ServiceAddFormProps {
   onClose: () => void; // Close modal function
+  mutate: () => void;  // Function to refresh data
 }
 
 export default function ServiceAddForm({ onClose }: ServiceAddFormProps) {
@@ -51,13 +54,17 @@ export default function ServiceAddForm({ onClose }: ServiceAddFormProps) {
       formData.append('photo', data.photo); 
     }
 
-    const message = await fetch(`${api}/api/manager/service`, {
+    const response = await fetch(`${api}/api/manager/service`, {
       method: 'POST',
       body:formData
     })
 
-    //success message
-    console.log(message);
+    const message = await response.json()
+    if(message.success) {
+      mutate(`${api}/api/manager/service`);
+    } else {
+      //display error here
+    }  
     onClose();
   };
 

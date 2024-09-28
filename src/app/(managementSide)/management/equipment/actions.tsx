@@ -16,9 +16,10 @@ import { Maintenance } from "./columns"; // Import your Maintenance type
 type EquipmentActionsProps = {
   equipment: any;
   maintenanceData: Maintenance[];
+  mutate: () => void;
 };
 
-const EquipmentActions: React.FC<EquipmentActionsProps> = ({ equipment, maintenanceData }) => {
+const EquipmentActions: React.FC<EquipmentActionsProps> = ({ equipment, maintenanceData, mutate }) => {
   const [isMaintenanceOpen, setIsMaintenanceOpen] = useState(false); // State to control maintenance modal visibility
   const [isEditOpen, setIsEditOpen] = useState(false); // State to control edit form modal visibility
   const [selectedMaintenance, setSelectedMaintenance] = useState<Maintenance[]>([]); // State for selected maintenance
@@ -95,7 +96,7 @@ const EquipmentActions: React.FC<EquipmentActionsProps> = ({ equipment, maintena
       {isEditOpen && selectedEquipmentId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50">
           <div className="p-4 max-w-lg w-full">
-            <EquipEditForm onClose={handleCloseEditModal} equipment_id={selectedEquipmentId.toString()} />
+            <EquipEditForm onClose={handleCloseEditModal} equipment_id={selectedEquipmentId.toString()} mutate={mutate}/>
           </div>
         </div>
       )}

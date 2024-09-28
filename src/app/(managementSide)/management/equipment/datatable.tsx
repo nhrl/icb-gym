@@ -55,11 +55,13 @@ import { Equipment } from "./columns";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  mutate: () => void;  
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  mutate
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -97,6 +99,7 @@ export function DataTable<TData, TValue>({
 
   const handleCloseForm = () => {
     setIsOpen(false); // Close the form modal
+    
   };
 
   const handleDelete = async () => {
@@ -119,6 +122,7 @@ export function DataTable<TData, TValue>({
       if (response.ok) {
         console.log("Successfully deleted equipment: ", result);
         // You might want to refresh the table or show a success message here
+        mutate();
       } else {
         console.error("Failed to delete equipment: ", result.message);
         // Handle the error, possibly display it to the user
@@ -188,7 +192,7 @@ export function DataTable<TData, TValue>({
             {isOpen && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50">
                 <div className="rounded-md w-full max-w-lg">
-                  <EquipmentForm onClose={handleCloseForm}/>
+                  <EquipmentForm onClose={handleCloseForm} mutate={mutate}/>
                 </div>
               </div>
             )}
