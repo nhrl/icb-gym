@@ -1,23 +1,31 @@
+'use client'; // Enables client-side rendering
+
 import React from 'react';
-import { Service, columns } from "./columns";
-import { DataTable } from "./datatable";
+import useSWR from 'swr';  // SWR for client-side data fetching
+import { Service, columns } from './columns';
+import { DataTable } from './datatable';
 
+// API URL
 const api = process.env.NEXT_PUBLIC_API_URL;
-async function getData(): Promise<Service[]> {
-  const res = await fetch(`${api}/api/manager/service?timestamp=${new Date().getTime()}`);
-  const data = await res.json();
-  return data.data;
-}
 
-export default async function Page() {
-  
-  const data = await getData();
+// Define the fetcher function
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+export default function Page() {
+  // Fetch data using SWR
+  const { data, error, isLoading, mutate } = useSWR(`${api}/api/manager/service`, fetcher, {
+    revalidateOnFocus: true, // Auto revalidate when window refocuses
+  });
+
+  if (error) return <div>Error loading services</div>;
+  if (isLoading) return <div>Loading...</div>; // Show loading while fetching data
+
   return (
     <div className="flex flex-col w-full p-[16px] justify-center sm:p-[32px] h-fit">
       {/* Main content */}
       <div className="flex flex-grow w-full h-full items-center">
-          <div className="container p-8 border bg-card rounded-xl h-fit w-full ">
-          <DataTable columns={columns} data={data} />
+        <div className="container p-8 border bg-card rounded-xl h-fit w-full">
+          <DataTable columns={columns} data={data.data} />
         </div>
       </div>
     </div>
