@@ -25,7 +25,7 @@ export default function Page() {
       {/* Main content */}
       <div className="flex flex-grow w-full h-full items-center">
         <div className="container p-8 border bg-card rounded-xl h-fit w-full">
-          <DataTable columns={columns} data={data.data} />
+          <DataTable columns={columns} data={data.data} mutate={mutate}/>
         </div>
       </div>
     </div>
