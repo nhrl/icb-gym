@@ -1,34 +1,31 @@
+'use client'; // Enables client-side rendering
+
 import React from 'react';
-import { Service, columns } from "./columns";
-import { DataTable } from "./datatable";
+import useSWR from 'swr';  // SWR for client-side data fetching
+import { Service, columns } from './columns';
+import { DataTable } from './datatable';
 
 // API URL
 const api = process.env.NEXT_PUBLIC_API_URL;
 
-// Async function to fetch the data with caching
-async function getData(): Promise<Service[]> {
-  // Fetch the data and enable server-side caching using 'next' object
-  const res = await fetch(`${api}/api/manager/service`, {
-    next: { revalidate: 1 }, // Revalidate cache every 60 seconds
+// Define the fetcher function
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+export default function Page() {
+  // Fetch data using SWR
+  const { data, error, isLoading, mutate } = useSWR(`${api}/api/manager/service`, fetcher, {
+    revalidateOnFocus: true, // Auto revalidate when window refocuses
   });
 
-  if (!res.ok) {
-    throw new Error('Failed to fetch data');
-  }
-
-  const data = await res.json();
-  return data.data;
-}
-
-export default async function Page() {
-  const data = await getData();
+  if (error) return <div>Error loading services</div>;
+  if (isLoading) return <div>Loading...</div>; // Show loading while fetching data
 
   return (
     <div className="flex flex-col w-full p-[16px] justify-center sm:p-[32px] h-fit">
       {/* Main content */}
       <div className="flex flex-grow w-full h-full items-center">
         <div className="container p-8 border bg-card rounded-xl h-fit w-full">
-          <DataTable columns={columns} data={data} />
+          <DataTable columns={columns} data={data.data} mutate={mutate}/>
         </div>
       </div>
     </div>

@@ -165,7 +165,9 @@ export const columns: ColumnDef<Equipment>[] = [
   {
     id: "actions",
     cell: ({ row }) => (
-      <EquipmentActions equipment={row.original} maintenanceData={maintenanceData} />
+      <EquipmentActions equipment={row.original} maintenanceData={maintenanceData} mutate={function (): void {
+        throw new Error("Function not implemented.");
+      } } />
     ),
   },
 ];

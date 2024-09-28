@@ -58,6 +58,8 @@ export const columns: ColumnDef<Service>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <ServiceActions service={row.original} />,
+    cell: ({ row }) => <ServiceActions service={row.original} mutate={function (): void {
+      throw new Error("Function not implemented.");
+    } } />,
   },
 ];

@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon, ArrowRightIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { mutate } from "swr";
 import { Textarea } from "@/components/ui/textarea";
 
 // Define the form schema for Equipment
@@ -35,6 +36,7 @@ const maintenanceSchema = zod.object({
 
 interface EquipmentFormProps {
   onClose: () => void; // Function to close the form modal
+  mutate: () => void;  // Function to refresh data
 }
 
 const api = process.env.NEXT_PUBLIC_API_URL;
@@ -99,10 +101,12 @@ export default function EquipmentForm({ onClose }: EquipmentFormProps) {
       body: JSON.stringify(updatedData), // Convert the form data to JSON
     });
     const message = await response.json();
-    console.log(message.message);
+   if(message.success) {
+      mutate(`${api}/api/manager/equipment`);
+   } else {
+    //display error here
+   }
     onClose();
-    //need to improve only the table should reload not the whole page
-    window.location.reload();
   };
 
   const metadata = {

@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
+import { mutate } from "swr";
 
 // Update the Zod schema for Service
 const serviceSchema = zod.object({
@@ -35,6 +36,7 @@ interface ServiceEditFormProps {
     photo?: string; // Assuming photo can be a URL or path
   };
   onClose: () => void;
+  mutate: () => void; // Function to refresh data
 }
 
 export default function ServiceEditForm({ serviceData, serviceId, onClose }: ServiceEditFormProps) {
@@ -60,11 +62,18 @@ export default function ServiceEditForm({ serviceData, serviceId, onClose }: Ser
     formData.append('desc', data.desc);
     formData.append('photo',data.photo);
 
-    const message = await fetch(`${api}/api/manager/service`, {
+    const response = await fetch(`${api}/api/manager/service`, {
       method: 'PUT',
       body:formData
     })
-    console.log(message);
+    
+    const message = await response.json();
+    if(message.success) {
+      //refresh table
+      mutate(`${api}/api/manager/service`);
+    } else {
+      // display error here
+    }
     onClose(); 
   };
 

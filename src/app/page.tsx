@@ -12,7 +12,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tag } from "@/components/ui/tag";
-import { NavBar } from "../components/navBar";
 import { 
   InformationCircleIcon, 
   ArrowUpLeftIcon, 
@@ -58,9 +57,7 @@ export default function Home() {
   ]);
 
   return (
-    <main>
-      <NavBar/>   
-
+    <main> 
       {/* Hero Section */}
       <section className="p-4 border w-full border-border rounded-2xl h-auto overflow-hidden text-center">
         <div className="font-black text-[64px] md:text-[350px] whitespace-nowrap flex items-center animate-scroll">
@@ -142,9 +139,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-
-      {/* Footer Section */}
-      <Footer />
     </main>
   );
 }
