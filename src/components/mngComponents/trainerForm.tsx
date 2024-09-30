@@ -23,6 +23,8 @@ import {
   SelectLabel,
 } from "@/components/ui/select";
 import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
+import { Toaster } from "@/components/ui/toaster"; // Import Toaster for displaying notifications
 
 // Define the form schema for Trainers
 const formSchema = zod.object({
@@ -53,6 +55,7 @@ interface TrainerFormProps {
 
 export default function TrainerForm({ onClose }: TrainerFormProps) {
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const { toast } = useToast(); // Use toast for notifications
 
   const form = useForm<zod.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -70,6 +73,13 @@ export default function TrainerForm({ onClose }: TrainerFormProps) {
     if (profilePicture) {
       console.log("Profile Picture:", profilePicture);
     }
+
+    // Show success toast notification
+    toast({
+      title: "Trainer Added",
+      description: "The new trainer has been successfully added.",
+      duration: 3000,
+    });
   };
 
   const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -213,6 +223,9 @@ export default function TrainerForm({ onClose }: TrainerFormProps) {
           </div>
         </form>
       </Form>
+
+      {/* Toaster component to display toast notifications */}
+      <Toaster />
     </div>
   );
 }

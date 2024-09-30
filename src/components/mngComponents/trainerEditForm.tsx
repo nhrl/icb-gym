@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import {
   Select,
   SelectContent,
@@ -24,7 +25,8 @@ import {
   SelectGroup,
   SelectLabel,
 } from "@/components/ui/select";
-import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
+import { Toaster } from "@/components/ui/toaster"; // Import Toaster for displaying notifications
 import { Textarea } from "@/components/ui/textarea";
 
 // Define the form schema for Trainers
@@ -80,12 +82,21 @@ export default function TrainerEditForm({ trainerData, onClose }: TrainerEditFor
   });
 
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const { toast } = useToast(); // Use toast for notifications
 
   const handleSubmit = (data: zod.infer<typeof formSchema>) => {
     console.log(data); // Handle form data here
     if (profilePicture) {
       console.log("Profile Picture:", profilePicture);
     }
+
+    // Show success toast notification
+    toast({
+      title: "Trainer Updated",
+      description: "The trainer details have been successfully updated.",
+      duration: 3000,
+    });
+
     onClose(); // Close the modal after submission
   };
 
@@ -251,6 +262,9 @@ export default function TrainerEditForm({ trainerData, onClose }: TrainerEditFor
           </div>
         </form>
       </Form>
+
+      {/* Toaster component to display toast notifications */}
+      <Toaster />
     </div>
   );
 }

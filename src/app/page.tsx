@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../components/ui/button";
 import {
   Card,
@@ -21,6 +21,13 @@ import {
 import { Footer } from "../components/footer";
 
 export default function Home() {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    // Set isMounted to true after the component is mounted
+    setIsMounted(true);
+  }, []);
+
   const [tags] = useState([
     "Community Forums",
     "Book Trainers on Preferred Time",
@@ -56,10 +63,15 @@ export default function Home() {
     },
   ]);
 
+  if (!isMounted) {
+    // Render nothing or a simple fallback until the component has mounted
+    return null;
+  }
+
   return (
-    <main> 
+    <> 
       {/* Hero Section */}
-      <section className="p-4 border w-full border-border rounded-2xl h-auto overflow-hidden text-center">
+      <div className="p-4 border w-full border-border rounded-2xl h-auto overflow-hidden text-center">
         <div className="font-black text-[64px] md:text-[350px] whitespace-nowrap flex items-center animate-scroll">
           <div className="flex items-center">
             <BoltIcon className="h-[64px] md:h-[300px] fill-yellow-400 stroke-yellow-400" />
@@ -85,10 +97,10 @@ export default function Home() {
             </Button>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Features Section */}
-      <section className="p-4 h-fit border w-full border-border rounded-2xl flex flex-col gap-6 py-6">
+      <div className="p-4 h-fit border w-full border-border rounded-2xl flex flex-col gap-6 py-6">
         <div>
           <h1 className="font-black text-2xl md:text-3xl flex flex-row items-center gap-2">
             <SparklesIcon className="h-6 w-6 fill-yellow-400 stroke-yellow-400" />
@@ -104,10 +116,10 @@ export default function Home() {
             </Tag>
           ))}
         </div>
-      </section>
+      </div>
 
       {/* Membership Section */}
-      <section className="p-4 h-fit border w-full border-border rounded-2xl flex flex-col gap-4 items-center py-8">
+      <div className="p-4 h-fit border w-full border-border rounded-2xl flex flex-col gap-4 items-center py-8">
         <div className="pb-2">
           <h1 className="font-black text-2xl md:text-3xl">Membership Subscriptions</h1>
         </div>
@@ -138,7 +150,7 @@ export default function Home() {
             </Card>
           ))}
         </div>
-      </section>
-    </main>
+      </div>
+    </>
   );
 }

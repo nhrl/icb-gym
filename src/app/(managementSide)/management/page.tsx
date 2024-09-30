@@ -1,3 +1,5 @@
+"use client";  // Ensure the page is rendered on the client side
+
 import React from 'react';
 
 export default function Page() {

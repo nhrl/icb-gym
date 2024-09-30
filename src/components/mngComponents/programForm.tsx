@@ -22,11 +22,11 @@ import {
   SelectTrigger,
   SelectValue,
   SelectGroup,
-  SelectLabel,
 } from "@/components/ui/select";
 import { ArrowLeftIcon, ArrowRightIcon, PlusCircleIcon, TrashIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
-
+import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
+import { Toaster } from "@/components/ui/toaster";
 
 // Define the form schema for Program with required photo
 const programSchema = zod.object({
@@ -60,6 +60,8 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
   const [step, setStep] = useState(1); // Step to track which form to show
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null); // Store the selected photo
 
+  const { toast } = useToast(); // Use toast for notifications
+
   const programForm = useForm<zod.infer<typeof programSchema>>({
     resolver: zodResolver(programSchema),
     defaultValues: {
@@ -92,11 +94,26 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
 
   const handleProgramSubmit = (data: zod.infer<typeof programSchema>) => {
     console.log(data); // Handle program data here
+
+    // Show success toast for program submission
+    toast({
+      title: "Program saved!",
+      description: "Your program details have been saved successfully.",
+      duration: 3000,
+    });
+
     setStep(2); // Move to the next form step
   };
 
   const handleExerciseSubmit = (data: { exercises: zod.infer<typeof exerciseSchema>[] }) => {
     console.log({ programData: programForm.getValues(), exercises: data.exercises }); // Submit both program and exercises
+
+    // Show success toast for exercises submission
+    toast({
+      title: "Exercises saved!",
+      description: "Your exercises have been saved successfully.",
+      duration: 3000,
+    });
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -384,6 +401,9 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
           </form>
         </Form>
       )}
+
+      {/* Toaster component to display toast notifications */}
+      <Toaster />
     </div>
   );
 }

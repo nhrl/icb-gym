@@ -20,9 +20,11 @@ import {
   SelectGroup,
   SelectLabel,
 } from "@/components/ui/select";
-import { ArrowLeftIcon, PlusCircleIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
 import { Program } from "./../../app/(managementSide)/management/workouts/columns"; // Import the Program type directly from columns.tsx
+import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
+import { Toaster } from "@/components/ui/toaster"; // Import Toaster for displaying notifications
 
 // Fitness levels and goals
 const fitnessLevels = [
@@ -44,6 +46,8 @@ interface ProgramEditFormProps {
 }
 
 export default function ProgramEditForm({ onClose, programData }: ProgramEditFormProps) {
+  const { toast } = useToast(); // Use toast for notifications
+
   const programForm = useForm({
     defaultValues: {
       program_id: programData.program_id, // Pre-filled data
@@ -56,6 +60,14 @@ export default function ProgramEditForm({ onClose, programData }: ProgramEditFor
 
   const handleProgramSubmit = (data: Program) => {
     console.log(data); // Handle updated program data here
+
+    // Show success toast notification
+    toast({
+      title: "Program Updated",
+      description: "The program details have been successfully updated.",
+      duration: 3000,
+    });
+
     onClose(); // Close the form after submission
   };
 
@@ -176,6 +188,9 @@ export default function ProgramEditForm({ onClose, programData }: ProgramEditFor
           </div>
         </form>
       </Form>
+
+      {/* Toaster component to display toast notifications */}
+      <Toaster />
     </div>
   );
 }

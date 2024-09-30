@@ -1,14 +1,21 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { InformationCircleIcon, ArrowUpLeftIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import logo from '../assets/logos/logodark.png';
+import dynamic from 'next/dynamic';
 
 export interface footProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 const Footer: React.FC<footProps> = ({ className }) => {
-  
+  const [isMounted, setIsMounted] = useState(false); // Add state to check if the component has mounted
+
+  // Run useEffect only once to set the isMounted flag after component mounts
+  useEffect(() => {
+    setIsMounted(true); // Component is mounted on the client
+  }, []);
+
   //Footer Links
   const [links] = useState([
     { name: 'Home', href: '/' },
@@ -17,8 +24,13 @@ const Footer: React.FC<footProps> = ({ className }) => {
     { name: 'Contact Us', href: '/contact' },
   ]);
 
+  // Ensure that the content renders only on the client side
+  if (!isMounted) {
+    return null; // Do not render anything until mounted on the client
+  }
+
   return (
-    <main className={`flex flex-col md:flex-row items-start w-full justify-between p-12 border border-border rounded-2xl ${className}`}>
+    <div className={`flex flex-col md:flex-row items-start w-full justify-between p-12 border border-border rounded-2xl ${className}`}>
       
       {/* Left Column - Heading and Logo */}
       <div className='text-xl font-extrabold items-start flex flex-col gap-8'>
@@ -59,8 +71,9 @@ const Footer: React.FC<footProps> = ({ className }) => {
           Get Started Now
         </Button>
       </div>
-    </main>
+    </div>
   );
 };
 
 export { Footer };
+export default dynamic(() => Promise.resolve(Footer), { ssr: false });

@@ -24,8 +24,10 @@ import {
   SelectGroup,
   SelectLabel,
 } from "@/components/ui/select";
-import { ArrowLeftIcon, PlusCircleIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
+import { Toaster } from "@/components/ui/toaster"; // Import Toaster for displaying notifications
 
 // Define the form schema, including photo
 const dietplanSchema = zod.object({
@@ -53,6 +55,7 @@ interface DietplanEditFormProps {
 
 export default function DietplanEditForm({ dietplanData, onClose }: DietplanEditFormProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null); // Store the selected photo
+  const { toast } = useToast(); // Use toast for notifications
 
   const dietplanForm = useForm<zod.infer<typeof dietplanSchema>>({
     resolver: zodResolver(dietplanSchema),
@@ -70,6 +73,14 @@ export default function DietplanEditForm({ dietplanData, onClose }: DietplanEdit
     if (selectedPhoto) {
       console.log("Uploaded Photo:", selectedPhoto); // Handle updated photo
     }
+
+    // Show success toast notification
+    toast({
+      title: "Dietplan Updated",
+      description: "Your diet plan has been successfully updated.",
+      duration: 3000,
+    });
+
     // Add the logic to update the diet plan and close the form
     onClose(); // Close the modal after submission
   };
@@ -205,6 +216,9 @@ export default function DietplanEditForm({ dietplanData, onClose }: DietplanEdit
           </div>
         </form>
       </Form>
+
+      {/* Toaster component to display toast notifications */}
+      <Toaster />
     </div>
   );
 }

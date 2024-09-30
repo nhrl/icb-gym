@@ -26,6 +26,8 @@ import { ArrowUpLeftIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import logo from '../assets/logos/logodark.png';
 import LoginModal from './loginModal'; // Import the login modal
+import { Toaster } from "@/components/ui/toaster";
+import { useToast } from '@/hooks/use-toast'; // Import useToast
 
 // Define the form schema
 const formSchema = zod.object({
@@ -47,6 +49,8 @@ const genders = [
 export default function SignupModal() {
   const [isLoginModal, setIsLoginModal] = useState(false); // State to switch between modals
 
+  const { toast } = useToast(); // Use the toast hook from shadcn
+
   const form = useForm<zod.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,7 +63,24 @@ export default function SignupModal() {
   });
 
   const handleSubmit = (data: zod.infer<typeof formSchema>) => {
-    console.log(data); // Handle form data here
+    const isSignupSuccessful = true; // Simulate success or failure of signup
+
+    if (isSignupSuccessful) {
+      // Display the success toast
+      toast({
+        title: "Signup successful!",
+        description: "Your account has been created.",
+        duration: 3000,
+      });
+    } else {
+      // Display the error (destructive) toast
+      toast({
+        title: "Signup failed!",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive", // Destructive variant for error messages
+        duration: 3000,
+      });
+    }
   };
 
   const handleRefresh = () => {
@@ -229,6 +250,9 @@ export default function SignupModal() {
             </div>
           </form>
         </Form>
+
+        {/* Toaster component to display toast notifications */}
+        <Toaster />
       </div>
     </>
   );

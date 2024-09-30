@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
+import { Toaster } from "@/components/ui/toaster";
 
 // Define the form schema for Assignment
 const assignmentSchema = zod.object({
@@ -60,6 +62,8 @@ interface TrainerAssignFormProps {
 }
 
 export default function TrainerAssignForm({ trainerId, onClose }: TrainerAssignFormProps) {
+  const { toast } = useToast(); // Use toast for notifications
+
   const form = useForm<zod.infer<typeof assignmentSchema>>({
     resolver: zodResolver(assignmentSchema),
     defaultValues: {
@@ -74,6 +78,14 @@ export default function TrainerAssignForm({ trainerId, onClose }: TrainerAssignF
 
   const handleSubmit = (data: zod.infer<typeof assignmentSchema>) => {
     console.log({ ...data, trainer_id: trainerId }); // Submit with trainerId
+
+    // Show success toast notification
+    toast({
+      title: "Trainer Assigned",
+      description: "The trainer has been successfully assigned to the service.",
+      duration: 3000,
+    });
+
     onClose(); // Close modal after submission
   };
 
@@ -221,13 +233,16 @@ export default function TrainerAssignForm({ trainerId, onClose }: TrainerAssignF
 
           {/* Submit Button */}
           <div className="items-center gap-4 flex flex-col">
-            <Button variant="secondary"type="submit" className="py-2 px-4 rounded w-full flex flex-row gap-2">
+            <Button variant="secondary" type="submit" className="py-2 px-4 rounded w-full flex flex-row gap-2">
               <CheckCircleIcon className="h-4 w-4" />
               Assign Trainer
             </Button>
           </div>
         </form>
       </Form>
+
+      {/* Toaster component to display toast notifications */}
+      <Toaster />
     </div>
   );
 }

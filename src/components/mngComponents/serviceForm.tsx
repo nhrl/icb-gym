@@ -15,8 +15,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftIcon, PlusCircleIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
+import { Toaster } from "@/components/ui/toaster";
 
 // Define the form schema for adding a new service
 const serviceSchema = zod.object({
@@ -30,6 +32,8 @@ interface ServiceAddFormProps {
 }
 
 export default function ServiceAddForm({ onClose }: ServiceAddFormProps) {
+  const { toast } = useToast(); // Use toast for notifications
+
   const form = useForm<zod.infer<typeof serviceSchema>>({
     resolver: zodResolver(serviceSchema),
     defaultValues: {
@@ -40,6 +44,14 @@ export default function ServiceAddForm({ onClose }: ServiceAddFormProps) {
 
   const handleFormSubmit = (data: zod.infer<typeof serviceSchema>) => {
     console.log(data); // Handle adding service data here
+
+    // Show success toast notification
+    toast({
+      title: "Service Added",
+      description: "Your service has been successfully added.",
+      duration: 3000,
+    });
+
     // Logic to submit the service data to the server or database goes here
   };
 
@@ -134,6 +146,9 @@ export default function ServiceAddForm({ onClose }: ServiceAddFormProps) {
           </div>
         </form>
       </Form>
+
+      {/* Toaster component to display toast notifications */}
+      <Toaster />
     </div>
   );
 }

@@ -15,6 +15,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PlusCircleIcon, ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
+import { Toaster } from "@/components/ui/toaster"; // Import Toaster for displaying notifications
 
 // Define the form schema for Maintenance
 const maintenanceSchema = zod.object({
@@ -28,6 +30,8 @@ interface EquipEditFormProps {
 }
 
 export default function EquipEditForm({ equipment_id, onClose }: EquipEditFormProps) {
+  const { toast } = useToast(); // Use toast for notifications
+
   // Initialize the form with validation schema
   const maintenanceForm = useForm<zod.infer<typeof maintenanceSchema>>({
     resolver: zodResolver(maintenanceSchema),
@@ -39,6 +43,14 @@ export default function EquipEditForm({ equipment_id, onClose }: EquipEditFormPr
 
   const handleMaintenanceSubmit = (data: zod.infer<typeof maintenanceSchema>) => {
     console.log(data); // Handle the submitted maintenance data here
+
+    // Show success toast notification
+    toast({
+      title: "Maintenance Set",
+      description: "The maintenance date has been successfully set.",
+      duration: 3000,
+    });
+
     // Add logic to send data to the server or handle it in your application
   };
 
@@ -95,6 +107,9 @@ export default function EquipEditForm({ equipment_id, onClose }: EquipEditFormPr
           </div>
         </form>
       </Form>
+
+      {/* Toaster component to display toast notifications */}
+      <Toaster />
     </div>
   );
 }

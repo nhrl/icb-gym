@@ -15,14 +15,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon, ArrowRightIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
-import { Textarea } from "@/components/ui/textarea";
+import { Toaster } from "@/components/ui/toaster";
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 
 // Define the form schema for Equipment
 const equipmentSchema = zod.object({
   equipment_id: zod.string().optional(), // Assuming the ID is auto-generated or optional
   name: zod.string().min(1, "Equipment Name is required").max(50, "Name must be less than 50 characters"),
-  // Preprocess the input to convert it into a number before validating
-  quantity: zod.preprocess((val) => Number(val), zod.number().min(1, "Quantity must be at least 1")),
+  quantity: zod.preprocess((val) => Number(val), zod.number().min(1, "Quantity must be at least 1")), // Convert input to number
   purchase_date: zod.string().min(1, "Purchase Date is required"), // For simplicity, using string
 });
 
@@ -30,7 +30,7 @@ const equipmentSchema = zod.object({
 const maintenanceSchema = zod.object({
   maint_id: zod.string().optional(),
   equipment_id: zod.string(),
-  maintenance_date: zod.string().min(1, "Maintenance Date is required"), // Also using string for simplicity
+  maintenance_date: zod.string().min(1, "Maintenance Date is required"), // Using string for simplicity
 });
 
 interface EquipmentFormProps {
@@ -40,6 +40,8 @@ interface EquipmentFormProps {
 export default function EquipmentForm({ onClose }: EquipmentFormProps) {
   const [step, setStep] = useState(1); // Step to track which form to show
   const [formKey, setFormKey] = useState(Date.now()); // Unique key for each step
+
+  const { toast } = useToast(); // Use the toast hook from Shadcn
 
   const equipmentForm = useForm<zod.infer<typeof equipmentSchema>>({
     resolver: zodResolver(equipmentSchema),
@@ -63,6 +65,13 @@ export default function EquipmentForm({ onClose }: EquipmentFormProps) {
   const handleEquipmentSubmit = (data: zod.infer<typeof equipmentSchema>) => {
     console.log(data); // Handle equipment data here
 
+    // Show success toast for equipment submission
+    toast({
+      title: "Equipment saved!",
+      description: "Your equipment details have been saved successfully.",
+      duration: 3000,
+    });
+
     // Reset the maintenance form with only the equipment_id passed and a unique key
     maintenanceForm.reset({
       maint_id: "",
@@ -76,7 +85,13 @@ export default function EquipmentForm({ onClose }: EquipmentFormProps) {
 
   const handleMaintenanceSubmit = (data: zod.infer<typeof maintenanceSchema>) => {
     console.log(data); // Handle maintenance data here
-    // You can add logic to submit or store the maintenance data
+
+    // Show success toast for maintenance submission
+    toast({
+      title: "Maintenance recorded!",
+      description: "Your maintenance details have been saved successfully.",
+      duration: 3000,
+    });
   };
 
   const metadata = {
@@ -209,12 +224,15 @@ export default function EquipmentForm({ onClose }: EquipmentFormProps) {
                 className="py-2 px-4 rounded w-full flex flex-row gap-2"
               >
                 <CheckCircleIcon className="h-4 w-4" />
-                Submit Equipment
+                Submit Maintenance
               </Button>
             </div>
           </form>
         </Form>
       )}
+
+      {/* Toaster component to display toast notifications */}
+      <Toaster />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react'; // Add useState for modal switching
+import React, { useState } from 'react';
 import * as zod from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +9,9 @@ import { Button } from '@/components/ui/button';
 import { ArrowRightEndOnRectangleIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import logo from '../assets/logos/logodark.png';
-import SignupModal from './signupModal'; // Import SignupModal
+import SignupModal from './signupModal';
+import { Toaster } from "@/components/ui/toaster";
+import { useToast } from '@/hooks/use-toast'; // Import Toaster and useToast
 
 // Define the login form schema
 const loginFormSchema = zod.object({
@@ -20,6 +22,8 @@ const loginFormSchema = zod.object({
 export default function LoginModal() {
   const [isSignupModal, setIsSignupModal] = useState(false); // State to toggle between login and signup
 
+  const { toast } = useToast(); // Use the toast hook from shadcn
+
   const form = useForm<zod.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
@@ -29,7 +33,25 @@ export default function LoginModal() {
   });
 
   const handleLogin = (data: zod.infer<typeof loginFormSchema>) => {
-    console.log(data); // Handle login data here
+    // Simulating login attempt
+    const isLoginSuccessful = false; // Simulate success or failure of login
+
+    if (isLoginSuccessful) {
+      // Display the success toast
+      toast({
+        title: "Login successful!",
+        description: "You have successfully logged in.",
+        duration: 3000, 
+      });
+    } else {
+      // Display the error (destructive) toast
+      toast({
+        title: "Login failed!",
+        description: "Invalid email or password. Please try again.",
+        variant: "destructive", // Destructive variant for error messages
+        duration: 3000, 
+      });
+    }
   };
 
   const handleRefresh = () => {
@@ -107,6 +129,8 @@ export default function LoginModal() {
 
         </form>
       </Form>
+
+      <Toaster />
     </div>
   );
 }
