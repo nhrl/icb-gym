@@ -22,7 +22,7 @@ import DietplanActions from "./actions"; // Adjust the import path
 export type Dietplans = {
   id: number;
   name: string;
-  desc: string;
+  description: string;
   fitness_goal: "Weight Loss" | "Muscle Gain" | "General Health" | "Endurance";
 };
 
@@ -106,7 +106,7 @@ export const columns: ColumnDef<Dietplans>[] = [
   {
     accessorKey: "desc",
     header: "Description",
-    cell: ({ row }) => <span>{row.original.desc}</span>,
+    cell: ({ row }) => <span>{row.original.description}</span>,
   },
   {
     accessorKey: "fitness_goal",

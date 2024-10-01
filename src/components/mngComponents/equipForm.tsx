@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon, ArrowRightIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { mutate } from "swr";
+import { Textarea } from "@/components/ui/textarea";
 
 // Define the form schema for Equipment
 const equipmentSchema = zod.object({
@@ -35,14 +37,16 @@ const maintenanceSchema = zod.object({
 
 interface EquipmentFormProps {
   onClose: () => void; // Function to close the form modal
+  mutate: () => void;  // Function to refresh data
 }
+
+const api = process.env.NEXT_PUBLIC_API_URL;
 
 export default function EquipmentForm({ onClose }: EquipmentFormProps) {
   const [step, setStep] = useState(1); // Step to track which form to show
   const [formKey, setFormKey] = useState(Date.now()); // Unique key for each step
-
   const { toast } = useToast(); // Use the toast hook from Shadcn
-
+  const [id,setId] = useState('');
   const equipmentForm = useForm<zod.infer<typeof equipmentSchema>>({
     resolver: zodResolver(equipmentSchema),
     defaultValues: {
@@ -62,9 +66,8 @@ export default function EquipmentForm({ onClose }: EquipmentFormProps) {
     },
   });
 
-  const handleEquipmentSubmit = (data: zod.infer<typeof equipmentSchema>) => {
-    console.log(data); // Handle equipment data here
-
+  const handleEquipmentSubmit = async (data: zod.infer<typeof equipmentSchema>) => {
+    //console.log(data); // Handle equipment data here
     // Show success toast for equipment submission
     toast({
       title: "Equipment saved!",
@@ -77,10 +80,19 @@ export default function EquipmentForm({ onClose }: EquipmentFormProps) {
       maint_id: "",
       equipment_id: data.equipment_id || "", // Carry the equipment_id into the maintenance form
       maintenance_date: "",
+    const response = await fetch(`${api}/api/manager/equipment`, { // Replace with your API endpoint
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json', // Sending data as JSON
+      },
+      body: JSON.stringify(data), // Convert the form data to JSON
     });
 
+    const equipmentInfo = await response.json();
+    const id = equipmentInfo.data[0].equipment_id;
+    setId(id);
     setFormKey(Date.now()); // Update the form key to force a re-render
-    setStep(2); // Move to the next form step
+    setStep(2); // Move to the next form step*/
   };
 
   const handleMaintenanceSubmit = (data: zod.infer<typeof maintenanceSchema>) => {
@@ -92,6 +104,31 @@ export default function EquipmentForm({ onClose }: EquipmentFormProps) {
       description: "Your maintenance details have been saved successfully.",
       duration: 3000,
     });
+  const handleMaintenanceSubmit = async (data: zod.infer<typeof maintenanceSchema>) => {
+   console.log(data);
+   console.log(id);
+
+   const updatedData = {
+    ...data,           // Spread the original data
+    equipment_id: id,  // Set the equipment_id to the given id
+  };
+
+  console.log(updatedData); 
+    // You can add logic to submit or store the maintenance data
+    const response = await fetch(`${api}/api/manager/equipment/maintenance`, { // Replace with your API endpoint
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json', // Sending data as JSON
+      },
+      body: JSON.stringify(updatedData), // Convert the form data to JSON
+    });
+    const message = await response.json();
+   if(message.success) {
+      mutate(`${api}/api/manager/equipment`);
+   } else {
+    //display error here
+   }
+    onClose();
   };
 
   const metadata = {

@@ -52,7 +52,7 @@ export default function ProgramEditForm({ onClose, programData }: ProgramEditFor
     defaultValues: {
       program_id: programData.program_id, // Pre-filled data
       title: programData.title,
-      desc: programData.desc,
+      description: programData.description,
       fitness_level: programData.fitness_level,
       fitness_goal: programData.fitness_goal,
     },
@@ -108,14 +108,14 @@ export default function ProgramEditForm({ onClose, programData }: ProgramEditFor
             {/* Description */}
             <FormField
               control={programForm.control}
-              name="desc"
+              name="description"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea {...field} className="border p-2 w-full rounded" />
                   </FormControl>
-                  <FormMessage>{programForm.formState.errors.desc?.message}</FormMessage>
+                  <FormMessage>{programForm.formState.errors.description?.message}</FormMessage>
                 </FormItem>
               )}
             />

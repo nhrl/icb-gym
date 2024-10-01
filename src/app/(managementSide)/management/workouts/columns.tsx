@@ -21,7 +21,7 @@ import ProgramActions from "./actions";
 export type Program = {
   program_id: number;
   title: string;
-  desc: string;
+  description: string;
   fitness_level: "Beginner" | "Intermediate" | "Advanced";
   fitness_goal: "Weight Loss" | "Muscle Gain" | "General Health" | "Endurance";
 };
@@ -83,7 +83,7 @@ export const columns: ColumnDef<Program>[] = [
   {
     accessorKey: "desc",
     header: "Description",
-    cell: ({ row }) => <span>{row.original.desc}</span>,
+    cell: ({ row }) => <span>{row.original.description}</span>,
   },
   {
     accessorKey: "fitness_goal",

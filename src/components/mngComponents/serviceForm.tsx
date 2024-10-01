@@ -5,6 +5,7 @@ import React from "react";
 import * as zod from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+
 import {
   Form,
   FormField,
@@ -19,6 +20,7 @@ import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
 import { Toaster } from "@/components/ui/toaster";
+import { mutate } from "swr";
 
 // Define the form schema for adding a new service
 const serviceSchema = zod.object({
@@ -29,6 +31,7 @@ const serviceSchema = zod.object({
 
 interface ServiceAddFormProps {
   onClose: () => void; // Close modal function
+  mutate: () => void;  // Function to refresh data
 }
 
 export default function ServiceAddForm({ onClose }: ServiceAddFormProps) {
@@ -52,7 +55,31 @@ export default function ServiceAddForm({ onClose }: ServiceAddFormProps) {
       duration: 3000,
     });
 
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  const handleFormSubmit = async (data: zod.infer<typeof serviceSchema>) => {
+    // Handle adding service data here
     // Logic to submit the service data to the server or database goes here
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('desc', data.desc);
+
+    // Only append the photo if it exists
+    if (data.photo) {
+      formData.append('photo', data.photo); 
+    }
+
+    const response = await fetch(`${api}/api/manager/service`, {
+      method: 'POST',
+      body:formData
+    })
+
+    const message = await response.json()
+    if(message.success) {
+      mutate(`${api}/api/manager/service`);
+    } else {
+      //display error here
+    }  
+    onClose();
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {

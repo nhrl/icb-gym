@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { PlusCircleIcon, ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
 import { Toaster } from "@/components/ui/toaster"; // Import Toaster for displaying notifications
+import { mutate } from "swr";
 
 // Define the form schema for Maintenance
 const maintenanceSchema = zod.object({
@@ -27,8 +28,11 @@ const maintenanceSchema = zod.object({
 interface EquipEditFormProps {
   equipment_id: string;
   onClose: () => void; // Function to handle back or close action
+  mutate: () => void;
 }
 
+
+const api = process.env.NEXT_PUBLIC_API_URL;
 export default function EquipEditForm({ equipment_id, onClose }: EquipEditFormProps) {
   const { toast } = useToast(); // Use toast for notifications
 
@@ -40,7 +44,7 @@ export default function EquipEditForm({ equipment_id, onClose }: EquipEditFormPr
       maintenance_date: "",
     },
   });
-
+  
   const handleMaintenanceSubmit = (data: zod.infer<typeof maintenanceSchema>) => {
     console.log(data); // Handle the submitted maintenance data here
 
@@ -50,8 +54,24 @@ export default function EquipEditForm({ equipment_id, onClose }: EquipEditFormPr
       description: "The maintenance date has been successfully set.",
       duration: 3000,
     });
-
+    
+  const handleMaintenanceSubmit = async (data: zod.infer<typeof maintenanceSchema>) => {
+    // Handle the submitted maintenance data here
     // Add logic to send data to the server or handle it in your application
+    const response = await fetch(`${api}/api/manager/equipment/maintenance`, { // Replace with your API endpoint
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json', // Sending data as JSON
+      },
+      body: JSON.stringify(data), // Convert the form data to JSON
+    });
+    const message = await response.json();
+    if(message.success) {
+      mutate(`${api}/api/manager/equipment`);
+    } else {
+      //display error here
+    }
+    onClose();
   };
 
   return (

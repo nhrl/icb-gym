@@ -13,8 +13,8 @@ import ServiceActions from "./actions";
 
 // Define the shape of your data based on the Service type
 export type Service = {
-  id: string;
-  name: string;
+  service_id: string;
+  service_name: string;
   desc: string;
 };
 
@@ -38,7 +38,7 @@ export const columns: ColumnDef<Service>[] = [
     ),
   },
   {
-    accessorKey: "name",
+    accessorKey: "service_name",
     header: ({ column }) => (
       <Button
         variant="ghostTable"
@@ -49,7 +49,7 @@ export const columns: ColumnDef<Service>[] = [
         <ArrowsUpDownIcon className="h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => <span>{row.original.name}</span>,
+    cell: ({ row }) => <span>{row.original.service_name}</span>,
   },
   {
     accessorKey: "desc",
@@ -58,6 +58,8 @@ export const columns: ColumnDef<Service>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <ServiceActions service={row.original} />,
+    cell: ({ row }) => <ServiceActions service={row.original} mutate={function (): void {
+      throw new Error("Function not implemented.");
+    } } />,
   },
 ];

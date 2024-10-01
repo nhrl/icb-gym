@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 import { ArrowsUpDownIcon } from "@heroicons/react/24/outline";
@@ -25,6 +25,7 @@ export type Equipment = {
   name: string;
   quantity: number;
   purchase_date: Date;
+  maintenance_date: Date
 };
 
 export type Maintenance = {
@@ -46,7 +47,7 @@ const maintenanceData: Maintenance[] = [
   },
   {
     maint_id: 3,
-    equipment_id: 3, // Dumbbells
+    equipment_id: 37, // Dumbbells
     maintenance_date: new Date("2024-03-10"), // Maintenance due soon (between 30 and 90 days ago)
   },
 ];
@@ -106,15 +107,10 @@ export const columns: ColumnDef<Equipment>[] = [
     id: "maintenance_date",
     header: "Maintenance Date",
     cell: ({ row }) => {
-      const equipment = row.original;
-
       // Find the latest maintenance date for the current equipment
-      const latestMaintenance = maintenanceData
-        .filter((maintenance) => maintenance.equipment_id === equipment.equipment_id)
-        .sort((a, b) => new Date(b.maintenance_date).getTime() - new Date(a.maintenance_date).getTime())[0];
-
+      const latestMaintenance = row.original.maintenance_date
       return latestMaintenance ? (
-        <span>{new Date(latestMaintenance.maintenance_date).toLocaleDateString()}</span>
+        <span>{new Date(row.original.maintenance_date).toLocaleDateString()}</span>
       ) : (
         <span>No Maintenance</span>
       );
@@ -124,13 +120,8 @@ export const columns: ColumnDef<Equipment>[] = [
     id: "status",
     header: "Status",
     cell: ({ row }) => {
-      const equipment = row.original;
-  
       // Find the latest maintenance date for the current equipment
-      const latestMaintenance = maintenanceData
-        .filter((maintenance) => maintenance.equipment_id === equipment.equipment_id)
-        .sort((a, b) => new Date(b.maintenance_date).getTime() - new Date(a.maintenance_date).getTime())[0];
-  
+      const latestMaintenance =  row.original.maintenance_date
       if (!latestMaintenance) {
         return (
           <Badge className="rounded-full w-fit flex items-center gap-2" variant="outline">
@@ -141,9 +132,9 @@ export const columns: ColumnDef<Equipment>[] = [
         );
       }
   
-      const daysSinceMaintenance = daysBetweenDates(new Date(), new Date(latestMaintenance.maintenance_date));
+      const daysSinceMaintenance = daysBetweenDates(new Date(), new Date(latestMaintenance));
   
-      if (daysSinceMaintenance <= 30) {
+      if (daysSinceMaintenance <= 30) { 
         return (
           <Badge className="rounded-full w-fit flex items-center gap-2" variant="success">
             {/* Green Dot for Newly Maintained */}
@@ -174,7 +165,9 @@ export const columns: ColumnDef<Equipment>[] = [
   {
     id: "actions",
     cell: ({ row }) => (
-      <EquipmentActions equipment={row.original} maintenanceData={maintenanceData} />
+      <EquipmentActions equipment={row.original} maintenanceData={maintenanceData} mutate={function (): void {
+        throw new Error("Function not implemented.");
+      } } />
     ),
   },
 ];

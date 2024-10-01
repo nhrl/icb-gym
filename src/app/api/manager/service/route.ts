@@ -33,8 +33,7 @@ export async function PUT(req: Request) {
 export async function DELETE(req: Request) {
     try {
         const data = await req.json();
-        const {id} = data;
-        const message = await deleteService(id);
+        const message = await deleteService(data);
         return Response.json(message);
     } catch (error) {
         return Response.json({ error: "Error deleting service" }, { status: 500 });

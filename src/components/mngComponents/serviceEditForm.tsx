@@ -19,45 +19,48 @@ import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
 import { Toaster } from "@/components/ui/toaster"; // Import Toaster for displaying notifications
+import { mutate } from "swr";
 
-// Define the form schema for Service
+// Update the Zod schema for Service
 const serviceSchema = zod.object({
   id: zod.string().optional(),
   name: zod.string().min(1, "Name is required").max(50, "Name must be less than 50 characters"),
   desc: zod.string().min(1, "Description is required").max(150, "Description must be less than 150 characters"),
-  photo: zod.instanceof(File).optional(),
+  photo: zod.any().optional(), // Allow any type for photo since File is hard to validate with Zod
 });
 
 interface ServiceEditFormProps {
+  serviceId: number | null;
   serviceData: {
-    id: string;
-    name: string;
+    service_id: string;
+    service_name: string;
     desc: string;
     photo?: string; // Assuming photo can be a URL or path
   };
   onClose: () => void;
+  mutate: () => void; // Function to refresh data
 }
 
-export default function ServiceEditForm({ serviceData, onClose }: ServiceEditFormProps) {
+export default function ServiceEditForm({ serviceData, serviceId, onClose }: ServiceEditFormProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const { toast } = useToast(); // Use toast for notifications
 
-  const form = useForm<zod.infer<typeof serviceSchema>>({
+  const serviceform = useForm<zod.infer<typeof serviceSchema>>({
     resolver: zodResolver(serviceSchema),
     defaultValues: {
-      id: serviceData.id,
-      name: serviceData.name,
+      name: serviceData.service_name,
       desc: serviceData.desc,
       photo: undefined,
     },
   });
 
-  const handleFormSubmit = (data: zod.infer<typeof serviceSchema>) => {
-    console.log(data); // Handle service data here
-    if (selectedPhoto) {
-      console.log("Uploaded Photo:", selectedPhoto); // Handle photo upload
+  // Handle form submission
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  const handleFormSubmit = async (data: zod.infer<typeof serviceSchema>) => {
+    const formData = new FormData();
+    if (serviceId !== null) {
+      formData.append('id', serviceId.toString());
     }
-
     // Show success toast notification
     toast({
       title: "Service Updated",
@@ -66,20 +69,38 @@ export default function ServiceEditForm({ serviceData, onClose }: ServiceEditFor
     });
 
     onClose(); // Close the form after submission
+    formData.append('name', data.name);
+    formData.append('desc', data.desc);
+    formData.append('photo',data.photo);
+
+    const response = await fetch(`${api}/api/manager/service`, {
+      method: 'PUT',
+      body:formData
+    })
+    
+    const message = await response.json();
+    if(message.success) {
+      //refresh table
+      mutate(`${api}/api/manager/service`);
+    } else {
+      // display error here
+    }
+    onClose(); 
   };
 
+  // Handle photo selection
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
     if (file) {
       setSelectedPhoto(file);
-      form.setValue("photo", file);
+      serviceform.setValue("photo", file); // Update form's "photo" field
     }
   };
 
   return (
     <div className="bg-background text-foreground text-sm rounded-lg shadow-lg w-full h-[fit] sm:h-full p-[32px] border border-border">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="gap-4 flex flex-col">
+      <Form {...serviceform}>
+        <form onSubmit={serviceform.handleSubmit(handleFormSubmit)} className="gap-4 flex flex-col">
           {/* Close Button */}
           <div className="flex w-full items-center">
             <ArrowLeftIcon
@@ -96,7 +117,7 @@ export default function ServiceEditForm({ serviceData, onClose }: ServiceEditFor
           {/* Form Fields */}
           <div className="flex flex-col gap-2">
             <FormField
-              control={form.control}
+              control={serviceform.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
@@ -104,13 +125,13 @@ export default function ServiceEditForm({ serviceData, onClose }: ServiceEditFor
                   <FormControl>
                     <Input {...field} type="text" className="border p-2 w-full rounded" />
                   </FormControl>
-                  <FormMessage>{form.formState.errors.name?.message}</FormMessage>
+                  <FormMessage>{serviceform.formState.errors.name?.message}</FormMessage>
                 </FormItem>
               )}
             />
 
             <FormField
-              control={form.control}
+              control={serviceform.control}
               name="desc"
               render={({ field }) => (
                 <FormItem>
@@ -118,13 +139,13 @@ export default function ServiceEditForm({ serviceData, onClose }: ServiceEditFor
                   <FormControl>
                     <Textarea {...field} className="border p-2 w-full rounded" />
                   </FormControl>
-                  <FormMessage>{form.formState.errors.desc?.message}</FormMessage>
+                  <FormMessage>{serviceform.formState.errors.desc?.message}</FormMessage>
                 </FormItem>
               )}
             />
 
             <FormField
-              control={form.control}
+              control={serviceform.control}
               name="photo"
               render={() => (
                 <FormItem>

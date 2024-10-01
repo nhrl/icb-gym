@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import {
@@ -16,9 +16,10 @@ import { Maintenance } from "./columns"; // Import your Maintenance type
 type EquipmentActionsProps = {
   equipment: any;
   maintenanceData: Maintenance[];
+  mutate: () => void;
 };
 
-const EquipmentActions: React.FC<EquipmentActionsProps> = ({ equipment, maintenanceData }) => {
+const EquipmentActions: React.FC<EquipmentActionsProps> = ({ equipment, maintenanceData, mutate }) => {
   const [isMaintenanceOpen, setIsMaintenanceOpen] = useState(false); // State to control maintenance modal visibility
   const [isEditOpen, setIsEditOpen] = useState(false); // State to control edit form modal visibility
   const [selectedMaintenance, setSelectedMaintenance] = useState<Maintenance[]>([]); // State for selected maintenance
@@ -32,9 +33,10 @@ const EquipmentActions: React.FC<EquipmentActionsProps> = ({ equipment, maintena
     setIsMaintenanceOpen(true);
   };
 
-  const handleOpenEditForm = () => {
-    setSelectedEquipmentId(equipment.equipment_id); // Store the selected equipment ID
+  const handleOpenEditForm = (id: any) => {
+    setSelectedEquipmentId(id); // Store the selected equipment ID
     setIsEditOpen(true); // Open the edit form modal
+
   };
 
   const handleCloseMaintenanceModal = () => {
@@ -62,7 +64,9 @@ const EquipmentActions: React.FC<EquipmentActionsProps> = ({ equipment, maintena
             Copy Equipment ID
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleOpenEditForm}>Set Maintenance</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleOpenEditForm(equipment.equipment_id)}>
+            Set Maintenance
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -74,7 +78,10 @@ const EquipmentActions: React.FC<EquipmentActionsProps> = ({ equipment, maintena
             <ul className="space-y-2">
               {selectedMaintenance.map((maintenance) => (
                 <li key={maintenance.maint_id} className="border-b pb-2 mb-2">
-                  <p><strong>Maintenance Date:</strong> {new Date(maintenance.maintenance_date).toLocaleDateString()}</p>
+                  <p>
+                    <strong>Maintenance Date:</strong>{" "}
+                    {new Date(maintenance.maintenance_date).toLocaleDateString()}
+                  </p>
                 </li>
               ))}
             </ul>
@@ -89,7 +96,7 @@ const EquipmentActions: React.FC<EquipmentActionsProps> = ({ equipment, maintena
       {isEditOpen && selectedEquipmentId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50">
           <div className="p-4 max-w-lg w-full">
-            <EquipEditForm onClose={handleCloseEditModal} equipment_id={selectedEquipmentId.toString()} />
+            <EquipEditForm onClose={handleCloseEditModal} equipment_id={selectedEquipmentId.toString()} mutate={mutate}/>
           </div>
         </div>
       )}
