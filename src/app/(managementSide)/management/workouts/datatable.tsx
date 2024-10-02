@@ -47,15 +47,18 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 import ProgramForm from "@/components/mngComponents/programForm" // Update to your program form component
+import { Program } from "./columns"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  mutate: () => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  mutate
 }: DataTableProps<TData, TValue>) {
 
   const [sorting, setSorting] = React.useState<SortingState>([])
@@ -88,6 +91,34 @@ export function DataTable<TData, TValue>({
   }
 
   const [isOpen, setIsOpen] = useState(false) // State to control modal visibility
+
+  const handleDelete = async () => {
+    const api = process.env.NEXT_PUBLIC_API_URL;
+    const ids = table
+      .getSelectedRowModel()
+      .rows.map((row) => (row.original as Program).program_id); // Cast to Service
+      try {
+        const response = await fetch(`${api}/api/manager/plans/workout`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ids }),  // Send the IDs to the server as JSON
+        });
+    
+        const result = await response.json();
+        if (result.success) {
+          console.log("Successfully deleted programs: ", result);
+          mutate();
+        } else {
+          console.error("Failed to delete programs: ", result.message);
+          // Handle the error, possibly display it to the user
+        }
+      } catch (error) {
+        console.error("An error occurred during deletion: ", error);
+        // Handle the error, possibly display it to the user
+      }
+  }
 
   const handleOpenForm = () => {
     setIsOpen(true) // Open the form modal
@@ -157,7 +188,7 @@ export function DataTable<TData, TValue>({
             {isOpen && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50">
                 <div className="rounded-md w-full max-w-lg">
-                  <ProgramForm onClose={handleCloseForm} />
+                  <ProgramForm onClose={handleCloseForm} mutate = {mutate}/>
                 </div>
               </div>
             )}
@@ -177,7 +208,7 @@ export function DataTable<TData, TValue>({
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction>Continue</AlertDialogAction>
+                <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

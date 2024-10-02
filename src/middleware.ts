@@ -11,9 +11,6 @@ export function middleware(req: NextRequest) {
   const userCookie = req.cookies.get('user');
   const accessToken = req.cookies.get('access_token');
 
-  console.log("Encrypted User Cookie:", userCookie);
-  console.log("Encrypted Access Token:", accessToken);
-
   // If no user or access token cookie, redirect to login
   if (!userCookie || !accessToken) {
     console.log("Redirecting to /login due to missing cookies.");

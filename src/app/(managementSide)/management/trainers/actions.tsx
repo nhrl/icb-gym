@@ -16,9 +16,10 @@ import { Trainers } from "./columns"; // Adjust the import path
 
 type TrainerActionsProps = {
   trainer: Trainers;
+  mutate:() => void;
 };
 
-const TrainerActions: React.FC<TrainerActionsProps> = ({ trainer }) => {
+const TrainerActions: React.FC<TrainerActionsProps> = ({ trainer, mutate}) => {
   const [isOpen, setIsOpen] = useState(false); // State to control edit form visibility
   const [isAssignOpen, setIsAssignOpen] = useState(false); // State to control assignment form visibility
   const [isAssignmentsPopupOpen, setIsAssignmentsPopupOpen] = useState(false); // State to control assignments popup
@@ -102,7 +103,7 @@ const TrainerActions: React.FC<TrainerActionsProps> = ({ trainer }) => {
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="p-4 max-w-lg w-full rounded-lg">
-            <TrainerEditForm trainerData={trainer} onClose={handleCloseEditModal} />
+            <TrainerEditForm trainerData={trainer} onClose={handleCloseEditModal} mutate={mutate}/>
           </div>
         </div>
       )}
