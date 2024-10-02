@@ -10,9 +10,11 @@ export async function POST(req : Request) {
     }
 }
 
-export async function GET() {
+export async function GET(req: Request) {
     try {
-        const message = await getAssign();
+        const { searchParams } = new URL(req.url);
+        const id = searchParams.get('id');
+        const message = await getAssign(id);
         return Response.json(message);
     } catch (error) {
         return Response.json({ error: "Error processing request" }, { status: 500 }); 

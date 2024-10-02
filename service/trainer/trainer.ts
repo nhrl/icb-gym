@@ -7,12 +7,12 @@ const folder = `trainer`;
 export async function addTrainer(data:any) {
     try {
          //Extract Data
-        const firstname = data.get('firstname') as string;
-        const lastname = data.get('lastname') as string;
-        const specialty = data.get('specialty') as string;
+        const firstname = data.get('firstName') as string;
+        const lastname = data.get('lastName') as string;
+        const specialty = data.get('speciality') as string;
         const email = data.get('email') as string;
         const availability = data.get('availability') as string;
-        const image = data.get('image') as File ;
+        const image = data.get('photo') as File ;
 
         //Check email duplication
         const { data: existingTrainer } = await supabase
@@ -86,52 +86,56 @@ export async function getTrainer() {
 
 export async function updateTrainer(data: any) {
     try {
-        //Extract data
+        // Extract data
         const id = data.get('id') as number;
-        const file = data.get('image') as File;
-        const firstname = data.get('firstname') as string;
-        const lastname = data.get('lastname') as string;
-        const specialty = data.get('specialty') as string;
+        const file = data.get('photo') as File;
+        const firstname = data.get('firstName') as string;
+        const lastname = data.get('lastName') as string;
+        const specialty = data.get('speciality') as string;
         const email = data.get('email') as string;
         const availability = data.get('availability') as string;
 
-        //Get trainer
-        const {data: trainer, error} = await supabase
-        .from('trainer')
-        .select()
-        .eq('trainer_id',id)
-        .single();
+        // Get trainer
+        const { data: trainer, error } = await supabase
+            .from('trainer')
+            .select()
+            .eq('trainer_id', id)
+            .single();
 
-        if(error) {
+        if (error) {
             return {
                 message: "Failed getting the trainer",
                 error: error.message
-            }
+            };
         }
 
-        //Check if images is provided
-        let trainer_img = trainer.trainer_img;
-        if(file && file.size > 0) {
-            //Upload new image
+        // Check if image is provided or the existing image is missing
+        let trainer_img = trainer?.trainer_img;  // Handle case where trainer_img is null or undefined
+        if (file && file.size > 0) {
             const filePath = `${folder}/${file.name}`;
-            const currentFile = getFilePathFromUrl(trainer.trainer_img);
 
-            if(currentFile != filePath) {
-                const publicUrl = await uploadImage(file,folder);
-                trainer_img = publicUrl;
+            // Only try to get the current file path if trainer_img is valid (non-null)
+            let currentFile = trainer_img ? getFilePathFromUrl(trainer_img) : null;
 
-                const {success, error:  removeImageError} = await removeImage(currentFile);
+            // If there is no existing image, or the image is different, upload the new one
+            if (!trainer_img || currentFile !== filePath) {
+                const publicUrl = await uploadImage(file, folder);
+                trainer_img = publicUrl;  // Set the new image URL
 
-                if(!success) {
-                    return {
-                        message: "Removing old image from storage failed",
-                        error: removeImageError
+                // If an old image exists, attempt to remove it
+                if (currentFile) {
+                    const { success, error: removeImageError } = await removeImage(currentFile);
+                    if (!success) {
+                        return {
+                            message: "Removing old image from storage failed",
+                            error: removeImageError
+                        };
                     }
                 }
             }
-        } 
-        
-        //Update trainer data
+        }
+
+        // Update trainer data
         const trainerData = {
             firstname,
             lastname,
@@ -139,14 +143,14 @@ export async function updateTrainer(data: any) {
             email,
             availability,
             trainer_img
-        }
+        };
 
-        const {error: updateError} = await supabase
-        .from('trainer')
-        .update(trainerData)
-        .eq('trainer_id',id)
+        const { error: updateError } = await supabase
+            .from('trainer')
+            .update(trainerData)
+            .eq('trainer_id', id);
 
-        if(updateError) {
+        if (updateError) {
             if (updateError.message.includes('duplicate key value')) {
                 if (updateError.message.includes('trainer_email_key')) {
                     return {
@@ -161,65 +165,72 @@ export async function updateTrainer(data: any) {
                 error: updateError.message
             };
         }
-        return {success: true, message: "Trainer updated successfully"};
-    } catch (error:any) {
+        return { success: true, message: "Trainer updated successfully" };
+    } catch (error: any) {
         return { success: false, message: "An error occurred. Please try again.", error: error.message };
     }
 }
 
-
-export async function deleteTrainer(id:number) {
+export async function deleteTrainer(info: any) {
     try {
-        let fileName: string;
+        const { ids } = info;
 
-        //Get trainer data
+        // Fetch trainer data for each ID to get the image paths
         const { data, error } = await supabase
             .from('trainer')
-            .select()
-            .eq('trainer_id', id);
-    
-        if(error) {
+            .select('trainer_id, trainer_img')
+            .in('trainer_id', ids); // Use 'in' to get trainers matching the provided ids
+
+        if (error) {
             return {
                 success: false,
-                message: error.message
-            }
+                message: "Error getting trainer data",
+                error: error.message
+            };
         }
-    
-        //Remove trainer image
-        if(data && data.length > 0) {
-            const path = data[0].trainer_img;
-            fileName = getFilePathFromUrl(path);
-            const imageRemovalResult = await removeImage(fileName);
-    
-            if(!imageRemovalResult) {
-                return {
-                    success: false,
-                    message: "Cannot delete trainer"
-                }
-            }
-        } else {
+
+        if (!data || data.length === 0) {
             return {
-                message: "Cannot find trainer"
+                success: false,
+                message: "No trainers found with the given IDs"
+            };
+        }
+
+        // Loop through each trainer and delete associated images
+        for (const trainer of data) {
+            const path = trainer.trainer_img; // Get the image path
+            if (path && path.trim() !== "") {
+                // Only proceed if trainer_img is not empty or null
+                const fileName = getFilePathFromUrl(path); // Extract the file name from the URL
+                // Remove the image from storage
+                const imageRemovalResult = await removeImage(fileName);
+                if (!imageRemovalResult.success) {
+                    return {
+                        success: false,
+                        message: `Error removing image ${fileName} from storage`
+                    };
+                }
+            } else {
+                console.log(`No image found for trainer with ID: ${trainer.trainer_id}, skipping image removal...`);
             }
         }
-    
-        //Delete trainer data
-        const {error: deleteTrainerError} = await supabase
+
+        // Now delete all the trainer records from the database
+        const { error: deleteTrainersError } = await supabase
             .from('trainer')
             .delete()
-            .eq('trainer_id',id);
-        
-        if(deleteTrainerError) {
+            .in('trainer_id', ids); // Delete all trainers with the provided ids
+
+        if (deleteTrainersError) {
             return {
                 success: false,
-                message: "Cannot delete trainer"
-            }
+                message: 'Error deleting the trainer data',
+                error: deleteTrainersError.message
+            };
         }
-        return {
-            success: true,
-            message: "Trainer deleted successfully"
-        }
-    } catch (error:any) {
+
+        return { success: true, message: 'Trainers and associated images removed successfully' };
+    } catch (error: any) {
         return { success: false, message: "An error occurred. Please try again.", error: error.message };
     }
 }

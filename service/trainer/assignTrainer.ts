@@ -2,7 +2,8 @@ import supabase from "../../database/db";
 
 export async function addAssign(data:any) {
     try {
-        const {service_id, trainer_id, time_availability, schedule, max_capacity, current_capacity, rate} = data;
+        const {service_id, trainer_id, time_start, time_end, schedule, max_capacity, rate} = data;
+        const current_capacity = 0;
         //insert to the assign trainer table
         const {error} = await supabase
         .from('assign_trainer')
@@ -10,7 +11,8 @@ export async function addAssign(data:any) {
             {
                 service_id: service_id,
                 trainer_id: trainer_id,
-                time_availability: time_availability,
+                start_time: time_start,
+                end_time: time_end,
                 schedule: schedule,
                 max_capacity: max_capacity,
                 current_capacity: current_capacity,
@@ -31,25 +33,13 @@ export async function addAssign(data:any) {
     }
 }
 
-export async function getAssign() {
+export async function getAssign(id:any) {
     try {
         // Query the assign table, joining with trainer and service tables
         const { data, error } = await supabase
             .from('assign_trainer')
-            .select(`
-                assign_id,
-                time_availability,
-                schedule,
-                max_capacity,
-                current_capacity,
-                rate,
-                trainer:trainer_id (
-                    firstname, lastname
-                ),
-                service:service_id (
-                    service_name
-                )
-            `);
+            .select()
+            .eq('trainer_id',id);
         if (error) {
             return { success: false, message: "An error occurred while fetching the data.", error: error.message };
         }

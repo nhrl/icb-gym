@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import * as zod from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,13 +35,6 @@ const assignmentSchema = zod.object({
   rate: zod.number().min(0, "Rate must be a positive number"),
 });
 
-// Mock Services Data
-const services = [
-  { label: "Yoga", value: "1" },
-  { label: "Strength Training", value: "2" },
-  { label: "Cardio", value: "3" },
-  { label: "Pilates", value: "4" },
-];
 
 // Days of the Week
 const daysOfWeek = [
@@ -53,6 +46,11 @@ const daysOfWeek = [
   { label: "Saturday", value: "Saturday" },
   { label: "Sunday", value: "Sunday" },
 ];
+
+interface Service {
+  service_id: number;
+  service_name: string;
+}
 
 interface TrainerAssignFormProps {
   trainerId: number;
@@ -72,9 +70,56 @@ export default function TrainerAssignForm({ trainerId, onClose }: TrainerAssignF
     },
   });
 
-  const handleSubmit = (data: zod.infer<typeof assignmentSchema>) => {
-    console.log({ ...data, trainer_id: trainerId }); // Submit with trainerId
-    onClose(); // Close modal after submission
+  const [services, setServices] = useState<Service[]>([]);
+
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await fetch(`${api}/api/manager/service`);
+        const data = await response.json();
+        setServices(data.data); // Assuming data.services contains an array of service objects
+      } catch (error) {
+        console.error("Error fetching services:", error);
+      }
+    };
+
+    fetchServices();
+  }, [api]);
+
+  const convertTo24HourFormat = (time:any) => {
+    const [hours, minutes] = time.split(":");
+    const date = new Date();
+    date.setHours(hours, minutes);
+  
+    // Use toLocaleTimeString to get the time in 24-hour format
+    return date.toLocaleTimeString("en-GB", { hour: '2-digit', minute: '2-digit', hour12: false });
+  };
+  
+  const handleSubmit = async (data: zod.infer<typeof assignmentSchema>) => {
+    const formattedData = {
+      ...data,
+      trainer_id: trainerId, // Add trainerId to the data
+      schedule: JSON.stringify(data.schedule), // Convert schedule array to JSON string
+      time_start: convertTo24HourFormat(data.time_start),
+      time_end: convertTo24HourFormat(data.time_end),
+    };
+
+    const response = await fetch(`${api}/api/manager/trainer/assign`, { // Replace with your API endpoint
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json', // Sending data as JSON
+      },
+      body: JSON.stringify(formattedData), // Convert the form data to JSON
+    });
+    const message = await response.json();
+    if(message.success) {
+      console.log(message.message);
+       onClose(); // Close modal after submission
+    } else {
+      console.log(message.error);
+      //Error message here
+    }
   };
 
   const metadata = {
@@ -114,8 +159,8 @@ export default function TrainerAssignForm({ trainerId, onClose }: TrainerAssignF
                         <SelectGroup>
                           <SelectLabel>Services</SelectLabel>
                           {services.map((service) => (
-                            <SelectItem key={service.value} value={service.value}>
-                              {service.label}
+                            <SelectItem key={service.service_id} value={String(service.service_id)}>
+                              {service.service_name}
                             </SelectItem>
                           ))}
                         </SelectGroup>
@@ -196,7 +241,7 @@ export default function TrainerAssignForm({ trainerId, onClose }: TrainerAssignF
                 <FormItem>
                   <FormLabel>Max Capacity</FormLabel>
                   <FormControl>
-                    <Input {...field} type="number" className="border p-2 w-full rounded" />
+                    <Input {...field} type="number" className="border p-2 w-full rounded"  onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
                   </FormControl>
                   <FormMessage>{form.formState.errors.max_capacity?.message}</FormMessage>
                 </FormItem>
@@ -211,7 +256,7 @@ export default function TrainerAssignForm({ trainerId, onClose }: TrainerAssignF
                 <FormItem>
                   <FormLabel>Rate ($)</FormLabel>
                   <FormControl>
-                    <Input {...field} type="number" className="border p-2 w-full rounded" />
+                    <Input {...field} type="number" className="border p-2 w-full rounded"  onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
                   </FormControl>
                   <FormMessage>{form.formState.errors.rate?.message}</FormMessage>
                 </FormItem>

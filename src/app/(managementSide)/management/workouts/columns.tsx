@@ -27,25 +27,13 @@ export type Program = {
 };
 
 export type Exercise = {
-  id: number;
+  exercise_id: number;
   program_id: number;
-  name: string;
-  desc: string;
+  exercise_name: string;
+  exercise_description: string;
   sets: number;
   reps: number;
 };
-
-// Mock Data for Exercises
-const exercisesData: Exercise[] = [
-  {
-    id: 1,
-    program_id: 1,
-    name: "Squats",
-    desc: "Lower body strength exercise",
-    sets: 3,
-    reps: 12,
-  },
-];
 
 // Define the columns for your Programs table
 export const columns: ColumnDef<Program>[] = [
@@ -98,7 +86,9 @@ export const columns: ColumnDef<Program>[] = [
   {
     id: "actions",
     cell: ({ row }) => (
-      <ProgramActions program={row.original} exercisesData={exercisesData} />
+      <ProgramActions program={row.original} mutate={function (): void {
+        throw new Error("Function not implemented.");
+      } }/>
     ),
   },
 ];

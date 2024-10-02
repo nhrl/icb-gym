@@ -23,6 +23,7 @@ import {
 import { ArrowLeftIcon, PlusCircleIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
 import { Program } from "./../../app/(managementSide)/management/workouts/columns"; // Import the Program type directly from columns.tsx
+import { mutate } from "swr";
 
 // Fitness levels and goals
 const fitnessLevels = [
@@ -41,6 +42,7 @@ const fitnessGoals = [
 interface ProgramEditFormProps {
   onClose: () => void; // Close modal function
   programData: Program; // Use the Program type directly
+  mutate: () => void;
 }
 
 export default function ProgramEditForm({ onClose, programData }: ProgramEditFormProps) {
@@ -54,9 +56,28 @@ export default function ProgramEditForm({ onClose, programData }: ProgramEditFor
     },
   });
 
-  const handleProgramSubmit = (data: Program) => {
-    console.log(data); // Handle updated program data here
-    onClose(); // Close the form after submission
+  const api = process.env.NEXT_PUBLIC_API_URL;
+
+  const handleProgramSubmit = async (data: Program) => {
+    const formData = new FormData();
+    formData.append('title', data.title);
+    formData.append('description', data.description);
+    formData.append('fitness_goal', data.fitness_goal);
+    formData.append('fitness_level', data.fitness_level);
+    formData.append('program_id', data.program_id.toString());
+
+    const response = await fetch(`${api}/api/manager/plans/workout`, {
+      method: 'PUT',
+      body:formData
+    })
+
+    const message = await response.json();
+    if(message.success) {
+      onClose(); // Close the form after submission
+      mutate(`${api}/api/manager/plans/workout`);
+    } else {
+      //Error message here
+    }
   };
 
   return (

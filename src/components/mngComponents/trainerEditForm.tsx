@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
+import { mutate } from "swr";
 
 // Define the form schema for Trainers
 const formSchema = zod.object({
@@ -64,6 +65,7 @@ interface Trainer {
 interface TrainerEditFormProps {
   trainerData: Trainer;
   onClose: () => void; // Close modal function
+  mutate: () => void;
 }
 
 export default function TrainerEditForm({ trainerData, onClose }: TrainerEditFormProps) {
@@ -80,13 +82,37 @@ export default function TrainerEditForm({ trainerData, onClose }: TrainerEditFor
   });
 
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
-
-  const handleSubmit = (data: zod.infer<typeof formSchema>) => {
-    console.log(data); // Handle form data here
-    if (profilePicture) {
-      console.log("Profile Picture:", profilePicture);
+  
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  const handleSubmit = async (data: zod.infer<typeof formSchema>) => {
+    // Handle form data here
+    const formData = new FormData();
+    if (data.trainer_id != null) {
+      formData.append('id', data.trainer_id.toString());
     }
-    onClose(); // Close the modal after submission
+    formData.append('firstName', data.firstname);
+    formData.append('lastName', data.lastname);
+    formData.append('email', data.email);
+    formData.append('speciality', data.specialty);
+    formData.append('availability', data.availability);
+    
+    if (profilePicture) {
+      formData.append('photo',profilePicture);
+    }
+    const response = await fetch(`${api}/api/manager/trainer`, {
+      method: 'PUT',
+      body:formData
+    })
+
+    const message = await response.json()
+    if(message.success) {
+      mutate(`${api}/api/manager/trainer`);
+      console.log(message.message);
+      onClose(); // Close the modal after submission
+    } else {
+      console.log(message.error);
+    }
+    
   };
 
   const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {

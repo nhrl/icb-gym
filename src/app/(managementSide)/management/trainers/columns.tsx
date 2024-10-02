@@ -55,56 +55,62 @@ export type Assignment = {
   assign_id: number;
   service_id: number;
   trainer_id: number;
-  time_availabilty: string;
+  start_time:string;
+  end_time:string;
   schedule: string[];
   max_capacity: number;
-  current: number;
+  current_capacity: number;
   rate: number;
 };
 
-// Mockup assignments data
-const mockAssignments: Assignment[] = [
-  {
-    assign_id: 1,
-    service_id: 101,
-    trainer_id: 1,
-    time_availabilty: "9 AM - 11 AM",
-    schedule: ["Monday", "Wednesday", "Friday"], // Available days
-    max_capacity: 10,
-    current: 8,
-    rate: 1000,
-  },
-  {
-    assign_id: 2,
-    service_id: 102,
-    trainer_id: 1,
-    time_availabilty: "2 PM - 4 PM",
-    schedule: ["Tuesday", "Thursday"], // Available days
-    max_capacity: 15,
-    current: 12,
-    rate: 1500,
-  },
-  {
-    assign_id: 3,
-    service_id: 103,
-    trainer_id: 2,
-    time_availabilty: "6 PM - 8 PM",
-    schedule: ["Monday", "Thursday"], // Available days
-    max_capacity: 20,
-    current: 18,
-    rate: 2000,
-  },
-];
-
 // Define the AssignmentTable component to display assignments
+const api = process.env.NEXT_PUBLIC_API_URL;
 const AssignmentTable = ({ trainerId }: { trainerId: number }) => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Fetch assignments from the API based on trainer ID
   useEffect(() => {
-    // Filter assignments by the trainer's ID
-    const filteredAssignments = mockAssignments.filter((assignment) => assignment.trainer_id === trainerId);
-    setAssignments(filteredAssignments);
+    const fetchAssignments = async () => {
+      try {
+        const response = await fetch(`${api}/api/manager/trainer/assign?id=${trainerId}`); // Fetch from your API
+        if (!response.ok) {
+          throw new Error('Failed to fetch assignments');
+        }
+        const data = await response.json();
+        setAssignments(data.data); // Assuming data is an array of assignments
+        setIsLoading(false);
+      } catch (err:any) {
+        setError(err.message);
+        setIsLoading(false);
+      }
+    };
+
+    fetchAssignments();
   }, [trainerId]);
+
+  if (isLoading) return <p>Loading assignments...</p>;
+  if (error) return <p>Error: {error}</p>;
+
+  const formatTime = (time: string) => {
+    const [hour, minute] = time.split(':');
+    const date = new Date();
+    date.setHours(parseInt(hour, 10));
+    date.setMinutes(parseInt(minute, 10));
+  
+    const options: Intl.DateTimeFormatOptions = {
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
+    };
+  
+    return date.toLocaleTimeString('en-US', options);
+  };
+
+const deleteAssign = async (assign_id: number) => {
+  console.log('Assignment ID to delete:', assign_id); // Test this log
+};
 
   return (
     <div>
@@ -118,8 +124,8 @@ const AssignmentTable = ({ trainerId }: { trainerId: number }) => {
                     <CardTitle>Service ID {assignment.service_id}</CardTitle>
                     <CardDescription>Rate {assignment.rate} PHP</CardDescription>
                   </div>
-                  {/* Delete Button */}
-                  <div>
+                 {/* Delete Button */}
+                 <div>
                     <AlertDialog>
                       <AlertDialogTrigger className="border border-border p-2 rounded-sm hover:bg-muted">
                         <TrashIcon className="h-4 w-4 text-destructive/80" />
@@ -133,7 +139,8 @@ const AssignmentTable = ({ trainerId }: { trainerId: number }) => {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction> {/* Diri ibutang Delete action */ }
+                          {/* Pass the assignment's ID to the delete handler */}
+                          <AlertDialogAction onClick={() => deleteAssign(assignment.assign_id)}>
                             Continue
                           </AlertDialogAction>
                         </AlertDialogFooter>
@@ -146,23 +153,27 @@ const AssignmentTable = ({ trainerId }: { trainerId: number }) => {
                 <div className="mb-2 flex flex-row gap-2 items-center">
                   Time Availability
                   <Badge variant="outline">
-                    {assignment.time_availabilty}
+                    {formatTime(assignment.start_time)} - {formatTime(assignment.end_time)}
                   </Badge>
                 </div>
                 <div className="mb-2 flex flex-row gap-2 items-center">
                   Schedule
                   <div className="flex flex-wrap gap-2">
-                    {assignment.schedule.map((day, index) => (
-                      <Badge key={index} variant="outline">
-                        {day}
-                      </Badge>
-                    ))}
+                    {assignment.schedule && typeof assignment.schedule === 'string' ? (
+                      JSON.parse(assignment.schedule).map((day: string, index: number) => (
+                        <Badge key={index} variant="outline">
+                          {day}
+                        </Badge>
+                      ))
+                    ) : (
+                      <Badge variant="outline">No schedule available</Badge>
+                    )}
                   </div>
                 </div>
                 <div className="mb-2 flex flex-row gap-2 items-center">
                   Capacity
                   <div className="flex flex-row gap-2 items-center">
-                    <Badge variant="outline">{assignment.current}</Badge> 
+                    <Badge variant="outline">{assignment.current_capacity}</Badge> 
                     of 
                     <Badge variant="outline">{assignment.max_capacity}</Badge>
                   </div>
@@ -226,16 +237,21 @@ export const columns: ColumnDef<Trainers>[] = [
   {
     accessorKey: "avatar", // New column for Avatar
     header: "Avatar",
-    cell: ({ row }) => (
-      <Avatar className="h-6 w-6">
-        <Image
-          src={row.original.trainer_img}
-          alt={`${row.original.firstname} ${row.original.lastname}`}
-          width={24}
-          height={24}
-        />
-      </Avatar>
-    ),
+    cell: ({ row }) => {
+      const trainerImg = row.original.trainer_img || 'https://mplhgifjydkvnfsofsoc.supabase.co/storage/v1/object/public/images/trainer/default.jpg'; // Fallback image if trainer_img is missing
+  
+      return (
+        <Avatar className="h-6 w-6">
+          <Image
+            src={trainerImg}
+            alt={`${row.original.firstname} ${row.original.lastname}`}
+            width={24}
+            height={24}
+            onError={(e) => e.currentTarget.src = '/https://mplhgifjydkvnfsofsoc.supabase.co/storage/v1/object/public/images/trainer/default.jpg'} // Fallback for broken images
+          />
+        </Avatar>
+      );
+    },
   },
   {
     accessorKey: "firstName",
@@ -289,7 +305,9 @@ export const columns: ColumnDef<Trainers>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <TrainerActions trainer={row.original} />,
+    cell: ({ row }) => <TrainerActions trainer={row.original} mutate={function (): void {
+      throw new Error("Function not implemented.");
+    } } />,
   },
 ];
 
