@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
-import { TrashIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,7 +49,6 @@ const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mealsData }
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isMealsPopupOpen, setIsMealsPopupOpen] = useState(false);
   const [selectedMeals, setSelectedMeals] = useState<Meals[]>([]);
-  const popupRef = useRef<HTMLDivElement>(null);
 
   const handleOpenMealsPopup = () => {
     const mealsForDietplan = mealsData.filter((meal) => meal.dietplan_id === dietplan.id);
@@ -61,28 +60,13 @@ const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mealsData }
     setIsEditOpen(true);
   };
 
+  const handleCloseMealsPopup = () => {
+    setIsMealsPopupOpen(false);
+  };
+
   const handleCloseEditModal = () => {
     setIsEditOpen(false);
   };
-
-  // Close popup if user clicks outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
-        setIsMealsPopupOpen(false);
-      }
-    };
-
-    if (isMealsPopupOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isMealsPopupOpen]);
 
   return (
     <div>
@@ -107,11 +91,15 @@ const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mealsData }
       {/* Popup to display Meals */}
       {isMealsPopupOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-          <div
-            ref={popupRef}
-            className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
-          >
-            <h2 className="text-xl font-semibold mb-4">Meals for {dietplan.name}</h2>
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
+            {/* Back Button */}
+            <div className="flex items-center mb-4">
+              <ArrowLeftIcon
+                className="h-6 w-6 cursor-pointer"
+                onClick={handleCloseMealsPopup} // Close the meals popup on back button click
+              />
+              <h2 className="text-xl font-semibold ml-2">Meals for {dietplan.name}</h2>
+            </div>
             {selectedMeals.length > 0 ? (
               <div className="flex flex-col gap-4">
                 {selectedMeals.map((meal) => (
@@ -190,7 +178,15 @@ const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mealsData }
       {/* Modal to show the Edit Form */}
       {isEditOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="p-4 max-w-lg w-full">
+          <div className="p-4 max-w-lg w-full rounded-lg bg-white">
+            {/* Back Button */}
+            <div className="flex items-center mb-4">
+              <ArrowLeftIcon
+                className="h-6 w-6 cursor-pointer"
+                onClick={handleCloseEditModal} // Close the edit modal on back button click
+              />
+              <h2 className="text-xl font-semibold ml-2">Edit Dietplan</h2>
+            </div>
             <DietplanEditForm dietplanData={dietplan} onClose={handleCloseEditModal} />
           </div>
         </div>
