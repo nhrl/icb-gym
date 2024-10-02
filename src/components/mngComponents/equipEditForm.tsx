@@ -15,6 +15,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PlusCircleIcon, ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
+import { Toaster } from "@/components/ui/toaster"; // Import Toaster for displaying notifications
 import { mutate } from "swr";
 
 // Define the form schema for Maintenance
@@ -32,6 +34,8 @@ interface EquipEditFormProps {
 
 const api = process.env.NEXT_PUBLIC_API_URL;
 export default function EquipEditForm({ equipment_id, onClose }: EquipEditFormProps) {
+  const { toast } = useToast(); // Use toast for notifications
+
   // Initialize the form with validation schema
   const maintenanceForm = useForm<zod.infer<typeof maintenanceSchema>>({
     resolver: zodResolver(maintenanceSchema),
@@ -40,24 +44,50 @@ export default function EquipEditForm({ equipment_id, onClose }: EquipEditFormPr
       maintenance_date: "",
     },
   });
+  
+   // Handle maintenance form submission
+   const handleMaintenanceSubmit = async (data: zod.infer<typeof maintenanceSchema>) => {
+    try {
+      const response = await fetch(`${api}/api/manager/equipment/maintenance`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
 
-  const handleMaintenanceSubmit = async (data: zod.infer<typeof maintenanceSchema>) => {
-    // Handle the submitted maintenance data here
-    // Add logic to send data to the server or handle it in your application
-    const response = await fetch(`${api}/api/manager/equipment/maintenance`, { // Replace with your API endpoint
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json', // Sending data as JSON
-      },
-      body: JSON.stringify(data), // Convert the form data to JSON
-    });
-    const message = await response.json();
-    if(message.success) {
-      mutate(`${api}/api/manager/equipment`);
-    } else {
-      //display error here
+      const message = await response.json();
+
+      if (message.success) {
+        // Refresh the data (via SWR)
+        mutate(`${api}/api/manager/equipment`);
+
+        // Show success toast
+        toast({
+          title: "Maintenance Set",
+          description: "The maintenance date has been successfully set.",
+          duration: 3000,
+        });
+
+        onClose(); // Close the modal or form
+      } else {
+        // Show error toast
+        toast({
+          title: "Error",
+          description: "Failed to set the maintenance date. Please try again.",
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      // Show error toast
+      toast({
+        title: "Error",
+        description: "An error occurred while setting the maintenance date.",
+        variant: "destructive",
+        duration: 3000,
+      });
     }
-    onClose();
   };
 
   return (
@@ -113,6 +143,9 @@ export default function EquipEditForm({ equipment_id, onClose }: EquipEditFormPr
           </div>
         </form>
       </Form>
+
+      {/* Toaster component to display toast notifications */}
+      <Toaster />
     </div>
   );
 }

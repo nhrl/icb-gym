@@ -17,6 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
+import { Toaster } from "@/components/ui/toaster"; // Import Toaster for displaying notifications
 import { mutate } from "swr";
 
 // Update the Zod schema for Service
@@ -41,6 +43,7 @@ interface ServiceEditFormProps {
 
 export default function ServiceEditForm({ serviceData, serviceId, onClose }: ServiceEditFormProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+  const { toast } = useToast(); // Use toast for notifications
 
   const serviceform = useForm<zod.infer<typeof serviceSchema>>({
     resolver: zodResolver(serviceSchema),
@@ -58,6 +61,14 @@ export default function ServiceEditForm({ serviceData, serviceId, onClose }: Ser
     if (serviceId !== null) {
       formData.append('id', serviceId.toString());
     }
+    // Show success toast notification
+    toast({
+      title: "Service Updated",
+      description: "The service details have been successfully updated.",
+      duration: 3000,
+    });
+
+    onClose(); // Close the form after submission
     formData.append('name', data.name);
     formData.append('desc', data.desc);
     formData.append('photo',data.photo);
@@ -166,6 +177,9 @@ export default function ServiceEditForm({ serviceData, serviceId, onClose }: Ser
           </div>
         </form>
       </Form>
+
+      {/* Toaster component to display toast notifications */}
+      <Toaster />
     </div>
   );
 }

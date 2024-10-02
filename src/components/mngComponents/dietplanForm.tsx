@@ -24,8 +24,16 @@ import {
   SelectGroup,
   SelectLabel,
 } from "@/components/ui/select";
-import { ArrowLeftIcon, ArrowRightIcon, PlusCircleIcon, TrashIcon, CheckCircleIcon} from "@heroicons/react/24/outline";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  PlusCircleIcon,
+  TrashIcon,
+  CheckCircleIcon,
+} from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
+import { Toaster } from "@/components/ui/toaster";
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 
 // Define the form schema including photo
 const dietplanSchema = zod.object({
@@ -68,6 +76,8 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
   const [step, setStep] = useState(1); // Step to track which form to show
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null); // Store the selected photo
   const [formKey, setFormKey] = useState(Date.now()); // Unique key for each step
+
+  const { toast } = useToast(); // Use the toast hook from shadcn
 
   const dietplanForm = useForm<zod.infer<typeof dietplanSchema>>({
     resolver: zodResolver(dietplanSchema),
@@ -112,12 +122,21 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
     if (selectedPhoto) {
       console.log("Uploaded Photo:", selectedPhoto); // Handle photo upload
     }
+    toast({
+      title: "Diet plan saved!",
+      description: "Your diet plan details have been saved successfully.",
+      duration: 3000,
+    });
     setStep(2); // Move to the next form step
   };
 
   const handleMealSubmit = (data: { meals: zod.infer<typeof mealSchema>[] }) => {
     console.log(data); // Handle meal data here
-    // Add logic to submit or store the meal data
+    toast({
+      title: "Meals submitted!",
+      description: "Your meals have been submitted successfully.",
+      duration: 3000,
+    });
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -301,7 +320,38 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
                       </FormItem>
                     )}
                   />
-                  {/* Other Meal Fields */}
+                  
+                  {/* Recipe */}
+                  <FormField
+                    control={mealForm.control}
+                    name={`meals.${index}.recipe`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Recipe</FormLabel>
+                        <FormControl>
+                          <Textarea {...field} className="border p-2 w-full rounded" placeholder="Enter the recipe..." />
+                        </FormControl>
+                        <FormMessage>{mealForm.formState.errors.meals?.[index]?.recipe?.message}</FormMessage>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Preparation */}
+                  <FormField
+                    control={mealForm.control}
+                    name={`meals.${index}.food_prep`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Preparation</FormLabel>
+                        <FormControl>
+                          <Textarea {...field} className="border p-2 w-full rounded" placeholder="Enter the preparation steps..." />
+                        </FormControl>
+                        <FormMessage>{mealForm.formState.errors.meals?.[index]?.food_prep?.message}</FormMessage>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Other fields */}
                   <div className="flex flex-row gap-2">
                     <FormField
                       control={mealForm.control}
@@ -411,6 +461,9 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
           </form>
         </Form>
       )}
+
+      {/* Toaster component to display toast notifications */}
+      <Toaster />
     </div>
   );
 }

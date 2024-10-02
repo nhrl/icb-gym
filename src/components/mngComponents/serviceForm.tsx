@@ -16,8 +16,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftIcon, PlusCircleIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
+import { Toaster } from "@/components/ui/toaster";
 import { mutate } from "swr";
 
 // Define the form schema for adding a new service
@@ -33,6 +35,8 @@ interface ServiceAddFormProps {
 }
 
 export default function ServiceAddForm({ onClose }: ServiceAddFormProps) {
+  const { toast } = useToast(); // Use toast for notifications
+
   const form = useForm<zod.infer<typeof serviceSchema>>({
     resolver: zodResolver(serviceSchema),
     defaultValues: {
@@ -43,8 +47,7 @@ export default function ServiceAddForm({ onClose }: ServiceAddFormProps) {
 
   const api = process.env.NEXT_PUBLIC_API_URL;
   const handleFormSubmit = async (data: zod.infer<typeof serviceSchema>) => {
-    // Handle adding service data here
-    // Logic to submit the service data to the server or database goes here
+    // Prepare form data to send to the server
     const formData = new FormData();
     formData.append('name', data.name);
     formData.append('desc', data.desc);
@@ -54,18 +57,43 @@ export default function ServiceAddForm({ onClose }: ServiceAddFormProps) {
       formData.append('photo', data.photo); 
     }
 
-    const response = await fetch(`${api}/api/manager/service`, {
-      method: 'POST',
-      body:formData
-    })
+    try {
+      const response = await fetch(`${api}/api/manager/service`, {
+        method: 'POST',
+        body: formData,
+      });
 
-    const message = await response.json()
-    if(message.success) {
-      mutate(`${api}/api/manager/service`);
-    } else {
-      //display error here
-    }  
-    onClose();
+      const message = await response.json();
+      
+      if (response.ok) {
+        // Show success toast notification
+        toast({
+          title: "Service Added",
+          description: "Your service has been successfully added.",
+          duration: 3000,
+        });
+        // Mutate the service list data to reflect the new changes
+        mutate(`${api}/api/manager/service`);
+        // Close the form modal
+        onClose();
+      } else {
+        // Display error toast notification
+        toast({
+          title: "Error Adding Service",
+          description: message.message || "Something went wrong.",
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      // Handle fetch errors
+      toast({
+        title: "Error",
+        description: "An error occurred while adding the service.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -159,6 +187,9 @@ export default function ServiceAddForm({ onClose }: ServiceAddFormProps) {
           </div>
         </form>
       </Form>
+
+      {/* Toaster component to display toast notifications */}
+      <Toaster />
     </div>
   );
 }

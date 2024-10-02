@@ -26,6 +26,8 @@ import { ArrowUpLeftIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import logo from '../assets/logos/logodark.png';
 import LoginModal from './loginModal'; // Import the login modal
+import { Toaster } from "@/components/ui/toaster";
+import { useToast } from '@/hooks/use-toast'; // Import useToast
 
 // Define the form schema
 const formSchema = zod.object({
@@ -48,12 +50,16 @@ const genders = [
 ] as const;
 
 const api = process.env.NEXT_PUBLIC_API_URL;
+
 export default function SignupModal() {
   const [isLoginModal, setIsLoginModal] = useState(false); // State to switch between modals
+  const { toast } = useToast(); // Use the toast hook
 
   const form = useForm<zod.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      firstname: "",
+      lastname: "",
       username: "",
       gender: "",
       email: "",
@@ -63,22 +69,43 @@ export default function SignupModal() {
   });
 
   const handleSubmit = async (data: zod.infer<typeof formSchema>) => {
-    const response = await fetch(`${api}/api/register/customer`, { // Replace with your API endpoint
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json', // Sending data as JSON
-      },
-      body: JSON.stringify(data), // Convert the form data to JSON
-    });
+    try {
+      const response = await fetch(`${api}/api/register/customer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
 
-    const result = await response.json();
-    console.log(result.message);
-    setIsLoginModal(true);
+      const result = await response.json();
+      if (response.ok) {
+        toast({
+          title: "Signup successful!",
+          description: "Your account has been created.",
+          duration: 3000,
+        });
+        setIsLoginModal(true); // Switch to login modal on success
+      } else {
+        toast({
+          title: "Signup failed!",
+          description: result.message || "Something went wrong. Please try again.",
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Signup failed!",
+        description: "An error occurred. Please try again.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   };
 
-
   const handleRefresh = () => {
-    window.location.href = '/'; // Change the URL and refresh the page
+    window.location.href = '/'; // Refresh the page
   };
 
   // Toggle to show login modal instead of signup modal
@@ -90,7 +117,6 @@ export default function SignupModal() {
     <>
       <div className="bg-background text-foreground text-sm rounded-lg shadow-lg w-fit h-[fit] sm:h-full p-[64px] border border-border">
         <Form {...form}>
-          
           <form onSubmit={form.handleSubmit(handleSubmit)} className="gap-4 flex flex-col">
 
             {/* Logo and Title */}
@@ -173,8 +199,8 @@ export default function SignupModal() {
                       <FormLabel>Gender</FormLabel>
                       <FormControl>
                         <Select
-                          onValueChange={(value) => form.setValue("gender", value)}  // Update form state with selected value
-                          value={field.value}  // Bind to the current form value
+                          onValueChange={(value) => form.setValue("gender", value)}
+                          value={field.value}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select a Gender" />
@@ -228,16 +254,16 @@ export default function SignupModal() {
 
             {/* Form Buttons */}
             <div className="items-center gap-4 flex flex-col">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="mt-4 py-2 px-4 rounded w-full flex flex-row gap-2 hover:bg-white hover:text-[#0a0a0a]"
               >
                 <ArrowUpLeftIcon className="h-4 w-4" />
                 Sign Up
               </Button>
               <FormLabel className="font-thin text-[11px] gap-1 flex flex-row text-zinc-600">
-                Already have an account? 
-                <span 
+                Already have an account?
+                <span
                   className="font-md text-white cursor-pointer"
                   onClick={() => setIsLoginModal(true)} // Switch to login modal
                 >
@@ -247,6 +273,9 @@ export default function SignupModal() {
             </div>
           </form>
         </Form>
+
+        {/* Toaster component to display toast notifications */}
+        <Toaster />
       </div>
     </>
   );

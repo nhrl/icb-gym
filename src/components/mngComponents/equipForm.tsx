@@ -15,6 +15,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon, ArrowRightIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { Toaster } from "@/components/ui/toaster";
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 import { mutate } from "swr";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -22,8 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 const equipmentSchema = zod.object({
   equipment_id: zod.string().optional(), // Assuming the ID is auto-generated or optional
   name: zod.string().min(1, "Equipment Name is required").max(50, "Name must be less than 50 characters"),
-  // Preprocess the input to convert it into a number before validating
-  quantity: zod.preprocess((val) => Number(val), zod.number().min(1, "Quantity must be at least 1")),
+  quantity: zod.preprocess((val) => Number(val), zod.number().min(1, "Quantity must be at least 1")), // Convert input to number
   purchase_date: zod.string().min(1, "Purchase Date is required"), // For simplicity, using string
 });
 
@@ -31,7 +32,7 @@ const equipmentSchema = zod.object({
 const maintenanceSchema = zod.object({
   maint_id: zod.string().optional(),
   equipment_id: zod.string(),
-  maintenance_date: zod.string().min(1, "Maintenance Date is required"), // Also using string for simplicity
+  maintenance_date: zod.string().min(1, "Maintenance Date is required"), // Using string for simplicity
 });
 
 interface EquipmentFormProps {
@@ -44,6 +45,7 @@ const api = process.env.NEXT_PUBLIC_API_URL;
 export default function EquipmentForm({ onClose }: EquipmentFormProps) {
   const [step, setStep] = useState(1); // Step to track which form to show
   const [formKey, setFormKey] = useState(Date.now()); // Unique key for each step
+  const { toast } = useToast(); // Use the toast hook from Shadcn
   const [id,setId] = useState('');
   const equipmentForm = useForm<zod.infer<typeof equipmentSchema>>({
     resolver: zodResolver(equipmentSchema),
@@ -64,50 +66,91 @@ export default function EquipmentForm({ onClose }: EquipmentFormProps) {
     },
   });
 
-  const handleEquipmentSubmit = async (data: zod.infer<typeof equipmentSchema>) => {
-    //console.log(data); // Handle equipment data here
+   // Handle Equipment Submission
+   const handleEquipmentSubmit = async (data: zod.infer<typeof equipmentSchema>) => {
+    try {
+      const response = await fetch(`${api}/api/manager/equipment`, { // Replace with your API endpoint
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
 
-    const response = await fetch(`${api}/api/manager/equipment`, { // Replace with your API endpoint
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json', // Sending data as JSON
-      },
-      body: JSON.stringify(data), // Convert the form data to JSON
-    });
+      const equipmentInfo = await response.json();
+      if (response.ok) {
+        const equipmentId = equipmentInfo.data[0].equipment_id;
+        setId(equipmentId);
 
-    const equipmentInfo = await response.json();
-    const id = equipmentInfo.data[0].equipment_id;
-    setId(id);
-    setFormKey(Date.now()); // Update the form key to force a re-render
-    setStep(2); // Move to the next form step*/
+        // Show success toast for equipment submission
+        toast({
+          title: "Equipment saved!",
+          description: "Your equipment details have been saved successfully.",
+          duration: 3000,
+        });
+
+        // Reset maintenance form with equipment_id
+        maintenanceForm.reset({
+          maint_id: "",
+          equipment_id: equipmentId,
+          maintenance_date: "",
+        });
+        
+        setFormKey(Date.now()); // Update form key to force re-render
+        setStep(2); // Move to the next step (maintenance form)
+      } else {
+        throw new Error(equipmentInfo.message || "Failed to save equipment");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error saving equipment",
+        description: error.message || "An error occurred while saving the equipment.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   };
 
-  const handleMaintenanceSubmit = async (data: zod.infer<typeof maintenanceSchema>) => {
-   console.log(data);
-   console.log(id);
+ // Handle Maintenance Submission
+ const handleMaintenanceSubmit = async (data: zod.infer<typeof maintenanceSchema>) => {
+  try {
+    const updatedData = {
+      ...data,
+      equipment_id: id, // Use the saved equipment ID
+    };
 
-   const updatedData = {
-    ...data,           // Spread the original data
-    equipment_id: id,  // Set the equipment_id to the given id
-  };
-
-  console.log(updatedData); 
-    // You can add logic to submit or store the maintenance data
-    const response = await fetch(`${api}/api/manager/equipment/maintenance`, { // Replace with your API endpoint
+    const response = await fetch(`${api}/api/manager/equipment/maintenance`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json', // Sending data as JSON
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(updatedData), // Convert the form data to JSON
+      body: JSON.stringify(updatedData),
     });
-    const message = await response.json();
-   if(message.success) {
+
+    const result = await response.json();
+    if (response.ok) {
+      toast({
+        title: "Maintenance recorded!",
+        description: "Your maintenance details have been saved successfully.",
+        duration: 3000,
+      });
+
+      // Refresh data (via SWR mutation)
       mutate(`${api}/api/manager/equipment`);
-   } else {
-    //display error here
-   }
-    onClose();
-  };
+
+      onClose(); // Close the modal
+    } else {
+      throw new Error(result.message || "Failed to save maintenance");
+    }
+  } catch (error: any) {
+    toast({
+      title: "Error saving maintenance",
+      description: error.message || "An error occurred while saving the maintenance.",
+      variant: "destructive",
+      duration: 3000,
+    });
+  }
+};
 
   const metadata = {
     title: step === 1 ? "Add New Equipment" : "Add Maintenance",
@@ -239,12 +282,15 @@ export default function EquipmentForm({ onClose }: EquipmentFormProps) {
                 className="py-2 px-4 rounded w-full flex flex-row gap-2"
               >
                 <CheckCircleIcon className="h-4 w-4" />
-                Submit Equipment
+                Submit Maintenance
               </Button>
             </div>
           </form>
         </Form>
       )}
+
+      {/* Toaster component to display toast notifications */}
+      <Toaster />
     </div>
   );
 }
