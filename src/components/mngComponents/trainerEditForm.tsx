@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import {
   Select,
   SelectContent,
@@ -24,7 +25,8 @@ import {
   SelectGroup,
   SelectLabel,
 } from "@/components/ui/select";
-import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
+import { Toaster } from "@/components/ui/toaster"; // Import Toaster for displaying notifications
 import { Textarea } from "@/components/ui/textarea";
 import { mutate } from "swr";
 
@@ -82,7 +84,8 @@ export default function TrainerEditForm({ trainerData, onClose }: TrainerEditFor
   });
 
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
-  
+  const { toast } = useToast(); // Use toast for notifications
+
   const api = process.env.NEXT_PUBLIC_API_URL;
   const handleSubmit = async (data: zod.infer<typeof formSchema>) => {
     // Handle form data here
@@ -106,8 +109,12 @@ export default function TrainerEditForm({ trainerData, onClose }: TrainerEditFor
 
     const message = await response.json()
     if(message.success) {
+      toast({
+        title: "Trainer Updated",
+        description: "The trainer details have been successfully updated.",
+        duration: 3000,
+      });
       mutate(`${api}/api/manager/trainer`);
-      console.log(message.message);
       onClose(); // Close the modal after submission
     } else {
       console.log(message.error);
@@ -277,6 +284,9 @@ export default function TrainerEditForm({ trainerData, onClose }: TrainerEditFor
           </div>
         </form>
       </Form>
+
+      {/* Toaster component to display toast notifications */}
+      <Toaster />
     </div>
   );
 }
