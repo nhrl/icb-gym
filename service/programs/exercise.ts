@@ -4,43 +4,50 @@ import supabase from "../../database/db";
 // For image folder directory
 const folder = `workout/exercise`;
 
-export async function addExercise(data:any) {
+export async function addExercises(exercises: any[]) {
     try {
-         // extract exercise data
-         const program_id  = Number(data.get('program_id'));
-         const exercise_name = data.get('exercise_name') as string;
-         const exercise_description  = data.get('exercise_description') as string;
-         const reps  = Number(data.get('reps'));
-         const sets  = Number(data.get('sets'));
-         const image = data.get('image') as File;
-    
-         //upload exercise image
-         const imageUrl = await uploadImage(image,folder);
-         
-         //store data to the database
-         const {error} = await supabase
-         .from('exercise')
-         .insert([
-             {
-                program_id: program_id,
-                exercise_name: exercise_name,
-                exercise_description: exercise_description,
-                reps: reps,
-                sets: sets,
-                exercise_img : imageUrl
-             }
-         ])
- 
-         if(error) {
-             return {
-                 success: false,
-                 message: "Failed to add exercise. Please try again.",
-                 error: error.message
-             };
-         }
-         return { success: true, message: "New exercise added successfully"};
-    } catch (error:any) {
-        return { success: false, message: "An error occurred. Please try again.", error: error.message };
+      const exerciseData = [];
+      for (const exercise of exercises) {
+        const program_id = Number(exercise.program_id);
+        const exercise_name = exercise.name as string;
+        const exercise_description = exercise.desc as string;
+        const reps = Number(exercise.reps);
+        const sets = Number(exercise.sets);
+        const image = exercise.photo as File; // Handle image if provided
+  
+        // If an image is provided, upload it
+        let imageUrl = null;
+        if (image) {
+          imageUrl = await uploadImage(image, folder);
+        }
+  
+        exerciseData.push({
+          program_id: program_id,
+          exercise_name: exercise_name,
+          exercise_description: exercise_description,
+          reps: reps,
+          sets: sets,
+          exercise_img: imageUrl || null,
+        });
+      }
+  
+      // Insert all exercises into the 'exercise' table
+      const { error } = await supabase.from('exercise').insert(exerciseData);
+  
+      if (error) {
+        return {
+          success: false,
+          message: "Failed to add exercises. Please try again.",
+          error: error.message,
+        };
+      }
+      return { success: true, message: "New exercises added successfully" };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: "An error occurred. Please try again.",
+        error: error.message,
+      };
     }
 }
 
@@ -61,7 +68,7 @@ export async function getExercise(id: any) {
         return {
             success: true,
             message: "Exercises retrieved successfully",
-            trainers: data
+            exercise: data
         };
     } catch (error:any) {
         return { success: false, message: "An error occurred. Please try again.", error: error.message };

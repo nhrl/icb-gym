@@ -1,4 +1,4 @@
-import { addProgram, getProgram, updateProgram, removeProgram} from "@service/programs/workout";
+import { addProgram, getProgram, updateProgram, removePrograms} from "@service/programs/workout";
 
 export async function POST(req: Request) {
     try {
@@ -32,8 +32,7 @@ export async function PUT(req: Request) {
 export async function DELETE(req: Request) {
     try {
         const data = await req.json();
-        const {id} = data;
-        const message = await removeProgram(id);
+        const message = await removePrograms(data);
         return Response.json(message);
     } catch (error) {
         return Response.json({ error: "Error processing request" }, { status: 500 });

@@ -25,6 +25,7 @@ import {
 import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
 import { Toaster } from "@/components/ui/toaster"; // Import Toaster for displaying notifications
+import { mutate } from "swr";
 
 // Define the form schema for Trainers
 const formSchema = zod.object({
@@ -51,6 +52,7 @@ const availabilities = [
 
 interface TrainerFormProps {
   onClose: () => void; // Close modal function
+  mutate: () => void;
 }
 
 export default function TrainerForm({ onClose }: TrainerFormProps) {
@@ -68,10 +70,32 @@ export default function TrainerForm({ onClose }: TrainerFormProps) {
     },
   });
 
-  const handleSubmit = (data: zod.infer<typeof formSchema>) => {
-    console.log(data); // Handle form data here
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  const handleSubmit = async (data: zod.infer<typeof formSchema>) => {
+    console.log(data);
+    const formData = new FormData();
+
+    formData.append('firstName', data.firstName);
+    formData.append('lastName', data.lastName);
+    formData.append('email', data.email);
+    formData.append('speciality', data.speciality);
+    formData.append('availability', data.availability);
     if (profilePicture) {
-      console.log("Profile Picture:", profilePicture);
+      formData.append('photo',profilePicture);
+    }
+
+    const response = await fetch(`${api}/api/manager/trainer`, {
+      method: 'POST',
+      body:formData
+    })
+
+    const message = await response.json();
+    if(message.success) {
+      console.log(message.message);
+      mutate(`${api}/api/manager/trainer`);
+      onClose();
+    } else {
+      console.log(message.error);
     }
 
     // Show success toast notification

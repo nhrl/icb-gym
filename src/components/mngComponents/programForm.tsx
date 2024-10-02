@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import React from "react";
 import * as zod from "zod";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -27,6 +27,8 @@ import { ArrowLeftIcon, ArrowRightIcon, PlusCircleIcon, TrashIcon, CheckCircleIc
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
 import { Toaster } from "@/components/ui/toaster";
+import { mutate } from "swr";
+
 
 // Define the form schema for Program with required photo
 const programSchema = zod.object({
@@ -50,15 +52,18 @@ const exerciseSchema = zod.object({
   desc: zod.string().min(1, "Description is required"),
   sets: zod.number().min(1, "Sets are required"),
   reps: zod.number().min(1, "Reps are required"),
+  photo: zod.instanceof(File).optional()
 });
 
 interface ProgramFormProps {
   onClose: () => void; // Close modal function
+  mutate: () => void;
 }
 
 export default function ProgramForm({ onClose }: ProgramFormProps) {
   const [step, setStep] = useState(1); // Step to track which form to show
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null); // Store the selected photo
+  const [programId, setProgramId] = useState<number | null>(null);
 
   const { toast } = useToast(); // Use toast for notifications
 
@@ -92,28 +97,86 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
     name: "exercises",
   });
 
-  const handleProgramSubmit = (data: zod.infer<typeof programSchema>) => {
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  const handleProgramSubmit = async (data: zod.infer<typeof programSchema>) => {
     console.log(data); // Handle program data here
+    const formData = new FormData();
+    
+    formData.append('title', data.title);
+    formData.append('desc', data.desc);
+    formData.append('fitness_goal', data.fitness_goal);
+    formData.append('fitness_level', data.fitness_level);
 
-    // Show success toast for program submission
-    toast({
-      title: "Program saved!",
-      description: "Your program details have been saved successfully.",
-      duration: 3000,
-    });
+    if (data.photo) {
+      formData.append('photo', data.photo); 
+    }
 
-    setStep(2); // Move to the next form step
+    const response = await fetch(`${api}/api/manager/plans/workout`, {
+      method: 'POST',
+      body:formData
+    })
+    
+    const message = await response.json();
+    if(message.success) {
+      toast({
+        title: "Program saved!",
+        description: "Your program details have been saved successfully.",
+        duration: 3000,
+      });
+      const data = message.data;
+      setProgramId(data.program_id);
+      mutate(`${api}/api/manager/plans/workout`);
+      setStep(2); // Move to the next form step
+    } else {
+      // display error message here
+    }
   };
 
-  const handleExerciseSubmit = (data: { exercises: zod.infer<typeof exerciseSchema>[] }) => {
-    console.log({ programData: programForm.getValues(), exercises: data.exercises }); // Submit both program and exercises
-
-    // Show success toast for exercises submission
-    toast({
-      title: "Exercises saved!",
-      description: "Your exercises have been saved successfully.",
-      duration: 3000,
-    });
+  useEffect(() => {
+    if (programId !== null) {
+      console.log("Program ID is set to:", programId); // Log the updated programId
+    }
+  }, [programId]);
+  
+  const handleExerciseSubmit = async (data: { exercises: zod.infer<typeof exerciseSchema>[] }) => {
+    const formData = new FormData();
+  
+    // Append each exercise to the FormData object
+    if(programId) {
+      data.exercises.forEach((exercise, index) => {
+        formData.append(`exercises[${index}][name]`, exercise.name);
+        formData.append(`exercises[${index}][desc]`, exercise.desc);
+        formData.append(`exercises[${index}][sets]`, exercise.sets.toString());
+        formData.append(`exercises[${index}][reps]`, exercise.reps.toString());
+        formData.append(`exercises[${index}][program_id]`, programId.toString()); // Add program_id
+    
+        // Append image if exists
+        if (exercise.photo) {
+          formData.append(`exercises[${index}][photo]`, exercise.photo);
+        }
+      });
+    }
+    try {
+      const response = await fetch(`${api}/api/manager/plans/workout/exercise`, {
+        method: 'POST',
+        body: formData, // Send as FormData
+      });
+  
+      const message = await response.json();
+  
+      if (message.success) {
+        toast({
+          title: "Exercises saved!",
+          description: "Your exercises have been saved successfully.",
+          duration: 3000,
+        });
+        onClose(); // Close modal after success
+      } else {
+        console.error("Failed to add exercises", message.error);
+      }
+    } catch (error) {
+      console.error("An error occurred while adding exercises", error);
+    }
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -343,7 +406,7 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
                         <FormItem className="flex-1">
                           <FormLabel>Sets</FormLabel>
                           <FormControl>
-                            <Input {...field} type="number" className="border p-2 w-full rounded" />
+                            <Input {...field} type="number" className="border p-2 w-full rounded" onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
                           </FormControl>
                           <FormMessage>{exercisesForm.formState.errors.exercises?.[index]?.sets?.message}</FormMessage>
                         </FormItem>
@@ -356,7 +419,7 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
                         <FormItem className="flex-1">
                           <FormLabel>Reps</FormLabel>
                           <FormControl>
-                            <Input {...field} type="number" className="border p-2 w-full rounded" />
+                            <Input {...field} type="number" className="border p-2 w-full rounded" onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
                           </FormControl>
                           <FormMessage>{exercisesForm.formState.errors.exercises?.[index]?.reps?.message}</FormMessage>
                         </FormItem>

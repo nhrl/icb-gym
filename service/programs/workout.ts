@@ -6,16 +6,15 @@ const folder = 'workout';
 export async function addProgram(data : any) {
     try {
         const title = data.get('title') as string
-        const description = data.get('description') as string
+        const description = data.get('desc') as string
         const fitness_level = data.get('fitness_level') as string
         const fitness_goal = data.get('fitness_goal') as string
-        const file = data.get('image') as File;
+        const file = data.get('photo') as File;
 
         //upload image
         const imageUrl = await uploadImage(file,folder);
-        
         //Insert data to the database
-        const {error: programError} = await supabase
+        const {data: program, error: programError} = await supabase
         .from('program')
         .insert([
             {
@@ -26,6 +25,8 @@ export async function addProgram(data : any) {
                 program_img: imageUrl
             }
         ])
+        .select()
+        .single();
 
         if(programError) {
             return {
@@ -34,7 +35,7 @@ export async function addProgram(data : any) {
                 error: programError.message
             }
         }
-        return{success: true, message: "New Program added Successfully"};
+        return{success: true, message: "New Program added Successfully", data: program};
     } catch (error:any) {
         return { success: false, message: "An error occurred. Please try again.", error: error.message };
     }
@@ -65,7 +66,7 @@ export async function updateProgram(data:any) {
         const fitness_level = data.get('fitness_level') as string
         const fitness_goal = data.get('fitness_goal') as string
         const file = data.get('image') as File;
-        const id = Number(data.get('id'));
+        const id = Number(data.get('program_id'));
 
         //fetch program to be updated
         const {data: program, error: fetchError} = await supabase
@@ -129,54 +130,65 @@ export async function updateProgram(data:any) {
     }
 }
 
-export async function removeProgram(id:number) {
+export async function removePrograms(info: any) {
     try {
-        //get program data
-        const {data, error: fetchError} = await supabase
-        .from('program')
-        .select('program_img')
-        .eq('program_id',id)
+        const { ids } = info; // ids should be an array of program IDs
+        // Fetch program data for each ID to get the image paths
+        const { data, error: fetchError } = await supabase
+            .from('program')
+            .select('program_id, program_img')
+            .in('program_id', ids); // Use 'in' to get programs matching the provided ids
 
-        if(fetchError) {
+        if (fetchError) {
             return {
                 success: false,
                 message: 'Failed to fetch program data.',
                 error: fetchError.message
-            }
-        }
-         //Delete image from storage
-        let fileName: string;
-        if (data && data.length > 0) {
-            const path = data[0].program_img;
-            fileName = getFilePathFromUrl(path);
-            // Remove the image from storage
-            const imageRemovalResult = await removeImage(fileName);
-            if (!imageRemovalResult.success) {
-                return {
-                    success: false,
-                    message: "Error removing image from the storage",
-                }
-            }
-        } else {
-            return { 
-                message: "No program found with the given ID" 
             };
         }
 
-        //Delete program data
-        const {error} = await supabase
-        .from('program')
-        .delete()
-        .eq('program_id',id)
-
-        if(error) {
+        if (!data || data.length === 0) {
             return {
                 success: false,
-                message: 'Failed to remove program.'
+                message: "No programs found with the given IDs"
+            };
+        }
+
+        // Loop through each program and delete associated images
+        for (const program of data) {
+            const path = program.program_img; // Get the image path
+            if (path && path.trim() !== "") {
+                // Only proceed if program_img is not empty or null
+                const fileName = getFilePathFromUrl(path); // Extract the file name from the URL
+                // Remove the image from storage
+                const imageRemovalResult = await removeImage(fileName);
+                if (!imageRemovalResult.success) {
+                    return {
+                        success: false,
+                        message: `Error removing image ${fileName} from storage`
+                    };
+                }
+            } else {
+                console.log(`No image found for program with ID: ${program.program_id}, skipping...`);
             }
-        } 
-        return {success: true, message: 'Program remove successfully'}
-    } catch (error:any) {
+        }
+
+        // Now delete all the program records from the database
+        const { error: deleteProgramsError } = await supabase
+            .from('program')
+            .delete()
+            .in('program_id', ids); // Delete all programs with the provided ids
+
+        if (deleteProgramsError) {
+            return {
+                success: false,
+                message: 'Error deleting the program data',
+                error: deleteProgramsError.message
+            };
+        }
+
+        return { success: true, message: 'Programs and associated images removed successfully' };
+    } catch (error: any) {
         return { success: false, message: "An error occurred. Please try again.", error: error.message };
     }
 }

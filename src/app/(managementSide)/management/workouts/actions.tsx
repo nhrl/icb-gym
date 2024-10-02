@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
+import useSWR from 'swr';  // SWR for client-side data fetching
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,19 +18,28 @@ import { Badge } from "@/components/ui/badge";
 // Define the ProgramActionsProps type
 type ProgramActionsProps = {
   program: Program; // Expecting a Program object
-  exercisesData: Exercise[]; // Expecting an array of Exercise objects
+  mutate: () => void;
 };
 
-const ProgramActions: React.FC<ProgramActionsProps> = ({ program, exercisesData }) => {
+const ProgramActions: React.FC<ProgramActionsProps> = ({ program, mutate }) => {
   const [isExercisesPopupOpen, setIsExercisesPopupOpen] = useState(false); // State to control exercises popup
   const [isEditOpen, setIsEditOpen] = useState(false); // State to control edit form modal visibility
-  const [selectedExercises, setSelectedExercises] = useState<Exercise[]>([]); // State for selected exercises
   const popupRef = useRef<HTMLDivElement>(null); // Ref for detecting clicks outside the popup
+
+  // Use SWR hook at the top level of the component
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  const fetcher = (url: string) => fetch(url).then((res) => res.json());
+  
+  const { data, error, isLoading } = useSWR(
+    isExercisesPopupOpen ? `${api}/api/manager/plans/workout/exercise?id=${program.program_id}` : null, 
+    fetcher,
+    { revalidateOnFocus: true }
+  );
+
+  const selectedExercises = data?.exercise || [];
 
   // Function to open the exercises popup
   const handleOpenExercisesPopup = () => {
-    const exercisesForProgram = exercisesData.filter((exercise) => exercise.program_id === program.program_id);
-    setSelectedExercises(exercisesForProgram);
     setIsExercisesPopupOpen(true);
   };
 
@@ -61,7 +71,6 @@ const ProgramActions: React.FC<ProgramActionsProps> = ({ program, exercisesData 
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isExercisesPopupOpen]);
-
   return (
     <div>
       <DropdownMenu>
@@ -92,11 +101,11 @@ const ProgramActions: React.FC<ProgramActionsProps> = ({ program, exercisesData 
             <h2 className="text-xl font-semibold mb-4">Exercises for {program.title}</h2>
             {selectedExercises.length > 0 ? (
               <div className="flex flex-col gap-4">
-                {selectedExercises.map((exercise) => (
-                  <Card key={exercise.id} className="bg-background border border-border rounded-md w-full sm:w-auto flex-1 mb-4">
+                {selectedExercises.map((exercise: Exercise) => (
+                  <Card key={exercise.exercise_id} className="bg-background border border-border rounded-md w-full sm:w-auto flex-1 mb-4">
                     <CardHeader>
-                      <CardTitle>{exercise.name}</CardTitle>
-                      <CardDescription>{exercise.desc}</CardDescription>
+                      <CardTitle>{exercise.exercise_name}</CardTitle>
+                      <CardDescription>{exercise.exercise_description}</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="mb-2 flex flex-row gap-2 items-center">
@@ -127,7 +136,7 @@ const ProgramActions: React.FC<ProgramActionsProps> = ({ program, exercisesData 
       {isEditOpen && program && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="p-4 max-w-lg w-full bg-white rounded-lg shadow-lg">
-            <ProgramEditForm programData={program} onClose={handleCloseEditModal} />
+            <ProgramEditForm programData={program} onClose={handleCloseEditModal} mutate={mutate}/>
           </div>
         </div>
       )}

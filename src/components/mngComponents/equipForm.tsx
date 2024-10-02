@@ -66,70 +66,91 @@ export default function EquipmentForm({ onClose }: EquipmentFormProps) {
     },
   });
 
-  const handleEquipmentSubmit = async (data: zod.infer<typeof equipmentSchema>) => {
-    //console.log(data); // Handle equipment data here
-    // Show success toast for equipment submission
-    toast({
-      title: "Equipment saved!",
-      description: "Your equipment details have been saved successfully.",
-      duration: 3000,
-    });
+   // Handle Equipment Submission
+   const handleEquipmentSubmit = async (data: zod.infer<typeof equipmentSchema>) => {
+    try {
+      const response = await fetch(`${api}/api/manager/equipment`, { // Replace with your API endpoint
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
 
-    // Reset the maintenance form with only the equipment_id passed and a unique key
-    maintenanceForm.reset({
-      maint_id: "",
-      equipment_id: data.equipment_id || "", // Carry the equipment_id into the maintenance form
-      maintenance_date: "",
-    const response = await fetch(`${api}/api/manager/equipment`, { // Replace with your API endpoint
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json', // Sending data as JSON
-      },
-      body: JSON.stringify(data), // Convert the form data to JSON
-    });
+      const equipmentInfo = await response.json();
+      if (response.ok) {
+        const equipmentId = equipmentInfo.data[0].equipment_id;
+        setId(equipmentId);
 
-    const equipmentInfo = await response.json();
-    const id = equipmentInfo.data[0].equipment_id;
-    setId(id);
-    setFormKey(Date.now()); // Update the form key to force a re-render
-    setStep(2); // Move to the next form step*/
+        // Show success toast for equipment submission
+        toast({
+          title: "Equipment saved!",
+          description: "Your equipment details have been saved successfully.",
+          duration: 3000,
+        });
+
+        // Reset maintenance form with equipment_id
+        maintenanceForm.reset({
+          maint_id: "",
+          equipment_id: equipmentId,
+          maintenance_date: "",
+        });
+        
+        setFormKey(Date.now()); // Update form key to force re-render
+        setStep(2); // Move to the next step (maintenance form)
+      } else {
+        throw new Error(equipmentInfo.message || "Failed to save equipment");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error saving equipment",
+        description: error.message || "An error occurred while saving the equipment.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   };
 
-  const handleMaintenanceSubmit = (data: zod.infer<typeof maintenanceSchema>) => {
-    console.log(data); // Handle maintenance data here
+ // Handle Maintenance Submission
+ const handleMaintenanceSubmit = async (data: zod.infer<typeof maintenanceSchema>) => {
+  try {
+    const updatedData = {
+      ...data,
+      equipment_id: id, // Use the saved equipment ID
+    };
 
-    // Show success toast for maintenance submission
-    toast({
-      title: "Maintenance recorded!",
-      description: "Your maintenance details have been saved successfully.",
-      duration: 3000,
-    });
-  const handleMaintenanceSubmit = async (data: zod.infer<typeof maintenanceSchema>) => {
-   console.log(data);
-   console.log(id);
-
-   const updatedData = {
-    ...data,           // Spread the original data
-    equipment_id: id,  // Set the equipment_id to the given id
-  };
-
-  console.log(updatedData); 
-    // You can add logic to submit or store the maintenance data
-    const response = await fetch(`${api}/api/manager/equipment/maintenance`, { // Replace with your API endpoint
+    const response = await fetch(`${api}/api/manager/equipment/maintenance`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json', // Sending data as JSON
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(updatedData), // Convert the form data to JSON
+      body: JSON.stringify(updatedData),
     });
-    const message = await response.json();
-   if(message.success) {
+
+    const result = await response.json();
+    if (response.ok) {
+      toast({
+        title: "Maintenance recorded!",
+        description: "Your maintenance details have been saved successfully.",
+        duration: 3000,
+      });
+
+      // Refresh data (via SWR mutation)
       mutate(`${api}/api/manager/equipment`);
-   } else {
-    //display error here
-   }
-    onClose();
-  };
+
+      onClose(); // Close the modal
+    } else {
+      throw new Error(result.message || "Failed to save maintenance");
+    }
+  } catch (error: any) {
+    toast({
+      title: "Error saving maintenance",
+      description: error.message || "An error occurred while saving the maintenance.",
+      variant: "destructive",
+      duration: 3000,
+    });
+  }
+};
 
   const metadata = {
     title: step === 1 ? "Add New Equipment" : "Add Maintenance",

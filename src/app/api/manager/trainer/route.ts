@@ -33,8 +33,7 @@ export async function PUT(req: Request) {
 export async function DELETE(req : Request) {
     try {
         const data = await req.json();
-        const {id} = data;
-        const message = await deleteTrainer(id);
+        const message = await deleteTrainer(data);
         return Response.json(message);
     } catch (error) {
         return Response.json({ error: "Error processing request" }, { status: 500 });

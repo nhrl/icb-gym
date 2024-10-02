@@ -45,33 +45,49 @@ export default function EquipEditForm({ equipment_id, onClose }: EquipEditFormPr
     },
   });
   
-  const handleMaintenanceSubmit = (data: zod.infer<typeof maintenanceSchema>) => {
-    console.log(data); // Handle the submitted maintenance data here
+   // Handle maintenance form submission
+   const handleMaintenanceSubmit = async (data: zod.infer<typeof maintenanceSchema>) => {
+    try {
+      const response = await fetch(`${api}/api/manager/equipment/maintenance`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
 
-    // Show success toast notification
-    toast({
-      title: "Maintenance Set",
-      description: "The maintenance date has been successfully set.",
-      duration: 3000,
-    });
-    
-  const handleMaintenanceSubmit = async (data: zod.infer<typeof maintenanceSchema>) => {
-    // Handle the submitted maintenance data here
-    // Add logic to send data to the server or handle it in your application
-    const response = await fetch(`${api}/api/manager/equipment/maintenance`, { // Replace with your API endpoint
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json', // Sending data as JSON
-      },
-      body: JSON.stringify(data), // Convert the form data to JSON
-    });
-    const message = await response.json();
-    if(message.success) {
-      mutate(`${api}/api/manager/equipment`);
-    } else {
-      //display error here
+      const message = await response.json();
+
+      if (message.success) {
+        // Refresh the data (via SWR)
+        mutate(`${api}/api/manager/equipment`);
+
+        // Show success toast
+        toast({
+          title: "Maintenance Set",
+          description: "The maintenance date has been successfully set.",
+          duration: 3000,
+        });
+
+        onClose(); // Close the modal or form
+      } else {
+        // Show error toast
+        toast({
+          title: "Error",
+          description: "Failed to set the maintenance date. Please try again.",
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      // Show error toast
+      toast({
+        title: "Error",
+        description: "An error occurred while setting the maintenance date.",
+        variant: "destructive",
+        duration: 3000,
+      });
     }
-    onClose();
   };
 
   return (
