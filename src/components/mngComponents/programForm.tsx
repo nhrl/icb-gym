@@ -22,10 +22,11 @@ import {
   SelectTrigger,
   SelectValue,
   SelectGroup,
-  SelectLabel,
 } from "@/components/ui/select";
 import { ArrowLeftIcon, ArrowRightIcon, PlusCircleIcon, TrashIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
+import { Toaster } from "@/components/ui/toaster";
 import { mutate } from "swr";
 
 
@@ -63,6 +64,8 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
   const [step, setStep] = useState(1); // Step to track which form to show
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null); // Store the selected photo
   const [programId, setProgramId] = useState<number | null>(null);
+
+  const { toast } = useToast(); // Use toast for notifications
 
   const programForm = useForm<zod.infer<typeof programSchema>>({
     resolver: zodResolver(programSchema),
@@ -115,6 +118,11 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
     
     const message = await response.json();
     if(message.success) {
+      toast({
+        title: "Program saved!",
+        description: "Your program details have been saved successfully.",
+        duration: 3000,
+      });
       const data = message.data;
       setProgramId(data.program_id);
       mutate(`${api}/api/manager/plans/workout`);
@@ -157,7 +165,11 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
       const message = await response.json();
   
       if (message.success) {
-        console.log("Exercises successfully added", message);
+        toast({
+          title: "Exercises saved!",
+          description: "Your exercises have been saved successfully.",
+          duration: 3000,
+        });
         onClose(); // Close modal after success
       } else {
         console.error("Failed to add exercises", message.error);
@@ -452,6 +464,9 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
           </form>
         </Form>
       )}
+
+      {/* Toaster component to display toast notifications */}
+      <Toaster />
     </div>
   );
 }
