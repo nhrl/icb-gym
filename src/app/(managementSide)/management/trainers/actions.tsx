@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import {
@@ -13,17 +13,17 @@ import TrainerEditForm from "@/components/mngComponents/trainerEditForm";
 import TrainerAssignForm from "@/components/mngComponents/trainerAssignForm";
 import { AssignmentTable } from "./columns"; // Adjust the import path
 import { Trainers } from "./columns"; // Adjust the import path
+import { ArrowLeftIcon } from "@heroicons/react/24/outline"; // Import ArrowLeftIcon for the back button
 
 type TrainerActionsProps = {
   trainer: Trainers;
-  mutate:() => void;
+  mutate: () => void;
 };
 
-const TrainerActions: React.FC<TrainerActionsProps> = ({ trainer, mutate}) => {
+const TrainerActions: React.FC<TrainerActionsProps> = ({ trainer, mutate }) => {
   const [isOpen, setIsOpen] = useState(false); // State to control edit form visibility
   const [isAssignOpen, setIsAssignOpen] = useState(false); // State to control assignment form visibility
   const [isAssignmentsPopupOpen, setIsAssignmentsPopupOpen] = useState(false); // State to control assignments popup
-  const popupRef = useRef<HTMLDivElement>(null);
 
   const handleOpenEditForm = () => {
     setIsOpen(true); // Open the edit form modal
@@ -37,29 +37,11 @@ const TrainerActions: React.FC<TrainerActionsProps> = ({ trainer, mutate}) => {
     setIsAssignmentsPopupOpen((prev) => !prev); // Toggle assignments popup
   };
 
-  const handleCloseEditModal = () => {
+  const handleCloseModal = () => {
     setIsOpen(false); // Close edit form modal
     setIsAssignOpen(false); // Close assignment form modal
+    setIsAssignmentsPopupOpen(false); // Close assignments popup
   };
-
-  // Close popup if the user clicks outside of it
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
-        setIsAssignmentsPopupOpen(false); // Close the assignments popup
-      }
-    };
-
-    if (isAssignmentsPopupOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isAssignmentsPopupOpen]);
 
   return (
     <div>
@@ -87,13 +69,17 @@ const TrainerActions: React.FC<TrainerActionsProps> = ({ trainer, mutate}) => {
       {/* Popup for Viewing Assignments */}
       {isAssignmentsPopupOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div
-            ref={popupRef}
-            className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
-          >
-            <h2 className="text-xl font-semibold mb-4">
-              Assignments for {trainer.firstname} {trainer.lastname}
-            </h2>
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
+            {/* Back Button */}
+            <div className="flex items-center mb-4">
+              <ArrowLeftIcon
+                className="h-6 w-6 cursor-pointer"
+                onClick={handleCloseModal} // Close the assignments popup on back button click
+              />
+              <h2 className="text-xl font-semibold ml-2">
+                Assignments for {trainer.firstname} {trainer.lastname}
+              </h2>
+            </div>
             <AssignmentTable trainerId={trainer.trainer_id} />
           </div>
         </div>
@@ -102,8 +88,16 @@ const TrainerActions: React.FC<TrainerActionsProps> = ({ trainer, mutate}) => {
       {/* Modal for Editing Trainer */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="p-4 max-w-lg w-full rounded-lg">
-            <TrainerEditForm trainerData={trainer} onClose={handleCloseEditModal} mutate={mutate}/>
+          <div className="p-4 max-w-lg w-full rounded-lg bg-white">
+            {/* Back Button */}
+            <div className="flex items-center mb-4">
+              <ArrowLeftIcon
+                className="h-6 w-6 cursor-pointer"
+                onClick={handleCloseModal} // Close the edit form on back button click
+              />
+              <h2 className="text-xl font-semibold ml-2">Edit Trainer</h2>
+            </div>
+            <TrainerEditForm trainerData={trainer} onClose={handleCloseModal} mutate={mutate} />
           </div>
         </div>
       )}
@@ -111,8 +105,16 @@ const TrainerActions: React.FC<TrainerActionsProps> = ({ trainer, mutate}) => {
       {/* Modal for Assigning Trainer to a Service */}
       {isAssignOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="p-4 max-w-lg w-full rounded-lg">
-            <TrainerAssignForm trainerId={trainer.trainer_id} onClose={handleCloseEditModal} />
+          <div className="p-4 max-w-lg w-full rounded-lg bg-white">
+            {/* Back Button */}
+            <div className="flex items-center mb-4">
+              <ArrowLeftIcon
+                className="h-6 w-6 cursor-pointer"
+                onClick={handleCloseModal} // Close the assign form on back button click
+              />
+              <h2 className="text-xl font-semibold ml-2">Assign Trainer to Service</h2>
+            </div>
+            <TrainerAssignForm trainerId={trainer.trainer_id} onClose={handleCloseModal} />
           </div>
         </div>
       )}
