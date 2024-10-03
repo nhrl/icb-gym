@@ -1,4 +1,4 @@
-"use client";
+'use client'
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,6 +17,8 @@ import {
   CalendarIcon,
   Bars3BottomLeftIcon,
 } from "@heroicons/react/24/outline";
+import { useRouter } from 'next/router';
+import { deleteCookie } from 'cookies-next';
 
 export interface SideProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -37,6 +39,12 @@ const SideBar: React.FC<SideProps> = ({ className }) => {
 
   const handleButtonClick = (buttonName: string) => {
     setActiveButton(buttonName);
+  };
+
+ const signOut = () => {
+    deleteCookie('access_token');  
+    deleteCookie('user');
+    window.location.replace('/');
   };
 
   // Icon mappings for sidebar buttons
@@ -184,7 +192,7 @@ const SideBar: React.FC<SideProps> = ({ className }) => {
               </div>
             </div>
 
-            <Button variant="outline" className="gap-2 items-center flex flex-row">
+            <Button variant="outline" className="gap-2 items-center flex flex-row" onClick={signOut}>
               <ArrowRightEndOnRectangleIcon className="h-4 w-4" />
               Signout
             </Button>

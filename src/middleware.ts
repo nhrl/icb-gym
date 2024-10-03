@@ -21,7 +21,7 @@ export function middleware(req: NextRequest) {
     // Decrypt the user cookie
     const decryptedUserBytes = CryptoJS.AES.decrypt(userCookie.value, secretKey);
     const decryptedUser = JSON.parse(decryptedUserBytes.toString(CryptoJS.enc.Utf8));
-
+    
     // Decrypt the access token (optional)
     const decryptedAccessTokenBytes = CryptoJS.AES.decrypt(accessToken.value, secretKey);
     const decryptedAccessToken = decryptedAccessTokenBytes.toString(CryptoJS.enc.Utf8);

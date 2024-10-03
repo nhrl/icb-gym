@@ -173,7 +173,7 @@ export async function removePrograms(info: any) {
             }
         }
 
-        // Now delete all the program records from the database
+        // delete all the program records from the database
         const { error: deleteProgramsError } = await supabase
             .from('program')
             .delete()

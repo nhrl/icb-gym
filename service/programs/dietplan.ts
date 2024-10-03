@@ -8,15 +8,15 @@ export async function addDietPlan(data:any) {
     try {
 
         const name = data.get('name') as string
-        const description = data.get('description') as string
+        const description = data.get('desc') as string
         const fitness_goal = data.get('fitness_goal') as string
-        const file = data.get('image') as File
+        const file = data.get('photo') as File
 
         //upload image
         const imageUrl = await uploadImage(file,folder);
 
         //Insert diet plan data to the database
-        const {error: programError} = await supabase
+        const {data: dietplanInfo , error: programError} = await supabase
         .from('dietplan')
         .insert([
             {
@@ -26,6 +26,8 @@ export async function addDietPlan(data:any) {
                 dietplan_img: imageUrl
             }
         ])
+        .select()
+        .single()
 
         if(programError) {
             return {
@@ -34,7 +36,7 @@ export async function addDietPlan(data:any) {
                 error: programError.message
             }
         }
-        return{success: true, message: "New Diet plan added Successfully"};
+        return{success: true, message: "New Diet plan added Successfully", data: dietplanInfo};
     } catch (error:any) {
         return { success: false, message: "An error occurred. Please try again.", error: error.message };
     }
@@ -63,8 +65,8 @@ export async function updateDietPlan(data:any) {
         const name = data.get('name') as string
         const description = data.get('description') as string
         const fitness_goal = data.get('fitness_goal') as string
-        const file = data.get('image') as File
-        const id = Number(data.get('id'));
+        const file = data.get('photo') as File
+        const id = Number(data.get('program_id'));
         
         //fetch dietplan to be updated
         const {data: dietplan, error: fetchError} = await supabase
@@ -127,52 +129,62 @@ export async function updateDietPlan(data:any) {
     }
 }
 
-export async function removeDietPlan(id:number) {
+export async function removeDietPlan(info: any) {
     try {
         //get dietplan data
-        const {data, error: fetchError} = await supabase
-        .from('dietplan')
-        .select('dietplan_img')
-        .eq('dietplan_id',id)
+        const { ids } = info; // ids should be an array of program IDs
+        // Fetch program data for each ID to get the image paths
+        const { data, error: fetchError } = await supabase
+            .from('dietplan')
+            .select('dietplan_id, dietplan_img')
+            .in('dietplan_id', ids); // Use 'in' to get programs matching the provided ids
 
-        if(fetchError) {
+        if (fetchError) {
             return {
                 success: false,
                 message: 'Failed to fetch program data.',
                 error: fetchError.message
-            }
+            };
         }
 
-         //Delete image from storage
-         let fileName: string;
-         if (data && data.length > 0) {
-             const path = data[0].dietplan_img;
-             fileName = getFilePathFromUrl(path);
-             // Remove the image from storage
-             const imageRemovalResult = await removeImage(fileName);
-             if (!imageRemovalResult.success) {
-                 return {
-                     success: false,
-                     message: "Error removing image from the storage",
-                 }
-             }
-         } else {
-             return { 
-                 message: "No program found with the given ID" 
-             };
-         }
- 
-        const {error} = await supabase
-        .from('dietplan')
-        .delete()
-        .eq('dietplan_id',id)
-
-        if(error) {
+        if (!data || data.length === 0) {
             return {
                 success: false,
-                message: 'Failed to remove diet plan.'
+                message: "No dietplan found with the given IDs"
+            };
+        }
+         // Loop through each program and delete associated images
+         for (const dietplan of data) {
+            const path = dietplan.dietplan_img; // Get the image path
+            if (path && path.trim() !== "") {
+                // Only proceed if program_img is not empty or null
+                const fileName = getFilePathFromUrl(path); // Extract the file name from the URL
+                // Remove the image from storage
+                const imageRemovalResult = await removeImage(fileName);
+                if (!imageRemovalResult.success) {
+                    return {
+                        success: false,
+                        message: `Error removing image ${fileName} from storage`
+                    };
+                }
+            } else {
+                console.log(`No image found for program with ID: ${dietplan.dietplan_id}, skipping...`);
             }
-        } 
+        }
+        
+         // delete all the program records from the database
+         const { error: deleteProgramsError } = await supabase
+         .from('dietplan')
+         .delete()
+         .in('dietplan_id', ids); // Delete all programs with the provided ids
+
+        if (deleteProgramsError) {
+            return {
+                success: false,
+                message: 'Error deleting the program data',
+                error: deleteProgramsError.message
+            };
+        }
         return {success: true, message: 'Diet plan remove successfully'}
     } catch (error:any) {
         return { success: false, message: "An error occurred. Please try again.", error: error.message };

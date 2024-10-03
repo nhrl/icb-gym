@@ -115,11 +115,13 @@ export async function getManagerInfo(id : any) {
 export async function updateManagerInfo(data: FormData) {
     try {
         // Extract data
-        const firstname = data.get('firstname') as string;
-        const lastname = data.get('lastname') as string;
+        const firstname = data.get('firstName') as string;
+        const lastname = data.get('lastName') as string;
         const email = data.get('email') as string;
+        const username = data.get('username') as string;
+        const gender = data.get('gender') as string;
         const id = Number(data.get('id')); 
-        const image = data.get('image') as File | null;
+        const image = data.get('photo') as File | null;
 
         // Get manager information
         const { data: managerInfo, error: managerError } = await supabase
@@ -176,6 +178,8 @@ export async function updateManagerInfo(data: FormData) {
             firstname,
             lastname,
             email,
+            username,
+            gender,
             profile_img: imageUrl,
         };
 
@@ -188,6 +192,15 @@ export async function updateManagerInfo(data: FormData) {
         if (updateError) {
             return { success: false, message: 'Failed to update manager info.', error: updateError.message };
         }
+
+        const { error: authError } = await supabase.auth.updateUser({
+            email: email, // The new password
+          });
+      
+          if (authError) {
+            console.error('Error updating password in Supabase Authentication:', authError);
+            return { success: false, message: 'Failed to update password in Supabase Authentication' };
+          }
 
         return { success: true, message: 'Manager info updated successfully.' };
     } catch (error: any) {
