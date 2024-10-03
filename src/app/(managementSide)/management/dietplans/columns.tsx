@@ -20,7 +20,7 @@ import DietplanActions from "./actions"; // Adjust the import path
 
 // Define the shape of your data
 export type Dietplans = {
-  id: number;
+  dietplan_id: number;
   name: string;
   description: string;
   fitness_goal: "Weight Loss" | "Muscle Gain" | "General Health" | "Endurance";
@@ -115,6 +115,8 @@ export const columns: ColumnDef<Dietplans>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <DietplanActions dietplan={row.original} mealsData={mealsData} />,
+    cell: ({ row }) => <DietplanActions dietplan={row.original} mealsData={mealsData} mutate={function (): void {
+      throw new Error("Function not implemented.");
+    } } />,
   },
 ];

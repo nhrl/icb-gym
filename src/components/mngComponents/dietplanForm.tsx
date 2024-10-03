@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import React from "react";
 import * as zod from "zod";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -34,6 +34,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { mutate } from "swr";
 
 // Define the form schema including photo
 const dietplanSchema = zod.object({
@@ -56,7 +57,6 @@ const fitnessGoals = [
 
 // Meal form schema
 const mealSchema = zod.object({
-  mealid: zod.string(),
   meal: zod.string().min(1, "Meal name is required").max(50, "Meal name must be less than 50 characters"),
   food: zod.string().min(1, "Food is required").max(100, "Food must be less than 100 characters"),
   food_desc: zod.string().min(1, "Food description is required"),
@@ -66,17 +66,19 @@ const mealSchema = zod.object({
   carbs: zod.number().min(0, "Carbs are required"),
   fats: zod.number().min(0, "Fats are required"),
   calories: zod.number().min(0, "Calories are required"),
+  photo: zod.instanceof(File).optional()
 });
 
 interface DietplanFormProps {
   onClose: () => void; // Close modal function
+  mutate:() => void;
 }
 
 export default function DietplanForm({ onClose }: DietplanFormProps) {
   const [step, setStep] = useState(1); // Step to track which form to show
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null); // Store the selected photo
   const [formKey, setFormKey] = useState(Date.now()); // Unique key for each step
-
+  const [dietplanId, setDietPlanId] = useState<number | null>(null);
   const { toast } = useToast(); // Use the toast hook from shadcn
 
   const dietplanForm = useForm<zod.infer<typeof dietplanSchema>>({
@@ -97,7 +99,6 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
     defaultValues: {
       meals: [
         {
-          mealid: "",
           meal: "",
           food: "",
           food_desc: "",
@@ -117,27 +118,97 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
     name: "meals",
   });
 
-  const handleDietplanSubmit = (data: zod.infer<typeof dietplanSchema>) => {
-    console.log(data); // Handle dietplan data here
+  const api = process.env.NEXT_PUBLIC_API_URL;
+
+  const handleDietplanSubmit = async (data: zod.infer<typeof dietplanSchema>) => {
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('desc', data.desc);
+    formData.append('fitness_goal', data.fitness_goal);
     if (selectedPhoto) {
       console.log("Uploaded Photo:", selectedPhoto); // Handle photo upload
+      formData.append('photo', selectedPhoto);
     }
-    toast({
-      title: "Diet plan saved!",
-      description: "Your diet plan details have been saved successfully.",
-      duration: 3000,
-    });
-    setStep(2); // Move to the next form step
+
+    const response = await fetch(`${api}/api/manager/plans/diet`, {
+      method: 'POST',
+      body:formData
+    })
+    
+    const message = await response.json();
+    if(message.success) {
+      toast({
+        title: "Diet plan saved!",
+        description: "Your diet plan details have been saved successfully.",
+        duration: 3000,
+      });
+      const data = message.data;
+      setDietPlanId(data.dietplan_id);
+      mutate(`${api}/api/manager/plans/diet`);
+      setStep(2); // Move to the next form step
+    } else {
+      //error message here
+    }
   };
 
-  const handleMealSubmit = (data: { meals: zod.infer<typeof mealSchema>[] }) => {
-    console.log(data); // Handle meal data here
-    toast({
-      title: "Meals submitted!",
-      description: "Your meals have been submitted successfully.",
-      duration: 3000,
-    });
+  const handleMealSubmit = async (data: { meals: zod.infer<typeof mealSchema>[] }) => {
+    const formData = new FormData();
+  
+    // Append each meal to the FormData object
+    if(dietplanId) {
+      data.meals.forEach((meal, index) => {
+      formData.append(`meals[${index}][meal]`, meal.meal);
+      formData.append(`meals[${index}][food]`, meal.food);
+      formData.append(`meals[${index}][food_desc]`, meal.food_desc);
+      formData.append(`meals[${index}][recipe]`, meal.recipe);
+      formData.append(`meals[${index}][food_prep]`, meal.food_prep);
+      formData.append(`meals[${index}][protein]`, meal.protein.toString());
+      formData.append(`meals[${index}][carbs]`, meal.carbs.toString());
+      formData.append(`meals[${index}][fats]`, meal.fats.toString());
+      formData.append(`meals[${index}][calories]`, meal.calories.toString());
+      formData.append(`meals[${index}][dietplan_id]`, dietplanId.toString()); // Add dietplan id
+      // Optionally append image if needed (not shown in your schema, but similar to exercises)
+      if (meal.photo) {
+        formData.append(`meals[${index}][photo]`, meal.photo); // Assuming a `photo` field is present in meal
+      }
+      });
+    }
+    
+    try {
+      const response = await fetch(`${api}/api/manager/plans/diet/meal`, {
+        method: 'POST',
+        body: formData, // Send as FormData
+      });
+  
+      const message = await response.json();
+  
+      if (message.success) {
+        toast({
+          title: "Meals submitted!",
+          description: "Your meals have been submitted successfully.",
+          duration: 3000,
+        });
+        onClose(); // Close modal after success
+      } else {
+        console.error("Failed to submit meals", message.error);
+        toast({
+          title: "Error",
+          description: "Failed to submit meals. Please try again.",
+          duration: 3000,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("An error occurred while submitting meals", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while submitting meals. Please try again.",
+        duration: 3000,
+        variant: "destructive",
+      });
+    }
   };
+  
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
@@ -146,6 +217,12 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
       dietplanForm.setValue("photo", file); // Set the file in the form data
     }
   };
+
+  useEffect(() => {
+    if (dietplanId !== null) {
+      console.log("Dietplan ID is set to:", dietplanId); // Log the updated programId
+    }
+  }, [dietplanId]);
 
   const metadata = {
     title: step === 1 ? "Add New Dietplan" : "Add Meals",
@@ -320,7 +397,21 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
                       </FormItem>
                     )}
                   />
-                  
+                    {/* Meal Name */}
+                    <FormField
+                    control={mealForm.control}
+                    name={`meals.${index}.food_desc`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Input {...field} type="text" className="border p-2 w-full rounded" />
+                        </FormControl>
+                        <FormMessage>{mealForm.formState.errors.meals?.[index]?.meal?.message}</FormMessage>
+                      </FormItem>
+                    )}
+                  />
+
                   {/* Recipe */}
                   <FormField
                     control={mealForm.control}
@@ -373,7 +464,7 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
                         <FormItem className="flex-1">
                           <FormLabel>Protein (g)</FormLabel>
                           <FormControl>
-                            <Input {...field} type="number" className="border p-2 w-full rounded" />
+                            <Input {...field} type="number" className="border p-2 w-full rounded" onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
                           </FormControl>
                           <FormMessage>{mealForm.formState.errors.meals?.[index]?.protein?.message}</FormMessage>
                         </FormItem>
@@ -386,7 +477,7 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
                         <FormItem className="flex-1">
                           <FormLabel>Carbs (g)</FormLabel>
                           <FormControl>
-                            <Input {...field} type="number" className="border p-2 w-full rounded" />
+                            <Input {...field} type="number" className="border p-2 w-full rounded" onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
                           </FormControl>
                           <FormMessage>{mealForm.formState.errors.meals?.[index]?.carbs?.message}</FormMessage>
                         </FormItem>
@@ -401,7 +492,7 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
                         <FormItem className="flex-1">
                           <FormLabel>Fats (g)</FormLabel>
                           <FormControl>
-                            <Input {...field} type="number" className="border p-2 w-full rounded" />
+                            <Input {...field} type="number" className="border p-2 w-full rounded" onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
                           </FormControl>
                           <FormMessage>{mealForm.formState.errors.meals?.[index]?.fats?.message}</FormMessage>
                         </FormItem>
@@ -414,7 +505,7 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
                         <FormItem className="flex-1">
                           <FormLabel>Calories (kcal)</FormLabel>
                           <FormControl>
-                            <Input {...field} type="number" className="border p-2 w-full rounded" />
+                            <Input {...field} type="number" className="border p-2 w-full rounded" onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
                           </FormControl>
                           <FormMessage>{mealForm.formState.errors.meals?.[index]?.calories?.message}</FormMessage>
                         </FormItem>
@@ -431,7 +522,6 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
               variant="outline"
               className="mt-2"
               onClick={() => append({
-                mealid: "",
                 meal: "",
                 food: "",
                 food_desc: "",

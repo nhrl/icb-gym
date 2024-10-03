@@ -32,8 +32,7 @@ export async function PUT(req :Request) {
 export async function DELETE(req :Request) {
     try {
         const data = await req.json();
-        const {id} = data;
-        const message = await removeDietPlan(id);
+        const message = await removeDietPlan(data);
         return Response.json(message);
     } catch (error) {
         return Response.json({ error: "Error processing request" }, { status: 500 });

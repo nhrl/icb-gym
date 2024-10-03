@@ -4,56 +4,67 @@ import supabase from "../../database/db";
 // For image folder directory
 const folder = `dietplan/meals`;
 
-export async function addMeal(data: any) {
+export async function addMeal(meals: any[]) {
     try {
-        // extract meal data
-        const dietplan_id = Number(data.get('dietplan_id'));
-        const meal = data.get('meal') as string;
-        const food = data.get('food') as string;
-        const food_desc = data.get('food_desc') as string;
-        const recipe = data.get('recipe') as string;
-        const food_prep = data.get('food_prep') as string;
-        const protein = Number(data.get('protein'));
-        const carbohydrates = Number(data.get('carbohydrates'));
-        const fats = Number(data.get('fats'));
-        const calories = Number(data.get('calories'));
-        const image = data.get('image') as File;
+        const mealDataArray = [];
 
-        //upload meal image
-        const imageUrl = await uploadImage(image,folder);
-        
-        //store data to the database
-        const {error} = await supabase
-        .from('meal')
-        .insert([
-            {
-                dietplan_id: dietplan_id,
-                meal: meal,
-                food: food,
-                food_desc: food_desc,
-                recipe: recipe,
-                food_prep: food_prep,
-                protein: protein,
-                carbohydrates: carbohydrates,
-                fats: fats,
-                calories: calories,
-                meal_img: imageUrl
-            }
-        ])
+        // Loop through each meal and process the data
+        for (const meal of meals) {
+        const dietplan_id = Number(meal.dietplan_id);
+        const mealName = meal.meal as string;
+        const food = meal.food as string;
+        const food_desc = meal.food_desc as string;
+        const recipe = meal.recipe as string;
+        const food_prep = meal.food_prep as string;
+        const protein = Number(meal.protein);
+        const carbohydrates = Number(meal.carbs);
+        const fats = Number(meal.fats);
+        const calories = Number(meal.calories);
+        const image = meal.photo as File; // Handle image if provided
 
-        if(error) {
+        // If an image is provided, upload it
+        let imageUrl = null;
+        if (image) {
+            imageUrl = await uploadImage(image, folder); // Assuming folder is defined elsewhere
+        }
+
+        // Push meal data into the array for batch insertion
+        mealDataArray.push({
+            dietplan_id: dietplan_id,
+            meal: mealName,
+            food: food,
+            food_desc: food_desc,
+            recipe: recipe,
+            food_prep: food_prep,
+            protein: protein,
+            carbohydrates: carbohydrates,
+            fats: fats,
+            calories: calories,
+            meal_img: imageUrl || null, // Use uploaded image URL or set null if no image
+        });
+        }
+
+        // Insert all meal data into the 'meal' table in a single operation
+        const { error } = await supabase.from('meal').insert(mealDataArray);
+
+        if (error) {
             return {
                 success: false,
-                message: "Failed to add meal. Please try again.",
-                error: error.message
+                message: "Failed to add meals. Please try again.",
+                error: error.message,
             };
         }
-        return { success: true, message: "New meal added successfully"};
-    } catch (error:any) {
-        return { success: false, message: "An error occurred. Please try again.", error: error.message };
+
+        return { success: true, message: "New meals added successfully" };
+    } catch (error: any) {
+        return {
+            success: false,
+            message: "An error occurred. Please try again.",
+            error: error.message,
+        };
     }
 }
-
+  
 export async function getMeal(id: any) {
     try {
         const {data, error} = await supabase
@@ -71,7 +82,7 @@ export async function getMeal(id: any) {
         return {
             success: true,
             message: "Meals retrieved successfully",
-            trainers: data
+            data: data
         };
     } catch (error:any) {
         return { success: false, message: "An error occurred. Please try again.", error: error.message };

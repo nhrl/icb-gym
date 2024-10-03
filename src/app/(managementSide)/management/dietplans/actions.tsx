@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { ArrowLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import useSWR from 'swr';  // SWR for client-side data fetching
+
 
 // Define the Meals type
 type Meals = {
@@ -43,16 +45,27 @@ type Meals = {
 type DietplanActionsProps = {
   dietplan: any;
   mealsData: Meals[];
+  mutate:() => void;
 };
 
-const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mealsData }) => {
+const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mealsData, mutate}) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isMealsPopupOpen, setIsMealsPopupOpen] = useState(false);
   const [selectedMeals, setSelectedMeals] = useState<Meals[]>([]);
+  const popupRef = useRef<HTMLDivElement>(null); // Ref for detecting clicks outside the popup
+  // Use SWR hook at the top level of the component
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  const fetcher = (url: string) => fetch(url).then((res) => res.json());
+  
+  const { data, error, isLoading } = useSWR(
+    isMealsPopupOpen ? `${api}/api/manager/plans/diet/meal?id=${dietplan.dietplan_id}` : null, 
+    fetcher,
+    { revalidateOnFocus: true }
+  );
+
+  const selectedDietPlan = data?.data || [];
 
   const handleOpenMealsPopup = () => {
-    const mealsForDietplan = mealsData.filter((meal) => meal.dietplan_id === dietplan.id);
-    setSelectedMeals(mealsForDietplan);
     setIsMealsPopupOpen(true);
   };
 
@@ -68,6 +81,23 @@ const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mealsData }
     setIsEditOpen(false);
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+        setIsMealsPopupOpen(false);
+      }
+    };
+
+    if (isMealsPopupOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isMealsPopupOpen]);
   return (
     <div>
       <DropdownMenu>
@@ -79,7 +109,7 @@ const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mealsData }
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => navigator.clipboard.writeText(dietplan.id.toString())}>
+          <DropdownMenuItem onClick={() => navigator.clipboard.writeText(dietplan.dietplan_id.toString())}>
             Copy Dietplan ID
           </DropdownMenuItem>
           <DropdownMenuSeparator />
@@ -100,9 +130,9 @@ const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mealsData }
               />
               <h2 className="text-xl font-semibold ml-2">Meals for {dietplan.name}</h2>
             </div>
-            {selectedMeals.length > 0 ? (
+            {selectedDietPlan.length > 0 ? (
               <div className="flex flex-col gap-4">
-                {selectedMeals.map((meal) => (
+                {selectedDietPlan.map((meal: Meals) => (
                   <Card key={meal.mealid} className="bg-background border border-border rounded-md w-full sm:w-auto flex-1 mb-4">
                     <CardHeader>
                       <div className="flex flex-row justify-between items-center">
@@ -113,9 +143,6 @@ const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mealsData }
                         {/* Delete Button */}
                         <div>
                           <AlertDialog>
-                            <AlertDialogTrigger className="border border-border p-2 rounded-sm hover:bg-muted">
-                              <TrashIcon className="h-4 w-4 text-destructive/80" />
-                            </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Are you sure you want to delete this?</AlertDialogTitle>
@@ -142,6 +169,14 @@ const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mealsData }
                       <div className="mb-2 flex flex-row gap-2 items-center">
                         <span>Description</span>
                         <Badge variant="outline">{meal.food_desc}</Badge>
+                      </div>
+                      <div className="mb-2 flex flex-row gap-2 items-center">
+                        <span>Recipe</span>
+                        <Badge variant="outline">{meal.recipe}</Badge>
+                      </div>
+                      <div className="mb-2 flex flex-row gap-2 items-center">
+                        <span>Preparation</span>
+                        <Badge variant="outline">{meal.food_prep}</Badge>
                       </div>
                       <div className="mb-2 flex flex-row gap-2 items-center">
                         <span>Protein</span>
@@ -187,7 +222,9 @@ const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mealsData }
               />
               <h2 className="text-xl font-semibold ml-2">Edit Dietplan</h2>
             </div>
-            <DietplanEditForm dietplanData={dietplan} onClose={handleCloseEditModal} />
+            <DietplanEditForm dietplanData={dietplan} onClose={handleCloseEditModal} mutate={function (): void {
+              throw new Error("Function not implemented.");
+            } } />
           </div>
         </div>
       )}
