@@ -27,6 +27,8 @@ import { ArrowUpLeftIcon, BoltIcon } from "@heroicons/react/24/outline"; // Impo
 import Image from "next/image";
 import logo from "@/assets/logos/logodark.png";
 import { ToastProvider } from "@radix-ui/react-toast";
+import { useToast } from '@/hooks/use-toast'; // Import useToast
+import { Toaster } from "@/components/ui/toaster";
 
 // Define the form schema with password confirmation
 const formSchema = zod.object({
@@ -52,6 +54,8 @@ const genders = [
 
 export default function ManagementRegisterForm() {
   const [showToast, setShowToast] = useState(false); // State to show the toast
+  const { toast } = useToast(); // Use the toast hook
+  const [message, setMessage] = useState('');
 
   // Set up form validation and state
   const form = useForm<zod.infer<typeof formSchema>>({
@@ -77,13 +81,17 @@ export default function ManagementRegisterForm() {
       body: JSON.stringify(data), // Convert the form data to JSON
     });
     const result = await response.json();
+    setMessage(result.message);
     if(result.success) {
       console.log(result.message);
       // Show the toast after successful registration
       setShowToast(true);
       // Hide the toast after a few seconds
-      //setTimeout(() => setShowToast(false), 3000);
+      setTimeout(() => setShowToast(false), 3000);
       window.location.href = '/';
+    } else {
+      console.log(result.message);
+      setTimeout(() => setShowToast(false), 3000);
     }
   };
 
@@ -294,13 +302,16 @@ export default function ManagementRegisterForm() {
 
           {/* Toast Notification */}
           {showToast && (
-            <ToastProvider>
-              <Toast>
-                <div className="flex items-center">
-                  <p className="text-sm">Registration successful!</p>
-                </div>
-              </Toast>
+            <>
+              <ToastProvider>
+                <Toast>
+                  <div className="flex items-center">
+                    <p className="text-sm">{message}</p>
+                  </div>
+                </Toast>
             </ToastProvider>
+            <Toaster />
+            </>
           )}
         </div>
       </div>

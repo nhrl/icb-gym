@@ -1,4 +1,5 @@
 import supabase from "../../../database/db";
+import supabaseAdmin from "../../../database/dbAdmin";
 import { encryptPassword } from "../../encryption/hash";
 import { uploadImage,getFilePathFromUrl,removeImage} from "@service/imageUpload/imageUploader";
 
@@ -10,19 +11,16 @@ export async function registerManager(info:any) {
     try {
         //Extract manager data
         const { firstname, lastname, gender, email, username, password } = info;
-        const profile_img = (gender === 'M' || gender === 'Male') ? MALE_IMG_URL : FEMALE_IMG_URL;
+        const profile_img = (gender === 'male' || gender === 'female') ? MALE_IMG_URL : FEMALE_IMG_URL;
         const newPass = await encryptPassword(password);
         
         const display_name = `${firstname} ${lastname}`;
         const role = "manager"; // Default role for customers
         //Check email duplication
-        const { data: existingTrainer } = await supabase
-        .from('manager')
-        .select('email')
-        .eq('email', email)
-        .single();
+        
+        const valid = await checkEmail(email);
 
-        if (existingTrainer) {
+        if (!valid) {
             return {
                 success: false,
                 message: "This email address is already in use. Please use a different email.",
@@ -56,7 +54,7 @@ export async function registerManager(info:any) {
 
         const managerId = managerInfo.manager_id;
         // Register customer in Supabase Auth with display_name, role, and customer_id
-        const { data, error: authError } = await supabase.auth.signUp({
+        const { data, error: authError } = await supabaseAdmin.auth.signUp({
             email,
             password,
             options: {
@@ -69,17 +67,32 @@ export async function registerManager(info:any) {
         });
 
         if (authError) {
+            console.error('Failed to register manager in Supabase Auth:', authError.message);
             return {
-                success: false,
-                message: "Failed to register customer in authentication system.",
-                error: authError.message,
+              success: false,
+              message: "Failed to register manager in the authentication system.",
+              error: authError.message,
             };
         }
-
+        
         const { user } = data;
+
+        const { error: updateError } = await supabase
+        .from('manager')
+        .update({ uuid: user?.id }) // Add user_id to the manager table
+        .eq('manager_id', managerId); // Match with manager_id
+
+        if (updateError) {
+            return {
+              success: false,
+              message: 'Failed to update manager with UUID.',
+              error: updateError.message,
+            };
+        }
+        
         return {
             success: true,
-            message: "Customer registered successfully.",
+            message: "Manager registered successfully.",
             user_id: user?.id,
             manager_id: managerId,
         };
@@ -126,7 +139,7 @@ export async function updateManagerInfo(data: FormData) {
         // Get manager information
         const { data: managerInfo, error: managerError } = await supabase
             .from('manager')
-            .select('profile_img') 
+            .select('profile_img, uuid') 
             .eq('manager_id', id)
             .single();
 
@@ -135,18 +148,15 @@ export async function updateManagerInfo(data: FormData) {
         }
 
         // Check for email duplication
-        const { data: emailExists, error: emailError } = await supabase
-            .from('manager')
-            .select('email')
-            .eq('email', email)
-            .neq('manager_id', id)
-            .single();
+        const valid = await checkEmail(email);
 
-        if (emailExists) {
+        if (!valid) {
             return { success: false, message: 'This email address is already in use by another manager. Please use a different email.' };
         }
 
         const currentImage = managerInfo.profile_img;
+        const uuid = managerInfo.uuid;
+
         let imageUrl = currentImage;
 
         // Upload image if provided
@@ -174,6 +184,15 @@ export async function updateManagerInfo(data: FormData) {
             }
         }
 
+        const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(uuid, {
+            email
+        });
+          
+        if (authError) {
+        console.error('Error updating user in Supabase Auth:', authError);
+        return { success: false, message: 'Failed to update user in Supabase Auth', error: authError };
+        }
+
         const updatedInfo = {
             firstname,
             lastname,
@@ -191,19 +210,31 @@ export async function updateManagerInfo(data: FormData) {
 
         if (updateError) {
             return { success: false, message: 'Failed to update manager info.', error: updateError.message };
-        }
-
-        const { error: authError } = await supabase.auth.updateUser({
-            email: email, // The new password
-          });
-      
-          if (authError) {
-            console.error('Error updating password in Supabase Authentication:', authError);
-            return { success: false, message: 'Failed to update password in Supabase Authentication' };
-          }
-
+        }  
         return { success: true, message: 'Manager info updated successfully.' };
     } catch (error: any) {
         return { success: false, message: 'An unexpected error occurred.', error: error.message };
     }
+}
+
+
+async function checkEmail  (email: string) {
+    const { data: existingManager } = await supabase
+    .from('manager')
+    .select('email')
+    .eq('email', email)
+    .single();
+
+    const { data: existingCustomer } = await supabase
+    .from('customer')
+    .select('email')
+    .eq('email', email)
+    .single();
+
+    if(existingCustomer || existingManager) {
+        return false;
+    } 
+
+    return true;
+    
 }

@@ -136,7 +136,7 @@ export default function Page() {
   }, [data, form]);
   
   const handleSubmit = async (data: any) => {
-    /*const formData = new FormData();
+    const formData = new FormData();
     formData.append('firstName', data.firstName);
     formData.append('lastName', data.lastName);
     formData.append('gender', data.gender);
@@ -163,12 +163,10 @@ export default function Page() {
     } else {
       //Error message here
       console.log(message.error);
-    }*/
+    }
   };
 
   const handlePasswordSubmit = async (data: any) => {
-    /*const session = getCookie('access_token');
-    console.log(session);
     const requestData = {
       currentPassword: data.currentPassword, // Data from form input (current password)
       newPassword: data.newPassword, // Data from form input (new password)
@@ -190,7 +188,7 @@ export default function Page() {
     } else {
       //display error message here
       console.log(message.message);
-    }*/
+    }
   };
 
 

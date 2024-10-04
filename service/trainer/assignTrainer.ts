@@ -79,12 +79,11 @@ export async function updateAssign(data:any) {
 
 export async function removeAssign(data:any) {
     try {
-        const {id} = data;
-        //remove data
+        const {assign_id} = data;
         const {error} = await supabase
         .from('assign_trainer')
         .delete()
-        .eq('assign_id',id);
+        .eq('assign_id',assign_id);
 
         if(error) {
             return {

@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
-
+import { useCallback } from "react";
 
 import { TrashIcon } from "@heroicons/react/24/outline";
 import {
@@ -70,25 +70,25 @@ const AssignmentTable = ({ trainerId }: { trainerId: number }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch assignments from the API based on trainer ID
-  useEffect(() => {
-    const fetchAssignments = async () => {
-      try {
-        const response = await fetch(`${api}/api/manager/trainer/assign?id=${trainerId}`); // Fetch from your API
-        if (!response.ok) {
-          throw new Error('Failed to fetch assignments');
-        }
-        const data = await response.json();
-        setAssignments(data.data); // Assuming data is an array of assignments
-        setIsLoading(false);
-      } catch (err:any) {
-        setError(err.message);
-        setIsLoading(false);
+  const fetchAssignments = useCallback(async () => {
+    try {
+      const response = await fetch(`${api}/api/manager/trainer/assign?id=${trainerId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch assignments');
       }
-    };
-
+      const data = await response.json();
+      setAssignments(data.data); // Assuming data is an array of assignments
+      setIsLoading(false);
+    } catch (err: any) {
+      setError(err.message);
+      setIsLoading(false);
+    }
+  }, [trainerId]); // Trainer ID is the dependency
+  
+  // Now the effect will only re-run when `trainerId` changes
+  useEffect(() => {
     fetchAssignments();
-  }, [trainerId]);
+  }, [fetchAssignments]);
 
   if (isLoading) return <p>Loading assignments...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -110,6 +110,23 @@ const AssignmentTable = ({ trainerId }: { trainerId: number }) => {
 
 const deleteAssign = async (assign_id: number) => {
   console.log('Assignment ID to delete:', assign_id); // Test this log
+
+  const response = await fetch(`${api}/api/manager/trainer/assign`, { // Replace with your API endpoint
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json', // Sending data as JSON
+    },
+    body: JSON.stringify({ assign_id }), // Convert the form data to JSON
+  });
+
+  const message = await response.json();
+  if(message.success) {
+    console.log(message.message);
+    fetchAssignments();
+  } else {
+    console.log(message.message);
+    console.log(message.error);
+  }
 };
 
   return (

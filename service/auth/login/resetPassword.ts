@@ -1,38 +1,42 @@
 import supabase from "../../../database/db";
+import supabaseAdmin from "../../../database/dbAdmin";
 import { verifyPassword, encryptPassword } from '@service/encryption/hash'; // Assuming you have these functions
 
 export async function resetPassword(data: any) {
-  const { newPassword, currentPassword, hashPassword, id, session } = data;
+  const { newPassword, currentPassword, hashPassword, id} = data;
   const match = await verifyPassword(currentPassword, hashPassword);
 
   if (match) {
-    const newHashedPassword = await encryptPassword(newPassword);
-    const { error: dbError } = await supabase
-      .from('manager') 
-      .update({ password: newHashedPassword }) 
-      .eq('manager_id', id); 
+    const {data, error} = await supabase
+    .from('manager')
+    .select('uuid')
+    .eq('manager_id', id)
+    .single()
 
-    if (dbError) {
-      console.error('Error updating password in the database:', dbError);
-      return { success: false, message: 'Failed to update password in the database' };
+    if(error) {
+      return {success: false, message:'Error fetching the manager data'}
     }
 
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-    
-    if (sessionError || !sessionData?.session) {
-      console.error('Error retrieving session:', sessionError);
-      return { success: false, message: 'Authentication session is missing or invalid' };
-    }
-
-    const { error: authError } = await supabase.auth.updateUser({
-      password: newPassword,
+    const uuid = data?.uuid;
+    const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(uuid, {
+      password: newPassword
     });
 
     if (authError) {
-      console.error('Error updating password in Supabase Authentication:', authError);
-      return { success: false, message: 'Failed to update password in Supabase Authentication' };
+      return { success: false, message: 'Failed to update user in Supabase Auth', error: authError };
     }
-    return { success: true, message: 'Password successfully updated' };
+
+    const newPass = await encryptPassword(newPassword);
+  
+    const{error: updateError} = await supabase
+    .from('manager')
+    .update({password: newPass})
+    .eq('manager_id', id)
+
+    if(updateError) {
+      return {success: false, message: 'Error encounter while updating your password', error: updateError}
+    }
+    return {success: true, message: 'Password updates successfully'}
   } else {
     console.log('Current password is incorrect');
     return { success: false, message: 'Current password is incorrect' };
