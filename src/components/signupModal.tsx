@@ -79,7 +79,7 @@ export default function SignupModal() {
       });
 
       const result = await response.json();
-      if (response.ok) {
+      if (result.success) {
         toast({
           title: "Signup successful!",
           description: "Your account has been created.",

@@ -1,4 +1,5 @@
 import supabase from "../../../database/db";
+import supabaseAdmin from "../../../database/dbAdmin";
 import { encryptPassword } from "../../encryption/hash";
 import { getFilePathFromUrl, uploadImage, removeImage } from "@service/imageUpload/imageUploader";
 
@@ -21,13 +22,9 @@ export async function registerCustomer(info: any) {
         const role = "customer"; // Default role for customers
 
         // Check email duplication
-        const { data: existingCustomer } = await supabase
-            .from('customer')
-            .select('email')
-            .eq('email', email)
-            .single();
-
-        if (existingCustomer) {
+       const valid = await checkEmail(email);
+    
+        if (!valid) {
             return {
                 success: false,
                 message: "This email address is already in use. Please use a different email.",
@@ -63,7 +60,7 @@ export async function registerCustomer(info: any) {
         const customerId = insertedData.customer_id;
 
         // Register customer in Supabase Auth with display_name, role, and customer_id
-        const { data, error: authError } = await supabase.auth.signUp({
+        const { data, error: authError } = await supabaseAdmin.auth.signUp({
             email,
             password,
             options: {
@@ -84,6 +81,20 @@ export async function registerCustomer(info: any) {
         }
 
         const { user } = data;
+        const { error: updateError } = await supabase
+
+        .from('customer')
+        .update({ uuid: user?.id }) // Add user_id to the manager table
+        .eq('customer_id', customerId); // Match with customer_id
+
+        if (updateError) {
+            return {
+              success: false,
+              message: 'Failed to update manager with UUID.',
+              error: updateError.message,
+            };
+        }
+        
         return {
             success: true,
             message: "Customer registered successfully.",
@@ -144,16 +155,14 @@ export async function updateCustomerData(data : FormData) {
             return { success: false, message: 'Error fetching customer data.' };
         }
 
-         // Check for email duplication
-         const { data: emailExists, error: emailError } = await supabase
-         .from('customer')
-         .select('email')
-         .eq('email', email)
-         .neq('customer_id', id)
-         .single();
-
-        if (emailExists) {
-            return { success: false, message: 'This email address is already in use by another manager. Please use a different email.' };
+        // Check email duplication
+        const valid = await checkEmail(email);
+        
+        if (!valid) {
+            return {
+                success: false,
+                message: "This email address is already in use. Please use a different email.",
+            };
         }
 
         const currentImage = customerInfo.profile_img;
@@ -204,5 +213,27 @@ export async function updateCustomerData(data : FormData) {
         return { success: true, message: 'Customer info updated successfully.' };
     } catch (error:any) {
         return { success: false, message: 'An unexpected error occurred.', error: error.message };
+    }
+}
+
+
+
+async function checkEmail  (email: string) {
+    const { data: existingManager } = await supabase
+    .from('manager')
+    .select('email')
+    .eq('email', email)
+    .single();
+
+    const { data: existingCustomer } = await supabase
+    .from('customer')
+    .select('email')
+    .eq('email', email)
+    .single();
+
+    if(existingCustomer || existingManager) {
+        return false;
+    } else {
+        return true;
     }
 }
