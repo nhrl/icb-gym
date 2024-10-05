@@ -30,8 +30,6 @@ const equipmentSchema = zod.object({
 
 // Define the form schema for Maintenance
 const maintenanceSchema = zod.object({
-  maint_id: zod.string().optional(),
-  equipment_id: zod.string(),
   maintenance_date: zod.string().min(1, "Maintenance Date is required"), // Using string for simplicity
 });
 
@@ -60,8 +58,6 @@ export default function EquipmentForm({ onClose }: EquipmentFormProps) {
   const maintenanceForm = useForm<zod.infer<typeof maintenanceSchema>>({
     resolver: zodResolver(maintenanceSchema),
     defaultValues: {
-      maint_id: "",
-      equipment_id: "",
       maintenance_date: "",
     },
   });
@@ -91,8 +87,6 @@ export default function EquipmentForm({ onClose }: EquipmentFormProps) {
 
         // Reset maintenance form with equipment_id
         maintenanceForm.reset({
-          maint_id: "",
-          equipment_id: equipmentId,
           maintenance_date: "",
         });
         
@@ -113,6 +107,7 @@ export default function EquipmentForm({ onClose }: EquipmentFormProps) {
 
  // Handle Maintenance Submission
  const handleMaintenanceSubmit = async (data: zod.infer<typeof maintenanceSchema>) => {
+  console.log(data);
   try {
     const updatedData = {
       ...data,
@@ -128,7 +123,7 @@ export default function EquipmentForm({ onClose }: EquipmentFormProps) {
     });
 
     const result = await response.json();
-    if (response.ok) {
+    if (result.success) {
       toast({
         title: "Maintenance recorded!",
         description: "Your maintenance details have been saved successfully.",
@@ -140,6 +135,7 @@ export default function EquipmentForm({ onClose }: EquipmentFormProps) {
 
       onClose(); // Close the modal
     } else {
+      console.log(result.error);
       throw new Error(result.message || "Failed to save maintenance");
     }
   } catch (error: any) {
