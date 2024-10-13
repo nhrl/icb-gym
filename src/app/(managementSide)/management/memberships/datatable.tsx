@@ -1,5 +1,4 @@
 "use client";
-
 import * as React from "react";
 import { useState } from "react";
 import {
@@ -29,7 +28,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ViewColumnsIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { ViewColumnsIcon, PlusCircleIcon, TrashIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 
 import {
   Table,
@@ -47,7 +46,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { Booking } from "./columns"; // Adjust the path if necessary
+
+import { MembershipRegistration } from "./columns";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -55,25 +55,28 @@ interface DataTableProps<TData, TValue> {
   mutate: () => void;
 }
 
+
+
 export function DataTable<TData, TValue>({
   columns,
   data,
   mutate,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
+  const [isModalOpen, setIsModalOpen] = useState(false); // Single state to control modal visibility
 
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
@@ -82,85 +85,118 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
     },
-    initialState: {
-      pagination: {
-        pageSize: 3, // Set the max rows per page to 3
-      },
-    },
   });
 
   const metadata = {
-    title: "Bookings",
-    description: "Manage your bookings",
+    title: "Memberships",
+    description: "Manage your memberships",
+  };
+
+  const handleConfirm = () => {
+    console.log("Membership confirmed!");
+    mutate(); // Assuming mutate refreshes the data or triggers necessary action
   };
 
   const handleDelete = async () => {
     const api = process.env.NEXT_PUBLIC_API_URL;
     const ids = table
       .getSelectedRowModel()
-      .rows.map((row) => (row.original as Booking).booking_id);
+      .rows.map((row) => (row.original as MembershipRegistration).membership_rID); // Cast to MembershipRegistration
     try {
-      const response = await fetch(`${api}/api/manager/bookings`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids }),
+      const response = await fetch(`${api}/api/manager/memberships`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ids }), // Send the IDs to the server as JSON
       });
 
       const result = await response.json();
       if (result.success) {
-        console.log("Successfully deleted booking: ", result);
+        console.log("Successfully deleted membership: ", result);
         mutate();
       } else {
-        console.error("Failed to delete booking: ", result.message);
+        console.error("Failed to delete membership: ", result.message);
+        // Handle the error, possibly display it to the user
       }
     } catch (error) {
       console.error("An error occurred during deletion: ", error);
+      // Handle the error, possibly display it to the user
     }
   };
+  
 
   return (
-    <div className="flex flex-col gap-4 w-full h-full">
+    <div className="flex flex-col gap-4">
       <div>
-        <h1 className="font-medium text-2xl">{metadata.title} (Temporary)</h1>
-        <p className="font-normal text-sm text-muted-foreground">
-          {metadata.description}
-        </p>
+        <h1 className="font-black text-2xl">{metadata.title}</h1>
+        <p className="font-normal text-sm text-muted-foreground">{metadata.description}</p>
       </div>
 
       <div className="flex sm:flex-row flex-col items-center gap-2">
         <Input
-          placeholder="Filter bookings..."
-          value={(table.getColumn("booking_id")?.getFilterValue() as string) ?? ""}
+          placeholder="Filter memberships..."
+          value={(table.getColumn("membership_rID")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("booking_id")?.setFilterValue(event.target.value)
+            table.getColumn("membership_rID")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
-
         <div className="flex flex-wrap sm:flex-row ml-auto gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex ml-auto gap-2">
+              <Button variant="outline" className="flex ml-auto flex-row gap-2">
                 <ViewColumnsIcon className="h-4 w-4" />
                 Columns
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {table.getAllColumns()
+              {table
+                .getAllColumns()
                 .filter((column) => column.getCanHide())
-                .map((column) => (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                ))}
+                .map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Confirm Membership Button */}
+          <div className="flex flex-col gap-4">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="secondary"
+                  className="flex ml-auto flex-row gap-2"
+                >
+                  <CheckCircleIcon className="h-4 w-4" />
+                  Confirm Membership
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirm Membership?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to confirm this membership? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleConfirm}>Confirm</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+
+          {/* Delete Button */}
           <AlertDialog>
             <AlertDialogTrigger className="border border-border p-2 rounded-sm hover:bg-muted">
               <TrashIcon className="h-4 w-4" />
@@ -169,7 +205,7 @@ export function DataTable<TData, TValue>({
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure you want to delete this?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. This will permanently remove your data.
+                  This action cannot be undone. This will permanently remove your data from the database.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -181,28 +217,29 @@ export function DataTable<TData, TValue>({
         </div>
       </div>
 
-      {/* Horizontal Scrollable Table */}
-      <div className="overflow-x-auto rounded-md border">
-        <Table className="min-w-full">
+      <div className="rounded-md border">
+        <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.length ? (
+            {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="whitespace-nowrap">
+                    <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}

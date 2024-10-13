@@ -105,15 +105,7 @@ const TrainerActions: React.FC<TrainerActionsProps> = ({ trainer, mutate }) => {
       {/* Modal for Assigning Trainer to a Service */}
       {isAssignOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="p-4 max-w-lg w-full rounded-lg bg-white">
-            {/* Back Button */}
-            <div className="flex items-center mb-4">
-              <ArrowLeftIcon
-                className="h-6 w-6 cursor-pointer"
-                onClick={handleCloseModal} // Close the assign form on back button click
-              />
-              <h2 className="text-xl font-semibold ml-2">Assign Trainer to Service</h2>
-            </div>
+          <div className="p-4 max-w-lg w-full">
             <TrainerAssignForm trainerId={trainer.trainer_id} onClose={handleCloseModal} />
           </div>
         </div>
