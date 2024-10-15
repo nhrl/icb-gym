@@ -190,7 +190,6 @@ export default function SignupModal() {
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="gender"
@@ -205,7 +204,7 @@ export default function SignupModal() {
                           <SelectTrigger>
                             <SelectValue placeholder="Select a Gender" />
                           </SelectTrigger>
-                          <SelectContent className="relative z-[100]">
+                          <SelectContent className="relative z-[1]">
                             <SelectGroup>
                               <SelectLabel>Gender</SelectLabel>
                               {genders.map((gender) => (
@@ -222,7 +221,6 @@ export default function SignupModal() {
                   )}
                 />
               </div>
-
               <FormField
                 control={form.control}
                 name="password"
