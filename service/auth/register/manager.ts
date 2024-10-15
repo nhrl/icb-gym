@@ -139,7 +139,7 @@ export async function updateManagerInfo(data: FormData) {
         // Get manager information
         const { data: managerInfo, error: managerError } = await supabase
             .from('manager')
-            .select('profile_img, uuid') 
+            .select('email, profile_img, uuid') 
             .eq('manager_id', id)
             .single();
 
@@ -147,15 +147,20 @@ export async function updateManagerInfo(data: FormData) {
             return { success: false, message: 'Error fetching manager data.' };
         }
 
-        // Check for email duplication
-        const valid = await checkEmail(email);
-
-        if (!valid) {
-            return { success: false, message: 'This email address is already in use by another manager. Please use a different email.' };
-        }
-
+        const currentEmail = managerInfo.email;
         const currentImage = managerInfo.profile_img;
         const uuid = managerInfo.uuid;
+
+         // Check if the email has changed
+         if (email !== currentEmail) {
+            const emailIsValid = await checkEmail(email);
+            if (!emailIsValid) {
+                return {
+                    success: false,
+                    message: 'This email address is already in use by another user. Please use a different email.',
+                };
+            }
+        }
 
         let imageUrl = currentImage;
 

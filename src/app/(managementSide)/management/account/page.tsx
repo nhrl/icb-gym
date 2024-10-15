@@ -163,6 +163,7 @@ export default function Page() {
     } else {
       //Error message here
       console.log(message.error);
+      console.log(message.message);
     }
   };
 
