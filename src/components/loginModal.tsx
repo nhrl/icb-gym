@@ -78,7 +78,7 @@ export default function LoginModal() {
         if (user.user_metadata.role === 'manager') {
           window.location.href = '/management/account';
         } else if (user.user_metadata.role === 'customer') {
-          window.location.href = '/customer/account';
+          window.location.href = '/user-profile';
         }
       } else {
         // Display error toast notification on failure

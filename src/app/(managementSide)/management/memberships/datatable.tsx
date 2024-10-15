@@ -55,8 +55,6 @@ interface DataTableProps<TData, TValue> {
   mutate: () => void;
 }
 
-
-
 export function DataTable<TData, TValue>({
   columns,
   data,
@@ -92,19 +90,39 @@ export function DataTable<TData, TValue>({
     description: "Manage your memberships",
   };
 
-  const handleConfirm = () => {
-    console.log("Membership confirmed!");
-    mutate(); // Assuming mutate refreshes the data or triggers necessary action
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  const handleConfirm = async() => {
+    const ids = table
+    .getSelectedRowModel()
+    .rows.map((row) => (row.original as MembershipRegistration).membership_rid); 
+    try {
+      const response = await fetch(`${api}/api/manager/transaction/membership`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ids }), // Send the IDs to the server as JSON
+      })
+
+      const result = await response.json();
+      if(result.success) {
+        mutate(); // Assuming mutate refreshes the data or triggers necessary action
+      } else {
+        //error message here
+      }
+    } catch (error) {
+      console.error("An error occurred during confirmation: ", error);
+      // Handle the error, possibly display it to the user
+    }
   };
 
   const handleDelete = async () => {
-    const api = process.env.NEXT_PUBLIC_API_URL;
     const ids = table
       .getSelectedRowModel()
-      .rows.map((row) => (row.original as MembershipRegistration).membership_rID); // Cast to MembershipRegistration
+      .rows.map((row) => (row.original as MembershipRegistration).membership_rid); // Cast to MembershipRegistration
     try {
-      const response = await fetch(`${api}/api/manager/memberships`, {
-        method: 'DELETE',
+      const response = await fetch(`${api}/api/manager/transaction/cancelMembership`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },

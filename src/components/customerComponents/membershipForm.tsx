@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import * as zod from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,58 +25,108 @@ import {
 } from "@/components/ui/select";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { useToast } from "@/hooks/use-toast";
-import { Toaster } from "@/components/ui/toaster";
-
-// Define membership options and related values
-const membershipOptions = [
-  { value: "Standard", validity: "1 month", rate: "₱1500" },
-  { value: "Premium", validity: "3 months", rate: "₱3000" },
-  { value: "Elite", validity: "6 months", rate: "₱5500" },
-];
+import CryptoJS from 'crypto-js';
 
 // Zod schema for form validation
 const membershipSchema = zod.object({
-  membership_type: zod.enum(["Standard", "Premium", "Elite"], {
-    required_error: "Please select a membership type.",
-  }),
+  membership_type: zod.string().nonempty("Please select a membership type."),
   validity_period: zod.string().optional(),
-  rate: zod.string().optional(),
+  rate: zod.number().optional(),
+  membership_id: zod.number().optional(), // Add membership_id to schema
 });
 
-// MembershipForm Component
 export default function MembershipForm({
   onSubmit,
 }: {
   onSubmit: (data: any) => void;
 }) {
-  const [selectedMembership, setSelectedMembership] = useState({
-    validity: "",
-    rate: "",
-  });
+  const [membershipOptions, setMembershipOptions] = useState<any[]>([]);
+  const [selectedMembership, setSelectedMembership] = useState<any>(null);
   const [isMembershipApplied, setIsMembershipApplied] = useState(false); // Track if membership is already applied
+  const [user_id, setUserID] = useState();
   const { toast } = useToast(); // ShadCN toast hook
+
 
   const form = useForm({
     resolver: zodResolver(membershipSchema),
     defaultValues: {
       membership_type: "",
       validity_period: "",
-      rate: "",
+      rate: 0,
+      membership_id: undefined, // Default value for membership_id
     },
   });
 
+  const { reset } = form;
+
+  const fetchUserFromCookie = () => {
+    const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || 'lhS7aOXRUPGPDId6mmHJdA00p39HAfU4';
+    const cookies = document.cookie.split("; ").reduce((acc: { [key: string]: string }, cookie) => {
+      const [name, value] = cookie.split("=");
+      acc[name] = value;
+      return acc;
+    }, {});
+
+    const userCookie = cookies['user']; 
+
+    if (!userCookie) {
+      console.error("User cookie not found");
+      return null;
+    }
+
+    try {
+      const decryptedUserBytes = CryptoJS.AES.decrypt(userCookie, secretKey);
+      const decryptedUser = JSON.parse(decryptedUserBytes.toString(CryptoJS.enc.Utf8));
+      return decryptedUser.id; // Assuming user ID is part of the decrypted data
+    } catch (error) {
+      console.error("Error decrypting the user cookie", error);
+      return null;
+    }
+  }
+
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  // Fetch membership options from the API
+  useEffect(() => {
+    const fetchMemberships = async () => {
+      try {
+        const response = await fetch(`${api}/api/manager/plans/membership`);
+        const data = await response.json();
+        setMembershipOptions(data.data); // Use 'data' field from API response
+        reset({
+          membership_type: "",
+          validity_period: "",
+          rate: 0,
+          membership_id: undefined,
+        });
+        const user_id = fetchUserFromCookie();
+        setUserID(user_id);
+      } catch (error) {
+        console.error("Failed to fetch memberships", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load membership options.",
+        });
+      }
+    };
+
+    fetchMemberships();
+  }, [reset, toast, api]);
+
   const handleMembershipChange = (type: string) => {
-    const selected = membershipOptions.find((option) => option.value === type);
+    const selected = membershipOptions.find(
+      (option) => option.membership_type === type
+    );
     if (selected) {
-      setSelectedMembership({ validity: selected.validity, rate: selected.rate });
-      form.setValue("validity_period", selected.validity);
+      setSelectedMembership(selected);
+      form.setValue("validity_period", selected.validity_period);
       form.setValue("rate", selected.rate);
+      form.setValue("membership_id", selected.membership_id); // Set membership_id
     }
   };
 
-  const handleFormSubmit = (data: any) => {
+  const handleFormSubmit = async (data: any) => {
     if (isMembershipApplied) {
-      // Show error message if user tries to apply for multiple memberships
       toast({
         variant: "destructive",
         title: "Membership Already Applied",
@@ -85,14 +135,30 @@ export default function MembershipForm({
       return;
     }
 
-    // Show success message
-    toast({
-      title: "Membership Registered",
-      description: `You have successfully registered for the ${data.membership_type} membership!`,
+    const payload = {
+      user_id: user_id, 
+      membership_id: selectedMembership?.membership_id,
+    };
+    
+    const response = await fetch(`${api}/api/customer/membership`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
     });
 
+    const message = await response.json();
+    if(message.success) {
+      toast({
+        title: "Membership Registered",
+        description: `You have successfully registered for the ${data.membership_type} membership!`,
+      });
+    }else {
+      console.log(message.error);
+    }
     setIsMembershipApplied(true); // Mark the membership as applied
-    onSubmit(data); // Trigger onSubmit callback
+    onSubmit(data); // Trigger onSubmit callback with membership_id included
   };
 
   return (
@@ -120,8 +186,11 @@ export default function MembershipForm({
                       <SelectGroup>
                         <SelectLabel>Membership Types</SelectLabel>
                         {membershipOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.value}
+                          <SelectItem
+                            key={option.membership_id}
+                            value={option.membership_type}
+                          >
+                            {option.membership_type}
                           </SelectItem>
                         ))}
                       </SelectGroup>
@@ -141,7 +210,7 @@ export default function MembershipForm({
               <FormItem>
                 <FormLabel>Validity Period</FormLabel>
                 <FormControl>
-                  <Input {...field} value={selectedMembership.validity} disabled />
+                  <Input {...field} value={selectedMembership?.validity_period || ""} disabled />
                 </FormControl>
               </FormItem>
             )}
@@ -155,7 +224,7 @@ export default function MembershipForm({
               <FormItem>
                 <FormLabel>Rate</FormLabel>
                 <FormControl>
-                  <Input {...field} value={selectedMembership.rate} disabled />
+                  <Input {...field} value={selectedMembership?.rate || 0} disabled />
                 </FormControl>
               </FormItem>
             )}

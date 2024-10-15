@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ColumnDef } from "@tanstack/react-table";
 
 export type MembershipRegistration = {
-  membership_rID: number;
+  membership_rid: number;
   customer_id: number; // foreign key
   customer_name: string; // new field for displaying customer name
   membership_ID: number; // foreign key
@@ -13,6 +13,7 @@ export type MembershipRegistration = {
   status: string;
   date_start: Date;
   date_end: Date;
+  created_at: Date;
 };
 
 // Define the columns for your MembershipRegistration table
@@ -37,7 +38,7 @@ export const columns: ColumnDef<MembershipRegistration>[] = [
   {
     accessorKey: "membership_rID",
     header: "Membership ID",
-    cell: ({ row }) => <span>{row.original.membership_rID}</span>,
+    cell: ({ row }) => <span>{row.original.membership_rid}</span>,
   },
   {
     accessorKey: "customer_name", // Display customer name
@@ -69,13 +70,27 @@ export const columns: ColumnDef<MembershipRegistration>[] = [
     header: "Status",
     cell: ({ row }) => {
       const status = row.original.status as string;
-      const statusToVariantMap: { [key: string]: "success" | "destructive" } = {
-        Active: "success",
-        Expired: "destructive",
+  
+      // Map statuses to valid badge variants
+      const statusToVariantMap: { [key: string]: "success" | "destructive" | "pending" | "secondary" } = {
+        Active: "success",      // Green
+        Expired: "destructive", // Red
+        Pending: "pending",     // Default pending color
+        Canceled: "secondary",  // Gray
       };
-      const variant = statusToVariantMap[status] || "secondary";
-      const dotColor = variant === "success" ? "bg-green-500" : "bg-background";
-
+  
+      const variant = statusToVariantMap[status] || "secondary"; // Default to 'secondary'
+  
+      // Map statuses to specific dot colors
+      const dotColorMap: { [key: string]: string } = {
+        Active: "bg-green-500",
+        Expired: "bg-red-500",
+        Pending: "bg-yellow-500",
+        Canceled: "bg-gray-500",
+      };
+  
+      const dotColor = dotColorMap[status] || "bg-background"; // Default to background
+  
       return (
         <Badge className="rounded-full w-fit flex items-center gap-2" variant={variant}>
           <span className={`w-1 h-1 rounded-full ${dotColor}`}></span>

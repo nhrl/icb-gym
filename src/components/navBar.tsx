@@ -9,7 +9,6 @@ import logo from "../assets/logos/logodark.png";
 import SignupModal from "./signupModal";
 import LoginModal from "./loginModal";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,50 +16,88 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-// Mock user data (replace with actual authentication logic in production)
-const mockUser = {
-  isLoggedIn: true,
-  name: "Aris Antonio",
-  avatar: "", // Empty means no uploaded avatar yet
-};
-
+import useSWR from "swr";
+import CryptoJS from "crypto-js";
+import { deleteCookie } from 'cookies-next';
+// Navbar component
 export interface navProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 const NavBar: React.FC<navProps> = ({ className }) => {
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Track dropdown open state
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const api = process.env.NEXT_PUBLIC_API_URL;
+
+  // Fetch the user ID from the cookie only after the component is mounted
+  useEffect(() => {
+    const fetchUserFromCookie = () => {
+      const secretKey =
+        process.env.NEXT_PUBLIC_SECRET_KEY || "lhS7aOXRUPGPDId6mmHJdA00p39HAfU4";
+      const cookies = document.cookie
+        .split("; ")
+        .reduce((acc: { [key: string]: string }, cookie) => {
+          const [name, value] = cookie.split("=");
+          acc[name] = value;
+          return acc;
+        }, {});
+
+      const userCookie = cookies["user"];
+      if (!userCookie) return null;
+
+      try {
+        const decryptedUserBytes = CryptoJS.AES.decrypt(userCookie, secretKey);
+        const decryptedUser = JSON.parse(
+          decryptedUserBytes.toString(CryptoJS.enc.Utf8)
+        );
+        return decryptedUser.id;
+      } catch (error) {
+        console.error("Error decrypting the user cookie", error);
+        return null;
+      }
+    };
+
+    const id = fetchUserFromCookie();
+    setUserId(id);
+  }, []); // Run only once on mount
+
+  const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+  // Use SWR to fetch user data, but only when the user ID is available
+  const { data } = useSWR(
+    userId ? `${api}/api/register/customer?id=${userId}` : null,
+    fetcher,
+    { revalidateOnFocus: true }
+  );
 
   useEffect(() => {
-    setIsMounted(true);
-    setUser(mockUser); // Simulate fetching user data (replace with real login logic)
-  }, []);
+    if (data && data.customer && data.customer.length > 0) {
+      const customer = data.customer[0];
+      const formattedUser = {
+        isLoggedIn: true,
+        name: customer.firstname,
+        avatar: customer.profile_img,
+      };
+      setUser(formattedUser);
+    }
+  }, [data]);
 
   const handleSignupClick = () => setIsSignupModalOpen(true);
   const handleLoginClick = () => setIsLoginModalOpen(true);
-  const handleCloseModal = () => {
-    setIsSignupModalOpen(false);
-    setIsLoginModalOpen(false);
-  };
-
   const handleLogout = () => {
-    setUser(null); // Clear user state
-  };
-
-  const toggleDropdown = () => setIsDropdownOpen((prev) => !prev); // Toggle dropdown state
-
-  if (!isMounted) return null; // Prevent SSR issues
+    setUser(null);
+    deleteCookie('access_token');  
+    deleteCookie('user');
+    window.location.replace('/');
+  }
+  const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
 
   return (
     <>
-      {/* Navbar Section */}
       <div
         className={`top-0 sticky bg-background/80 backdrop-filter backdrop-blur z-[200] flex items-center w-full justify-between p-4 border border-border rounded-2xl ${className}`}
       >
-        {/* Logo - Link to Home Page */}
         <Link href="/" passHref>
           <div className="text-xl font-extrabold items-center flex gap-2 cursor-pointer">
             <Image src={logo} alt="icblogo" className="inline h-8 w-8" priority />
@@ -125,21 +162,15 @@ const NavBar: React.FC<navProps> = ({ className }) => {
         </div>
       </div>
 
-      {/* Signup Modal */}
       {isSignupModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-[300] bg-background/50">
-          <div className="relative">
-            <SignupModal />
-          </div>
+          <SignupModal />
         </div>
       )}
 
-      {/* Login Modal */}
       {isLoginModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-[300] bg-background/50">
-          <div className="relative">
-            <LoginModal />
-          </div>
+          <LoginModal />
         </div>
       )}
     </>

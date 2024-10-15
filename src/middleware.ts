@@ -43,7 +43,7 @@ export function middleware(req: NextRequest) {
         return NextResponse.next();
       } else {
         console.log("Redirecting to /customer.");
-        return NextResponse.redirect(new URL('/customer/account', req.url));
+        return NextResponse.redirect(new URL('/user-profile', req.url));
       }
     }
   } catch (error) {

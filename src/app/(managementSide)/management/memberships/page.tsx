@@ -22,21 +22,6 @@ import { DataTable } from './datatable';
 
 const api = process.env.NEXT_PUBLIC_API_URL;
 
-// Sample chart data
-const chartData = [
-  { month: "January", memberships: 20 },
-  { month: "February", memberships: 50 },
-  { month: "March", memberships: 35 },
-  { month: "April", memberships: 60 },
-  { month: "May", memberships: 40 },
-  { month: "June", memberships: 70 },
-  { month: "August", memberships: 20 },
-  { month: "September", memberships: 90 },
-  { month: "October", memberships: 80 },
-  { month: "November", memberships: 100 },
-  { month: "December", memberships: 120 },
-];
-
 // Chart configuration
 const chartConfig = {
   memberships: {
@@ -47,16 +32,59 @@ const chartConfig = {
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
+// Helper function to group data by month
+const getMonthlyMembershipData = (data: MembershipRegistration[]) => {
+  const monthlyData: { [key: string]: number } = {};
+
+  //Group data by month
+  data.forEach((item) => {
+    if (!item.created_at) return; // Skip if date is null or undefined
+
+    const date = new Date(item.created_at);
+    if (isNaN(date.getTime())) return; // Skip if date is invalid
+
+    const month = new Intl.DateTimeFormat("en-US", { month: "long" }).format(date);
+
+    monthlyData[month] = (monthlyData[month] || 0) + 1;
+  });
+
+  //Define a month order array
+  const monthOrder = [
+    "January", "February", "March", "April", "May", "June", 
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  //Convert the object into an array and sort it by the month order
+  const sortedData = Object.entries(monthlyData)
+    .map(([month, memberships]) => ({ month, memberships }))
+    .sort((a, b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month));
+
+  return sortedData;
+};
+
 export default function Page() {
-  const { data, error, isLoading, mutate } = useSWR(`${api}/api/manager/service`, fetcher, { //Lihug lang ko update kel
+  const { data, error, isLoading, mutate } = useSWR(`${api}/api/manager/transaction/membership`, fetcher, {
     revalidateOnFocus: true,
   });
 
   if (error) return <div>Error loading memberships</div>;
   if (isLoading) return <div>Loading...</div>;
 
-  const totalMemberships = data?.data.length || 0;
+  // Format data to include customer_name field
+  const formattedData: MembershipRegistration[] = data.data.map((item: any) => ({
+    membership_rid: item.membership_rid,
+    customer_id: item.customer_id,
+    customer_name: `${item.customer.firstname} ${item.customer.lastname}`, // Combine first and last name
+    membership_ID: item.membership_id,
+    payment_status: item.payment_status,
+    status: item.status,
+    date_start: item.date_start,
+    date_end: item.date_end,
+    created_at: item.created_at
+  }));
 
+  const chartData = getMonthlyMembershipData(formattedData);
+  const totalMemberships = data?.data.length || 0;
   // Get the last two months of data
   const lastMonthData = chartData[chartData.length - 2]?.memberships || 0;
   const currentMonthData = chartData[chartData.length - 1]?.memberships || 0;
@@ -79,12 +107,13 @@ export default function Page() {
     </>
   );
 
-  // Get the current year dynamically
   const currentYear = new Date().getFullYear();
-
-  // Dynamic date range with the current year
-  const dateRange = `${chartData[0].month} - ${chartData[chartData.length - 1].month} ${currentYear}`;
-
+  const dateRange = chartData.length === 1
+    ? `${chartData[0].month} ${currentYear}` // Single month case
+    : chartData.length > 1
+    ? `${chartData[0].month} - ${chartData[chartData.length - 1].month} ${currentYear}`
+    : `No Data Available for ${currentYear}`;
+      
   return (
     <div className="flex flex-col w-full p-[16px] justify-center sm:p-[32px] h-fit">
       <div className="flex flex-col w-full h-full items-center gap-4">
@@ -162,14 +191,14 @@ export default function Page() {
             </CardHeader>
             <CardContent>
               <p className="text-[50px] font-black text-primary">
-                {data?.data.filter((item: any) => item.status === 'unconfirmed').length || 0}
+                {data?.data.filter((item: any) => item.status === 'Pending').length || 0}
               </p>
             </CardContent>
           </Card>
         </div>
 
         <div className="container p-8 border bg-card rounded-xl h-fit w-full">
-          <DataTable columns={columns} data={data.data} mutate={mutate} />
+          <DataTable columns={columns} data={formattedData} mutate={mutate} />
         </div>
       </div>
     </div>
