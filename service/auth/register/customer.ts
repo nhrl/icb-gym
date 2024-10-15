@@ -128,7 +128,7 @@ export async function getCustomerData(id:any) {
         return {
             success: true,
             message: 'Manager data retrieved successfully.',
-            manager: data
+            customer: data
         }
     } catch (error:any) {
         return { success: false, message: "An error occurred. Please try again.", error: error.message };
@@ -215,8 +215,6 @@ export async function updateCustomerData(data : FormData) {
         return { success: false, message: 'An unexpected error occurred.', error: error.message };
     }
 }
-
-
 
 async function checkEmail  (email: string) {
     const { data: existingManager } = await supabase

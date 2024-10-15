@@ -78,7 +78,7 @@ export default function LoginModal() {
         if (user.user_metadata.role === 'manager') {
           window.location.href = '/management/account';
         } else if (user.user_metadata.role === 'customer') {
-          window.location.href = '/customer/account';
+          window.location.href = '/user-profile';
         }
       } else {
         // Display error toast notification on failure
@@ -158,7 +158,7 @@ export default function LoginModal() {
 
           {/* Form Buttons */}
           <div className='items-center gap-4 flex flex-col'>
-            <Button type="submit" className="mt-4 py-2 px-4 rounded w-full flex flex-row gap-2 hover:bg-white hover:text-[#0a0a0a]">
+            <Button type="submit" className="mt-4 py-2 px-4 rounded w-full flex flex-row gap-2 hover:bg-primary/90 hover:text-[#0a0a0a]">
               <ArrowRightEndOnRectangleIcon className="h-4 w-4" />
               Log In
             </Button>

@@ -142,7 +142,7 @@ const deleteAssign = async (assign_id: number) => {
                     <CardDescription>Rate {assignment.rate} PHP</CardDescription>
                   </div>
                  {/* Delete Button */}
-                 <div>
+                <div>
                     <AlertDialog>
                       <AlertDialogTrigger className="border border-border p-2 rounded-sm hover:bg-muted">
                         <TrashIcon className="h-4 w-4 text-destructive/80" />

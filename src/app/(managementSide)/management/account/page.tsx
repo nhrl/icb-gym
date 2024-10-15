@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import useSWR, { mutate } from 'swr';
 import CryptoJS from 'crypto-js';
-import { getCookie } from 'cookies-next';
+
 
 // Define the form schema for personal information
 const formSchema = zod.object({
@@ -96,7 +96,7 @@ export default function Page() {
       return acc;
     }, {});
 
-    const userCookie = cookies['user']; // Assuming the cookie name is 'user'
+    const userCookie = cookies['user']; 
 
     if (!userCookie) {
       console.error("User cookie not found");
