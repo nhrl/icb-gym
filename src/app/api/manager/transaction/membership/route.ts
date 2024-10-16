@@ -1,5 +1,5 @@
 import { getRegisterMembership, confirmMembership, cancelMembership} from "@service/transaction/membershipTransaction";
-
+export const dynamic = 'force-dynamic';
 export async function GET() {
     try {
         const data = await getRegisterMembership();
