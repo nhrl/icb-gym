@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic"; // Force dynamic rendering
-
 import * as React from "react";
 import { useState } from "react";
 import {
@@ -61,7 +59,7 @@ interface DataTableProps<TData, TValue> {
 export function DataTable<TData, TValue>({
   columns,
   data,
-  mutate,
+  mutate
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -103,8 +101,8 @@ export function DataTable<TData, TValue>({
 
       const result = await response.json();
       if (result.success) {
-        console.log(result.message);
         mutate(); // Trigger the parent mutate function if needed
+        console.log(result.message);
       } else {
         console.error(result.message);
       }
