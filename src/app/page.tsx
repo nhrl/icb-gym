@@ -54,7 +54,7 @@ export default function Home() {
     {
       title: "Premium",
       description: "Get access to advanced workout plans, personal coaching, and nutritional guides to fast-track your fitness journey.",
-      price: "₱1500",
+      price: "₱3000",
     },
     {
       title: "Elite",
