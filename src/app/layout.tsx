@@ -1,4 +1,5 @@
 "use client";
+
 import { usePathname } from "next/navigation";
 import localFont from "next/font/local";
 import { Footer } from "../components/footer";
