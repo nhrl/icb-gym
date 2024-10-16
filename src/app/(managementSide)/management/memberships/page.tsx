@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = "force-dynamic"; // Force dynamic rendering
+
 import React from 'react';
 import useSWR from 'swr';
 import { 
