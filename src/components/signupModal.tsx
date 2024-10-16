@@ -205,7 +205,7 @@ export default function SignupModal() {
                           <SelectTrigger>
                             <SelectValue placeholder="Select a Gender" />
                           </SelectTrigger>
-                          <SelectContent className="relative z-[100]">
+                          <SelectContent className="relative z-[400]">
                             <SelectGroup>
                               <SelectLabel>Gender</SelectLabel>
                               {genders.map((gender) => (
