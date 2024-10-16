@@ -1,4 +1,7 @@
 "use client";
+
+export const dynamic = "force-dynamic"; // Force dynamic rendering
+
 import * as React from "react";
 import { useState } from "react";
 import {
@@ -47,7 +50,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { MembershipRegistration } from "./columns"; // Adjust import based on your actual file structure
-import { mutate as swrMutate } from "swr"; // Ensure SWR is installed
+
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -101,7 +104,6 @@ export function DataTable<TData, TValue>({
       const result = await response.json();
       if (result.success) {
         console.log(result.message);
-        swrMutate(`${api}/api/manager/transaction/membership`); // Revalidate data
         mutate(); // Trigger the parent mutate function if needed
       } else {
         console.error(result.message);
@@ -126,7 +128,6 @@ export function DataTable<TData, TValue>({
       const result = await response.json();
       if (result.success) {
         console.log("Successfully deleted membership:", result);
-        swrMutate(`${api}/api/manager/transaction/membership`);
         mutate();
       } else {
         console.error("Failed to delete membership:", result.message);
