@@ -137,23 +137,24 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
     
     const message = await response.json();
     if(message.success) {
-      toast({
-        title: "Diet plan saved!",
-        description: "Your diet plan details have been saved successfully.",
-        duration: 3000,
-      });
       const data = message.data;
       setDietPlanId(data.dietplan_id);
       mutate(`${api}/api/manager/plans/diet`);
       setStep(2); // Move to the next form step
     } else {
       //error message here
+      toast({
+        title: "Diet plan Error!",
+        description: "Failed to add diet plan.",
+        duration: 3000,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      onClose(); // Close modal
     }
   };
 
   const handleMealSubmit = async (data: { meals: zod.infer<typeof mealSchema>[] }) => {
     const formData = new FormData();
-  
     // Append each meal to the FormData object
     if(dietplanId) {
       data.meals.forEach((meal, index) => {
@@ -185,18 +186,18 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
       if (message.success) {
         toast({
           title: "Meals submitted!",
-          description: "Your meals have been submitted successfully.",
+          description: "Your Diet plan and Meals have been submitted successfully.",
           duration: 3000,
         });
-        onClose(); // Close modal after success
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       } else {
-        console.error("Failed to submit meals", message.error);
         toast({
           title: "Error",
           description: "Failed to submit meals. Please try again.",
           duration: 3000,
           variant: "destructive",
         });
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
     } catch (error) {
       console.error("An error occurred while submitting meals", error);
@@ -206,7 +207,9 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
         duration: 3000,
         variant: "destructive",
       });
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
+    onClose(); // Close modal
   };
   
 

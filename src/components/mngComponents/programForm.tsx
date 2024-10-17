@@ -118,17 +118,19 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
     
     const message = await response.json();
     if(message.success) {
-      toast({
-        title: "Program saved!",
-        description: "Your program details have been saved successfully.",
-        duration: 3000,
-      });
       const data = message.data;
       setProgramId(data.program_id);
       mutate(`${api}/api/manager/plans/workout`);
       setStep(2); // Move to the next form step
     } else {
       // display error message here
+      toast({
+        title: "Program Error!",
+        description: "Failed to save program.",
+        duration: 3000,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      onClose();
     }
   };
 
@@ -140,7 +142,6 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
   
   const handleExerciseSubmit = async (data: { exercises: zod.infer<typeof exerciseSchema>[] }) => {
     const formData = new FormData();
-  
     // Append each exercise to the FormData object
     if(programId) {
       data.exercises.forEach((exercise, index) => {
@@ -161,22 +162,21 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
         method: 'POST',
         body: formData, // Send as FormData
       });
-  
       const message = await response.json();
-  
       if (message.success) {
         toast({
           title: "Exercises saved!",
-          description: "Your exercises have been saved successfully.",
+          description: "Your Program and Exercises have been saved successfully.",
           duration: 3000,
         });
-        onClose(); // Close modal after success
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       } else {
         console.error("Failed to add exercises", message.error);
       }
     } catch (error) {
       console.error("An error occurred while adding exercises", error);
     }
+    onClose(); // Close modal
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {

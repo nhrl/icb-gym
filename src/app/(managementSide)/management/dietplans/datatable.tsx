@@ -48,6 +48,8 @@ import {
 
 import DietplanForm from "@/components/mngComponents/dietplanForm" 
 import { Dietplans } from "./columns"
+import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { Toaster } from "@/components/ui/toaster";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -62,7 +64,7 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
 
   const [sorting, setSorting] = React.useState<SortingState>([])
-
+  const { toast } = useToast(); // Use the toast hook from Shadcn
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   )
@@ -115,14 +117,27 @@ export function DataTable<TData, TValue>({
   
       const result = await response.json();
       if (result.success) {
+        toast({
+          title: "Diet plan Deleted",
+          description: "Diet plan deleted successfully.",
+          duration: 3000,
+        });
         mutate();
       } else {
-        console.error("Failed to delete programs: ", result.message);
         // Handle the error, possibly display it to the user
+        toast({
+          title: "Diet plan Delete Error",
+          description: "Failed to delete diet plan.",
+          duration: 3000,
+        });
       }
     } catch (error) {
-      console.error("An error occurred during deletion: ", error);
       // Handle the error, possibly display it to the user
+      toast({
+        title: "Diet plan Delete Error",
+        description: "An error occurred during deletion.",
+        duration: 3000,
+      });
     }
   }
 
@@ -288,6 +303,7 @@ export function DataTable<TData, TValue>({
           Next
         </Button>
       </div>
+      <Toaster />
     </div>
   )
 }

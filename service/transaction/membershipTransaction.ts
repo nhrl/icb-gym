@@ -156,6 +156,23 @@ export async function confirmMembership(data: any) {
             };
         }
 
+        const {error : confirmationError} = await supabase
+        .from('membershipconfirmation')
+        .insert(
+            updates.map((update) => ({
+                membership_rid: update.membership_rid,
+                confirmation_date: new Date().toISOString().split('T')[0],
+              }))
+        )
+
+        if (confirmationError) {
+            return {
+              success: false,
+              message: "Error inserting membership confirmations.",
+              error: confirmationError.message,
+            };
+        }
+
         return {
             success: true,
             message: "Memberships confirmed successfully.",

@@ -92,18 +92,23 @@ export default function TrainerForm({ onClose }: TrainerFormProps) {
     const message = await response.json();
     if(message.success) {
       console.log(message.message);
+      // Show success toast notification
+      toast({
+        title: "Trainer Added",
+        description: "The new trainer has been successfully added.",
+        duration: 3000,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       mutate(`${api}/api/manager/trainer`);
-      onClose();
     } else {
-      console.log(message.error);
+      toast({
+        title: "Trainer Add Error",
+        description: "Failed to add new trainer.",
+        duration: 3000,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
-
-    // Show success toast notification
-    toast({
-      title: "Trainer Added",
-      description: "The new trainer has been successfully added.",
-      duration: 3000,
-    });
+    onClose();
   };
 
   const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {

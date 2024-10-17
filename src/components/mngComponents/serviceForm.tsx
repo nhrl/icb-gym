@@ -65,35 +65,40 @@ export default function ServiceAddForm({ onClose }: ServiceAddFormProps) {
 
       const message = await response.json();
       
-      if (response.ok) {
+      if (message.success) {
         // Show success toast notification
-        toast({
-          title: "Service Added",
-          description: "Your service has been successfully added.",
-          duration: 3000,
-        });
+        toastSuccess();
         // Mutate the service list data to reflect the new changes
-        mutate(`${api}/api/manager/service`);
-        // Close the form modal
-        onClose();
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        mutate(`${api}/api/manager/service`); // Refresh data
       } else {
         // Display error toast notification
-        toast({
-          title: "Error Adding Service",
-          description: message.message || "Something went wrong.",
-          variant: "destructive",
-          duration: 3000,
-        });
+        toastError(message.message || "Something went wrong.");
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
     } catch (error) {
-      // Handle fetch errors
-      toast({
-        title: "Error",
-        description: "An error occurred while adding the service.",
-        variant: "destructive",
-        duration: 3000,
-      });
+      // Handle fetch error
+      toastError("An error occurred while adding the service.");
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
+    onClose(); // Close the modal after the toast disappears
+  };
+
+  const toastSuccess = () => {
+    toast({
+      title: "Service Added",
+      description: "Your service has been successfully added.",
+      duration: 3000,
+    });
+  };
+
+  const toastError = (description: string) => {
+    toast({
+      title: "Error",
+      description,
+      variant: "destructive",
+      duration: 3000,
+    });
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {

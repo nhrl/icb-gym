@@ -74,22 +74,13 @@ export default function EquipmentForm({ onClose }: EquipmentFormProps) {
       });
 
       const equipmentInfo = await response.json();
-      if (response.ok) {
+      if (equipmentInfo.message) {
         const equipmentId = equipmentInfo.data[0].equipment_id;
         setId(equipmentId);
-
-        // Show success toast for equipment submission
-        toast({
-          title: "Equipment saved!",
-          description: "Your equipment details have been saved successfully.",
-          duration: 3000,
-        });
-
         // Reset maintenance form with equipment_id
         maintenanceForm.reset({
           maintenance_date: "",
         });
-        
         setFormKey(Date.now()); // Update form key to force re-render
         setStep(2); // Move to the next step (maintenance form)
       } else {
@@ -126,13 +117,12 @@ export default function EquipmentForm({ onClose }: EquipmentFormProps) {
     if (result.success) {
       toast({
         title: "Maintenance recorded!",
-        description: "Your maintenance details have been saved successfully.",
+        description: "Your Equipment and Maintenance details have been saved successfully.",
         duration: 3000,
       });
-
       // Refresh data (via SWR mutation)
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       mutate(`${api}/api/manager/equipment`);
-
       onClose(); // Close the modal
     } else {
       console.log(result.error);
@@ -145,6 +135,7 @@ export default function EquipmentForm({ onClose }: EquipmentFormProps) {
       variant: "destructive",
       duration: 3000,
     });
+    onClose(); // Close the modal
   }
 };
 

@@ -82,11 +82,18 @@ export default function ProgramEditForm({ onClose, programData }: ProgramEditFor
         description: "The program details have been successfully updated.",
         duration: 3000,
       });
-      onClose(); // Close the form after submission
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       mutate(`${api}/api/manager/plans/workout`);
     } else {
       //Error message here
+      toast({
+        title: "Program Update Error",
+        description: "Failed to update program",
+        duration: 3000,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
+    onClose(); // Close the form after submission
   };
 
   return (

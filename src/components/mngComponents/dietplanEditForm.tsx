@@ -99,12 +99,18 @@ export default function DietplanEditForm({ dietplanData, onClose }: DietplanEdit
         description: "Your diet plan has been successfully updated.",
         duration: 3000,
       });
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       mutate(`${api}/api/manager/plans/diet`);
-      onClose(); // Close the modal after submission
     } else {
       //Display error message here
+      toast({
+        title: "Dietplan Error",
+        description: "Failed to update diet plan.",
+        duration: 3000,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
-   
+    onClose();
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -114,12 +114,17 @@ export default function TrainerEditForm({ trainerData, onClose }: TrainerEditFor
         description: "The trainer details have been successfully updated.",
         duration: 3000,
       });
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       mutate(`${api}/api/manager/trainer`);
-      onClose(); // Close the modal after submission
     } else {
-      console.log(message.error);
+      toast({
+        title: "Trainer Updated Error",
+        description: "Failed to update trainer details.",
+        duration: 3000,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
-    
+    onClose(); // Close the modal after submission
   };
 
   const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
