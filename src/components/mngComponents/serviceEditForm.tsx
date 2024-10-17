@@ -61,14 +61,6 @@ export default function ServiceEditForm({ serviceData, serviceId, onClose }: Ser
     if (serviceId !== null) {
       formData.append('id', serviceId.toString());
     }
-    // Show success toast notification
-    toast({
-      title: "Service Updated",
-      description: "The service details have been successfully updated.",
-      duration: 3000,
-    });
-
-    onClose(); // Close the form after submission
     formData.append('name', data.name);
     formData.append('desc', data.desc);
     formData.append('photo',data.photo);
@@ -80,14 +72,33 @@ export default function ServiceEditForm({ serviceData, serviceId, onClose }: Ser
     
     const message = await response.json();
     if(message.success) {
+      // Show success toast notification
+      toastSuccess();
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       //refresh table
       mutate(`${api}/api/manager/service`);
+      onClose(); 
     } else {
-      // display error here
+      toastError(message.message || "Something went wrong.");
     }
-    onClose(); 
   };
 
+  const toastSuccess = () => {
+    toast({
+      title: "Service Updated",
+      description: "Your service has been updated successfully.",
+      duration: 3000,
+    });
+  };
+
+  const toastError = (description: string) => {
+    toast({
+      title: "Error",
+      description,
+      variant: "destructive",
+      duration: 3000,
+    });
+  };
   // Handle photo selection
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;

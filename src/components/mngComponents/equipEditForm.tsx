@@ -59,17 +59,14 @@ export default function EquipEditForm({ equipment_id, onClose }: EquipEditFormPr
       const message = await response.json();
 
       if (message.success) {
-        // Refresh the data (via SWR)
-        mutate(`${api}/api/manager/equipment`);
-
         // Show success toast
         toast({
           title: "Maintenance Set",
           description: "The maintenance date has been successfully set.",
           duration: 3000,
         });
-
-        onClose(); // Close the modal or form
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        mutate(`${api}/api/manager/equipment`);
       } else {
         // Show error toast
         toast({
@@ -78,6 +75,7 @@ export default function EquipEditForm({ equipment_id, onClose }: EquipEditFormPr
           variant: "destructive",
           duration: 3000,
         });
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
     } catch (error) {
       // Show error toast
@@ -87,7 +85,9 @@ export default function EquipEditForm({ equipment_id, onClose }: EquipEditFormPr
         variant: "destructive",
         duration: 3000,
       });
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
+    onClose(); // Close the modal or form
   };
 
   return (

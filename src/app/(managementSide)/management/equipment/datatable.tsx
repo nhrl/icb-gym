@@ -50,7 +50,8 @@ import {
 
 import EquipmentForm from "@/components/mngComponents/equipForm"; // Replace with your Equipment form component
 import { Equipment } from "./columns";
-
+import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { Toaster } from "@/components/ui/toaster";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -67,6 +68,7 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
+  const { toast } = useToast(); // Use the toast hook from Shadcn
   const table = useReactTable({
     data,
     columns,
@@ -119,17 +121,28 @@ export function DataTable<TData, TValue>({
   
       const result = await response.json();
   
-      if (response.ok) {
-        console.log("Successfully deleted equipment: ", result);
-        // You might want to refresh the table or show a success message here
+      if (result.success) {
+        toast({
+          title: "Equipment Deleted",
+          description: "Equipment deleted successfully.",
+          duration: 3000,
+        });
         mutate();
       } else {
-        console.error("Failed to delete equipment: ", result.message);
         // Handle the error, possibly display it to the user
+        toast({
+          title: "Equipment Delete Error",
+          description: "Failed to delete equipment.",
+          duration: 3000,
+        });
       }
     } catch (error) {
-      console.error("An error occurred during deletion: ", error);
       // Handle the error, possibly display it to the user
+      toast({
+        title: "Equipment Delete Error",
+        description: "An error occurred during deletion.",
+        duration: 3000,
+      });
     }
   };
 
@@ -279,6 +292,7 @@ export function DataTable<TData, TValue>({
           Next
         </Button>
       </div>
+      <Toaster />
     </div>
   );
 }

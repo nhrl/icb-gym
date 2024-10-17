@@ -48,6 +48,8 @@ import {
 
 import ServiceAddForm from "@/components/mngComponents/serviceForm"; // Make sure this path is correct
 import { Service } from "./columns";
+import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { Toaster } from "@/components/ui/toaster";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -65,6 +67,7 @@ export function DataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [isModalOpen, setIsModalOpen] = useState(false); // Single state to control modal visibility
+  const { toast } = useToast(); // Use the toast hook from Shadcn
 
   const table = useReactTable({
     data,
@@ -111,15 +114,28 @@ export function DataTable<TData, TValue>({
     
         const result = await response.json();
         if (result.success) {
-          console.log("Successfully deleted service: ", result);
+          toast({
+            title: "Service Deleted",
+            description: "Service successfully deleted.",
+            duration: 3000,
+          });
           mutate();
         } else {
-          console.error("Failed to delete service: ", result.message);
           // Handle the error, possibly display it to the user
+          toast({
+            title: "Service Deleted Failed",
+            description: "Failed to delete service.",
+            duration: 3000,
+          });
         }
       } catch (error) {
         console.error("An error occurred during deletion: ", error);
         // Handle the error, possibly display it to the user
+        toast({
+          title: "Service Deleted Failed",
+          description: "An error occurred during deletion.",
+          duration: 3000,
+        });
       }
   }
   return (
@@ -264,6 +280,7 @@ export function DataTable<TData, TValue>({
           Next
         </Button>
       </div>
+      <Toaster />
     </div>
   );
 }

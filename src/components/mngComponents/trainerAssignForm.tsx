@@ -122,11 +122,17 @@ export default function TrainerAssignForm({ trainerId, onClose }: TrainerAssignF
         description: "The trainer has been successfully assigned to the service.",
         duration: 3000,
       });
-      onClose(); // Close modal after submission
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     } else {
       console.log(message.error);
-      //Error message here
+      toast({
+        title: "Trainer Assigned Error",
+        description: "Failed to assign trainer.",
+        duration: 3000,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
+    onClose(); // Close modal after submission
   };
 
   const metadata = {

@@ -105,6 +105,7 @@ export function DataTable<TData, TValue>({
         console.log(result.message);
       } else {
         console.error(result.message);
+        console.error(result.error);
       }
     } catch (error) {
       console.error("An error occurred during confirmation: ", error);

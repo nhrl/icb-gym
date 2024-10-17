@@ -48,6 +48,8 @@ import {
 
 import TrainerForm from "@/components/mngComponents/trainerForm" 
 import { Trainers } from "./columns"
+import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { Toaster } from "@/components/ui/toaster";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -70,6 +72,7 @@ export function DataTable<TData, TValue>({
   const [rowSelection, setRowSelection] = React.useState({})
 
   const [isMounted, setIsMounted] = useState(false); // New state to track mounting
+  const { toast } = useToast(); // Use the toast hook from Shadcn
 
   useEffect(() => {
     setIsMounted(true); // Set mounted to true after client-side rendering
@@ -125,15 +128,27 @@ export function DataTable<TData, TValue>({
     
         const result = await response.json();
         if (result.success) {
-          console.log("Successfully deleted service: ", result);
+          toast({
+            title: "Trainer Deleted",
+            description: "Trainer successfully deleted.",
+            duration: 3000,
+          });
           mutate();
         } else {
-          console.error("Failed to delete service: ", result.message);
           // Handle the error, possibly display it to the user
+          toast({
+            title: "Trainer Delete Error",
+            description: "Failed to delete trainer.",
+            duration: 3000,
+          });
         }
       } catch (error) {
-        console.error("An error occurred during deletion: ", error);
         // Handle the error, possibly display it to the user
+        toast({
+          title: "Trainer Delete Error",
+          description: "An error occurred during deletion.",
+          duration: 3000,
+        });
       }
   }
   // Don't render the table until after hydration (when the component has mounted)
@@ -293,6 +308,7 @@ export function DataTable<TData, TValue>({
           Next
         </Button>
       </div>
+      <Toaster />
     </div>
   )
 }
