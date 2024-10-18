@@ -209,9 +209,9 @@ export default function Page() {
 
   const trainerImg = user?.profile_img || 'https://mplhgifjydkvnfsofsoc.supabase.co/storage/v1/object/public/images/trainer/default.jpg';
   return (
-    <div className="flex flex-col w-full p-4 bg-muted min-h-screen gap-4">
+    <div className="flex flex-col w-full p-4 bg-background min-h-screen gap-4">
       {/* Main content */}
-      <div className="flex flex-col gap-2 h-full "> {/* Add bottom padding here */}
+      <div className="flex flex-col gap-4 h-full "> {/* Add bottom padding here */}
         <div className='bg-background border border-border flex flex-col justify-between items-center p-8 rounded-lg'>
           {/* Top Content */}
           <div className='flex flex-row items-center justify-between w-full'>

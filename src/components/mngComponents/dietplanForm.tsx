@@ -26,9 +26,6 @@ import {
 } from "@/components/ui/select";
 import {
   ArrowLeftIcon,
-  ArrowRightIcon,
-  PlusCircleIcon,
-  TrashIcon,
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,19 +52,6 @@ const fitnessGoals = [
   { label: "Endurance", value: "Endurance" },
 ];
 
-// Meal form schema
-const mealSchema = zod.object({
-  meal: zod.string().min(1, "Meal name is required").max(50, "Meal name must be less than 50 characters"),
-  food: zod.string().min(1, "Food is required").max(100, "Food must be less than 100 characters"),
-  food_desc: zod.string().min(1, "Food description is required"),
-  recipe: zod.string().min(1, "Recipe is required"),
-  food_prep: zod.string().min(1, "Food preparation is required"),
-  protein: zod.number().min(0, "Protein is required"),
-  carbs: zod.number().min(0, "Carbs are required"),
-  fats: zod.number().min(0, "Fats are required"),
-  calories: zod.number().min(0, "Calories are required"),
-  photo: zod.instanceof(File).optional()
-});
 
 interface DietplanFormProps {
   onClose: () => void; // Close modal function
@@ -81,6 +65,8 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
   const [dietplanId, setDietPlanId] = useState<number | null>(null);
   const { toast } = useToast(); // Use the toast hook from shadcn
 
+  
+
   const dietplanForm = useForm<zod.infer<typeof dietplanSchema>>({
     resolver: zodResolver(dietplanSchema),
     defaultValues: {
@@ -92,31 +78,6 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
     },
   });
 
-  const mealForm = useForm<{
-    meals: zod.infer<typeof mealSchema>[];
-  }>({
-    resolver: zodResolver(zod.object({ meals: zod.array(mealSchema) })),
-    defaultValues: {
-      meals: [
-        {
-          meal: "",
-          food: "",
-          food_desc: "",
-          recipe: "",
-          food_prep: "",
-          protein: 0,
-          carbs: 0,
-          fats: 0,
-          calories: 0,
-        },
-      ],
-    },
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control: mealForm.control,
-    name: "meals",
-  });
 
   const api = process.env.NEXT_PUBLIC_API_URL;
 
@@ -153,66 +114,6 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
     }
   };
 
-  const handleMealSubmit = async (data: { meals: zod.infer<typeof mealSchema>[] }) => {
-    const formData = new FormData();
-    // Append each meal to the FormData object
-    if(dietplanId) {
-      data.meals.forEach((meal, index) => {
-      formData.append(`meals[${index}][meal]`, meal.meal);
-      formData.append(`meals[${index}][food]`, meal.food);
-      formData.append(`meals[${index}][food_desc]`, meal.food_desc);
-      formData.append(`meals[${index}][recipe]`, meal.recipe);
-      formData.append(`meals[${index}][food_prep]`, meal.food_prep);
-      formData.append(`meals[${index}][protein]`, meal.protein.toString());
-      formData.append(`meals[${index}][carbs]`, meal.carbs.toString());
-      formData.append(`meals[${index}][fats]`, meal.fats.toString());
-      formData.append(`meals[${index}][calories]`, meal.calories.toString());
-      formData.append(`meals[${index}][dietplan_id]`, dietplanId.toString()); // Add dietplan id
-      // Optionally append image if needed (not shown in your schema, but similar to exercises)
-      if (meal.photo) {
-        formData.append(`meals[${index}][photo]`, meal.photo); // Assuming a `photo` field is present in meal
-      }
-      });
-    }
-    
-    try {
-      const response = await fetch(`${api}/api/manager/plans/diet/meal`, {
-        method: 'POST',
-        body: formData, // Send as FormData
-      });
-  
-      const message = await response.json();
-  
-      if (message.success) {
-        toast({
-          title: "Meals submitted!",
-          description: "Your Diet plan and Meals have been submitted successfully.",
-          duration: 3000,
-        });
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to submit meals. Please try again.",
-          duration: 3000,
-          variant: "destructive",
-        });
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-      }
-    } catch (error) {
-      console.error("An error occurred while submitting meals", error);
-      toast({
-        title: "Error",
-        description: "An error occurred while submitting meals. Please try again.",
-        duration: 3000,
-        variant: "destructive",
-      });
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
-    onClose(); // Close modal
-  };
-  
-
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
     if (file) {
@@ -234,8 +135,6 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
 
   return (
     <div className="bg-background text-foreground text-sm rounded-lg shadow-lg w-full h-[fit] sm:h-full p-[64px] border border-border">
-      {step === 1 ? (
-        // Dietplan Form
         <Form {...dietplanForm}>
           <form onSubmit={dietplanForm.handleSubmit(handleDietplanSubmit)} className="gap-4 flex flex-col">
             {/* Close Button */}
@@ -282,7 +181,6 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
                   </FormItem>
                 )}
               />
-
               {/* Fitness Goal */}
               <FormField
                 control={dietplanForm.control}
@@ -298,8 +196,8 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
                         <SelectContent>
                           <SelectGroup>
                             <SelectLabel>Fitness Goals</SelectLabel>
-                            {fitnessGoals.map((goal) => (
-                              <SelectItem key={goal.value} value={goal.value}>
+                            {fitnessGoals.map((goal, index) => (
+                              <SelectItem key={index} value={goal.value}>
                                 {goal.label}
                               </SelectItem>
                             ))}
@@ -343,218 +241,14 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
               <Button 
                 type="submit"
                 className="py-2 px-4 rounded w-full flex flex-row gap-2"
-              >
-                Next
-                <ArrowRightIcon className="h-4 w-4" />
-              </Button>
-            </div>
-          </form>
-        </Form>
-      ) : (
-        // Meal Form
-        <Form {...mealForm} key={formKey}> {/* Use a unique key to force re-render */}
-          <form onSubmit={mealForm.handleSubmit(handleMealSubmit)} className="gap-4 flex flex-col">
-            {/* Back Button */}
-            <div className="flex w-full items-center justify-between">
-              <Button 
-                variant="ghost"
-                onClick={() => setStep(1)}
-                className="p-0"
-              >
-                <ArrowLeftIcon className="h-4 w-4 mr-2" />
-                Back
-              </Button>
-            </div>
-
-            {/* Meal Form Fields */}
-            <div>
-              <FormLabel className="font-bold text-xl font-md">{metadata.title}</FormLabel>
-              <p className="text-muted-foreground text-[12px]">{metadata.description}</p>
-            </div>
-
-            <div className="overflow-auto max-h-[400px]">
-              {fields.map((field, index) => (
-                <div key={field.id} className="flex flex-col gap-2 border p-4 rounded-md mb-2">
-                  <div className="flex justify-between">
-                    <h3 className="font-semibold">Meal {index + 1}</h3>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="p-2"
-                      onClick={() => remove(index)}
-                    >
-                    <TrashIcon className="h-4 w-4 text-red-600" />
-                    </Button>
-                  </div>
-                  {/* Meal Name */}
-                  <FormField
-                    control={mealForm.control}
-                    name={`meals.${index}.meal`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Meal Name</FormLabel>
-                        <FormControl>
-                          <Input {...field} type="text" className="border p-2 w-full rounded" />
-                        </FormControl>
-                        <FormMessage>{mealForm.formState.errors.meals?.[index]?.meal?.message}</FormMessage>
-                      </FormItem>
-                    )}
-                  />
-                    {/* Meal Name */}
-                    <FormField
-                    control={mealForm.control}
-                    name={`meals.${index}.food_desc`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                          <Input {...field} type="text" className="border p-2 w-full rounded" />
-                        </FormControl>
-                        <FormMessage>{mealForm.formState.errors.meals?.[index]?.meal?.message}</FormMessage>
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Recipe */}
-                  <FormField
-                    control={mealForm.control}
-                    name={`meals.${index}.recipe`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Recipe</FormLabel>
-                        <FormControl>
-                          <Textarea {...field} className="border p-2 w-full rounded" placeholder="Enter the recipe..." />
-                        </FormControl>
-                        <FormMessage>{mealForm.formState.errors.meals?.[index]?.recipe?.message}</FormMessage>
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Preparation */}
-                  <FormField
-                    control={mealForm.control}
-                    name={`meals.${index}.food_prep`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Preparation</FormLabel>
-                        <FormControl>
-                          <Textarea {...field} className="border p-2 w-full rounded" placeholder="Enter the preparation steps..." />
-                        </FormControl>
-                        <FormMessage>{mealForm.formState.errors.meals?.[index]?.food_prep?.message}</FormMessage>
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Other fields */}
-                  <div className="flex flex-row gap-2">
-                    <FormField
-                      control={mealForm.control}
-                      name={`meals.${index}.food`}
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel>Food</FormLabel>
-                          <FormControl>
-                            <Input {...field} type="text" className="border p-2 w-full rounded" />
-                          </FormControl>
-                          <FormMessage>{mealForm.formState.errors.meals?.[index]?.food?.message}</FormMessage>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={mealForm.control}
-                      name={`meals.${index}.protein`}
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel>Protein (g)</FormLabel>
-                          <FormControl>
-                            <Input {...field} type="number" className="border p-2 w-full rounded" onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
-                          </FormControl>
-                          <FormMessage>{mealForm.formState.errors.meals?.[index]?.protein?.message}</FormMessage>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={mealForm.control}
-                      name={`meals.${index}.carbs`}
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel>Carbs (g)</FormLabel>
-                          <FormControl>
-                            <Input {...field} type="number" className="border p-2 w-full rounded" onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
-                          </FormControl>
-                          <FormMessage>{mealForm.formState.errors.meals?.[index]?.carbs?.message}</FormMessage>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="flex flex-row gap-2">
-                    <FormField
-                      control={mealForm.control}
-                      name={`meals.${index}.fats`}
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel>Fats (g)</FormLabel>
-                          <FormControl>
-                            <Input {...field} type="number" className="border p-2 w-full rounded" onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
-                          </FormControl>
-                          <FormMessage>{mealForm.formState.errors.meals?.[index]?.fats?.message}</FormMessage>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={mealForm.control}
-                      name={`meals.${index}.calories`}
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel>Calories (kcal)</FormLabel>
-                          <FormControl>
-                            <Input {...field} type="number" className="border p-2 w-full rounded" onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
-                          </FormControl>
-                          <FormMessage>{mealForm.formState.errors.meals?.[index]?.calories?.message}</FormMessage>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Add Another Meal Button */}
-            <Button
-              type="button"
-              variant="outline"
-              className="mt-2"
-              onClick={() => append({
-                meal: "",
-                food: "",
-                food_desc: "",
-                recipe: "",
-                food_prep: "",
-                protein: 0,
-                carbs: 0,
-                fats: 0,
-                calories: 0,
-              })}
-            >
-              <PlusCircleIcon className="h-4 w-4 mr-2" />
-              Add Another Meal
-            </Button>
-
-            {/* Submit Button */}
-            <div className="items-center gap-4 flex flex-col mt-4">
-              <Button 
                 variant="secondary"
-                type="submit"
-                className="py-2 px-4 rounded w-full flex flex-row gap-2"
               >
-                <CheckCircleIcon className="h-4 w-4" />
-                Submit Diet Plan
+                <CheckCircleIcon className="h-4 w-4 mr-2" />
+                Submit Dietplan
               </Button>
             </div>
           </form>
         </Form>
-      )}
-
       {/* Toaster component to display toast notifications */}
       <Toaster />
     </div>

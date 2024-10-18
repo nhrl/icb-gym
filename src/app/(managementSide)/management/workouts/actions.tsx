@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
+import Image from "next/image";
 import useSWR from 'swr';  // SWR for client-side data fetching
 import {
   DropdownMenu,
@@ -14,6 +15,7 @@ import ProgramEditForm from "@/components/mngComponents/programEditForm";
 import { Exercise, Program } from "./columns"; // Ensure this import matches your structure
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 // Define the ProgramActionsProps type
 type ProgramActionsProps = {
@@ -24,6 +26,7 @@ type ProgramActionsProps = {
 const ProgramActions: React.FC<ProgramActionsProps> = ({ program, mutate }) => {
   const [isExercisesPopupOpen, setIsExercisesPopupOpen] = useState(false); // State to control exercises popup
   const [isEditOpen, setIsEditOpen] = useState(false); // State to control edit form modal visibility
+  const [isPhotoPopupOpen, setIsPhotoPopupOpen] = useState(false); // State to control photo popup visibility
   const popupRef = useRef<HTMLDivElement>(null); // Ref for detecting clicks outside the popup
 
   // Use SWR hook at the top level of the component
@@ -53,6 +56,16 @@ const ProgramActions: React.FC<ProgramActionsProps> = ({ program, mutate }) => {
     setIsEditOpen(false);
   };
 
+  // Function to open the photo popup
+  const handleOpenPhotoPopup = () => {
+    setIsPhotoPopupOpen(true);
+  };
+
+  // Function to close the photo popup
+  const handleClosePhotoPopup = () => {
+    setIsPhotoPopupOpen(false);
+  };
+
   // Close the exercises popup if the user clicks outside of it
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -71,6 +84,7 @@ const ProgramActions: React.FC<ProgramActionsProps> = ({ program, mutate }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isExercisesPopupOpen]);
+
   return (
     <div>
       <DropdownMenu>
@@ -88,6 +102,7 @@ const ProgramActions: React.FC<ProgramActionsProps> = ({ program, mutate }) => {
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleOpenEditForm}>Edit</DropdownMenuItem>
           <DropdownMenuItem onClick={handleOpenExercisesPopup}>View Exercises</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleOpenPhotoPopup}>View Photo</DropdownMenuItem> {/* New dropdown item */}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -96,7 +111,7 @@ const ProgramActions: React.FC<ProgramActionsProps> = ({ program, mutate }) => {
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
           <div
             ref={popupRef}
-            className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
+            className="bg-background border border-border rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
           >
             <h2 className="text-xl font-semibold mb-4">Exercises for {program.title}</h2>
             {selectedExercises.length > 0 ? (
@@ -135,8 +150,29 @@ const ProgramActions: React.FC<ProgramActionsProps> = ({ program, mutate }) => {
       {/* Modal to show the Edit Form */}
       {isEditOpen && program && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="p-4 max-w-lg w-full bg-white rounded-lg shadow-lg">
+          <div className="p-4 max-w-lg w-full rounded-lg">
             <ProgramEditForm programData={program} onClose={handleCloseEditModal} mutate={mutate}/>
+          </div>
+        </div>
+      )}
+
+      {/* Popup to display Program Photo */}
+      {isPhotoPopupOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+          <div className="bg-background border border-border rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
+            {/* Back Button */}
+            <div className="flex items-center mb-4">
+              <ArrowLeftIcon
+                className="h-6 w-6 cursor-pointer"
+                onClick={handleClosePhotoPopup} // Close the photo popup on back button click
+              />
+              <h2 className="text-xl font-semibold ml-2">Photo for {program.title}</h2>
+            </div>
+            <Card className="bg-background border border-border rounded-md w-full sm:w-auto flex items-center justify-center p-6">
+              <CardContent>
+                <Image src={program.photoUrl} alt="Program Photo" className="w-full h-auto rounded-md" />
+              </CardContent>
+            </Card>
           </div>
         </div>
       )}

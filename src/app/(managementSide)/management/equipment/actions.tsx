@@ -72,8 +72,8 @@ const EquipmentActions: React.FC<EquipmentActionsProps> = ({ equipment, maintena
 
       {/* Modal to show the Maintenance */}
       {isMaintenanceOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50">
-          <div className="bg-white rounded-lg shadow-lg p-4 max-w-lg w-full">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-background border border-border rounded-lg shadow-lg p-4 max-w-lg w-full">
             <h2 className="text-xl font-semibold mb-4">Maintenance for {equipment.name}</h2>
             <ul className="space-y-2">
               {selectedMaintenance.map((maintenance) => (
@@ -94,7 +94,7 @@ const EquipmentActions: React.FC<EquipmentActionsProps> = ({ equipment, maintena
 
       {/* Modal to show the Edit Form */}
       {isEditOpen && selectedEquipmentId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="p-4 max-w-lg w-full">
             <EquipEditForm onClose={handleCloseEditModal} equipment_id={selectedEquipmentId.toString()} mutate={mutate}/>
           </div>

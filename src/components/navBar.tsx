@@ -8,7 +8,7 @@ import Link from "next/link";
 import logo from "../assets/logos/logodark.png";
 import SignupModal from "./signupModal";
 import LoginModal from "./loginModal";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, SunIcon, MoonIcon } from "@heroicons/react/24/outline"; // Import MoonIcon
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,19 +18,33 @@ import {
 } from "@/components/ui/dropdown-menu";
 import useSWR from "swr";
 import CryptoJS from "crypto-js";
-import { deleteCookie } from 'cookies-next';
-// Navbar component
-export interface navProps extends React.HTMLAttributes<HTMLDivElement> {}
+import { deleteCookie } from "cookies-next";
 
-const NavBar: React.FC<navProps> = ({ className }) => {
+export const NavBar: React.FC = () => {
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [theme, setTheme] = useState<string>("light"); // Track theme state
   const api = process.env.NEXT_PUBLIC_API_URL;
 
-  // Fetch the user ID from the cookie only after the component is mounted
+  useEffect(() => {
+    // Initialize the theme based on localStorage or system preference
+    const storedTheme = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const initialTheme = storedTheme || (prefersDark ? "dark" : "light");
+    setTheme(initialTheme);
+    document.documentElement.classList.toggle("dark", initialTheme === "dark");
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    document.documentElement.classList.toggle("dark", newTheme === "dark");
+  };
+
   useEffect(() => {
     const fetchUserFromCookie = () => {
       const secretKey =
@@ -60,11 +74,10 @@ const NavBar: React.FC<navProps> = ({ className }) => {
 
     const id = fetchUserFromCookie();
     setUserId(id);
-  }, []); // Run only once on mount
+  }, []);
 
   const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-  // Use SWR to fetch user data, but only when the user ID is available
   const { data } = useSWR(
     userId ? `${api}/api/register/customer?id=${userId}` : null,
     fetcher,
@@ -87,17 +100,15 @@ const NavBar: React.FC<navProps> = ({ className }) => {
   const handleLoginClick = () => setIsLoginModalOpen(true);
   const handleLogout = () => {
     setUser(null);
-    deleteCookie('access_token');  
-    deleteCookie('user');
-    window.location.replace('/');
-  }
+    deleteCookie("access_token");
+    deleteCookie("user");
+    window.location.replace("/");
+  };
   const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
 
   return (
     <>
-      <div
-        className={`top-0 sticky bg-background/80 backdrop-filter backdrop-blur z-[200] flex items-center w-full justify-between p-4 border border-border rounded-2xl ${className}`}
-      >
+      <div className="top-0 sticky bg-background/80 backdrop-filter backdrop-blur z-[200] flex items-center w-full justify-between p-4 ">
         <Link href="/" passHref>
           <div className="text-xl font-extrabold items-center flex gap-2 cursor-pointer">
             <Image src={logo} alt="icblogo" className="inline h-8 w-8" priority />
@@ -140,7 +151,16 @@ const NavBar: React.FC<navProps> = ({ className }) => {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
               </DropdownMenuContent>
+              <div onClick={toggleTheme} className="cursor-pointer">
+                {theme === "light" ? (
+                  <MoonIcon className="h-4 w-4 text-foreground" />
+                ) : (
+                  <SunIcon className="h-4 w-4 text-foreground" />
+                )}
+              </div>
             </DropdownMenu>
+
+            
           ) : (
             <>
               <Button
@@ -157,6 +177,14 @@ const NavBar: React.FC<navProps> = ({ className }) => {
               >
                 Signup
               </Button>
+
+              <div onClick={toggleTheme} className="cursor-pointer">
+                {theme === "light" ? (
+                  <MoonIcon className="h-4 w-4 text-foreground" />
+                ) : (
+                  <SunIcon className="h-4 w-4 text-foreground" />
+                )}
+              </div>
             </>
           )}
         </div>
@@ -176,5 +204,3 @@ const NavBar: React.FC<navProps> = ({ className }) => {
     </>
   );
 };
-
-export { NavBar };
