@@ -202,8 +202,11 @@ export function DataTable<TData, TValue>({
           </AlertDialog>
 
           <AlertDialog>
-            <AlertDialogTrigger className="border border-border p-2 rounded-sm hover:bg-muted">
-              <TrashIcon className="h-4 w-4" />
+            <AlertDialogTrigger className="rounded-sm hover:bg-muted">
+              <Button className="flex flex-row items-center" variant="outline">
+              <TrashIcon className="h-4 w-4 mr-2" />
+              Cancel Membership
+              </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>

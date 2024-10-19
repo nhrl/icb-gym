@@ -86,6 +86,17 @@ body {
   }
 }
 
+.section-bg {
+  background-image: 
+    linear-gradient(to bottom, #FF865E, rgba(255, 255, 255, 0.01)),
+    linear-gradient(to top right, #FF2D1E, rgba(255, 255, 255, 0.01)),
+    linear-gradient(to top, #FF865E, rgba(255, 255, 255, 0.01)),
+    url('../assets/sectionbg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-blend-mode: multiply;
+}
 
 @keyframes scroll {
   0% {

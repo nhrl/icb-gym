@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { RiAsterisk } from "react-icons/ri";
 import { useState, useEffect } from "react";
 import { Button } from "../components/ui/button";
 import {
@@ -14,11 +15,20 @@ import {
 import { Tag } from "@/components/ui/tag";
 import { 
   InformationCircleIcon, 
-  ArrowUpLeftIcon, 
+  ArrowUpLeftIcon,
+  ArrowRightCircleIcon, 
   SparklesIcon,
   BoltIcon 
 } from "@heroicons/react/24/outline";
-import { Footer } from "../components/footer";
+
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+
+
 
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
@@ -29,7 +39,6 @@ export default function Home() {
   }, []);
 
   const [tags] = useState([
-    "Community Forums",
     "Book Trainers on Preferred Time",
     "Progress Tracking",
     "Digital Membership Card",
@@ -40,8 +49,8 @@ export default function Home() {
 
   const [herosection] = useState([
     {
-      title: "INCREDOBALL",
-      description: "Incredoball is your ultimate fitness companion. We offer a comprehensive platform that caters to all your fitness needs. Join our vibrant community and discover personalized workout plans, delicious nutrition advice, and the motivation to reach your goals.",
+      title: "Incredoball Gym and Fitness Assistant",
+      description: "Incredoball is your ultimate fitness companion. We offer a comprehensive platform that caters to all your fitness needs",
     },
   ]);
 
@@ -71,86 +80,114 @@ export default function Home() {
   return (
     <> 
       {/* Hero Section */}
-      <div className="p-4  w-full rounded-2xl h-auto overflow-hidden text-center">
-        <div className="font-black text-[64px] md:text-[350px] whitespace-nowrap flex items-center animate-scroll">
-          <div className="flex items-center">
-            <BoltIcon className="h-[64px] md:h-[300px] fill-yellow-400 stroke-yellow-400" />
-            {herosection[0].title}
-            <BoltIcon className="h-[64px] md:h-[300px] fill-yellow-400 stroke-yellow-400" />
+      <div className="w-full h-fit text-center flex flex-col gap-6 py-12 px-16">
+        <div className="font-black text-[52px] sm:text-[132px] text-left w-full leading-none h-fit">
+          <div className="flex items-center w-full">
+            {herosection[0].title.split(" ").slice(0, 2).join(" ")}<br />
+            {herosection[0].title.split(" ").slice(2).join(" ")}
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-between">
-          <p className="w-full md:w-[1000px] h-auto mt-4 text-sm text-left">
-            {herosection[0].description}
-          </p>
-
           {/* Button Container */}
-          <div className="flex md:flex-row gap-4 mt-4 md:mt-0">
+          <div className="flex flex-wrap sm:flex-row gap-4 mt-4 sm:mt-6">
             <Button className="rounded-3xl gap-2 flex" variant="outline">
               <InformationCircleIcon className="h-4 w-4" />
               About Us
             </Button>
             <Button className="rounded-3xl gap-2 flex" variant="secondary">
-              <ArrowUpLeftIcon className="h-4 w-4" />
-              Get Started Now
+              Join Incredoball Now
+              <ArrowRightCircleIcon className="h-4 w-4" />
             </Button>
+
+          </div>
+      </div>
+
+
+    
+      {/* Section1 */}
+      <div className="w-full section-bg border-t border-border rounded-t-2xl h-[720px] text-background text-center flex flex-col gap-6 py-12 pb-6 px-16">
+        <div className="font-light text-[16px] sm:text-[48px] text-white md:text-md text-right w-full leading-none h-fit">
+          <div className="flex items-top w-full ">
+            <RiAsterisk className="h-16 w-16  mr-2" />{herosection[0].description}
           </div>
         </div>
       </div>
 
-      {/* Features Section */}
-      <div className="p-4 h-fit  w-full rounded-2xl flex flex-col gap-6 py-6">
-        <div>
-          <h1 className="font-black text-2xl md:text-3xl flex flex-row items-center gap-2">
-            <SparklesIcon className="h-6 w-6 fill-yellow-400 stroke-yellow-400" />
-            Features
-          </h1>
-        </div>
-
-        {/* Tags */}
-        <div className="gap-4 flex flex-wrap w-full">
-          {tags.map((tag, index) => (
-            <Tag key={index} className="text-foreground bg-background font-medium md:text-lg">
-              {tag}
-            </Tag>
-          ))}
-        </div>
-      </div>
-
-      {/* Membership Section */}
-      <div className="p-4 h-fit w-full rounded-2xl flex flex-col gap-4 items-center py-8 dark:">
-        <div className="pb-2">
-          <h1 className="font-black text-2xl md:text-3xl">Membership Subscriptions</h1>
-        </div>
-
-        <div className="gap-4 flex flex-col w-full items-center justify-center md:flex-row">
-          {/* Map through the subscription data */}
-          {subscriptions.map((subscription, index) => (
-          <Card
-          key={index}
-          className="h-[400px] md:h-[565px] w-full md:w-[380px] rounded-2xl flex flex-col justify-between transition-transform duration-300 ease-in-out hover:scale-105 hover:z-10 hover:border-primary/70 hover:shadow-lg hover:shadow-primary/10"
-        >
-        
-              <CardHeader>
-                <CardTitle className="text-[32px] md:text-[50px]">{subscription.title}</CardTitle>
-                <CardDescription className="text-sm md:text-base">
-                  {subscription.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-[32px] md:text-[50px] font-bold">
-                <p>{subscription.price}</p>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full rounded-md flex gap-2" variant="outline">
-                  <ArrowUpLeftIcon className="h-4 w-4" />
-                  Register Now
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+        {/* Features Section */}
+        <div className="p-4 bg-[#CCFF00] h-fit w-full flex flex-col gap-6 py-6">
+        {/* Sliding Container */}
+        <div className="relative overflow-hidden w-full">
+          <div className="flex gap-14  animate-slide">
+            {tags.map((tag, index) => (
+              <div key={index} className="text-[#131605] font-medium md:text-lg whitespace-nowrap items-center">
+                <RiAsterisk className="h-4 w-4 inline-block mr-2" />
+                {tag}
+              </div>
+            ))}
+            {tags.map((tag, index) => (
+              <div key={index + tags.length} className="text-[#131605]  font-medium md:text-lg whitespace-nowrap items-center">
+                <RiAsterisk className="h-4 w-4 inline-block mr-2" />
+                {tag}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes slide {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-100%);
+          }
+        }
+        .animate-slide {
+          display: flex;
+          animation: slide 10s linear infinite;
+        }
+      `}</style>
+
+      <div className="w-full h-fit text-center flex flex-col gap-6 p-[64px]">
+        <div className="font-black text-[36px] sm:text-[84px] text-left w-full leading-none h-fit">
+          <div className="flex items-center w-full">
+            Frequently <br /> Asked Questions
+          </div>
+          </div>
+
+          <div>
+            <Accordion type="single" collapsible className="w-full text-left">
+              <AccordionItem value="item-1">
+                <AccordionTrigger>How can I pay my Memberships and Bookings?</AccordionTrigger>
+                <AccordionContent>
+                  You can pay your memberships and booking through our frontdesk.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-2">
+                <AccordionTrigger>How do I get recommeded with Trainers, Workouts and Dietplans?</AccordionTrigger>
+                <AccordionContent>
+                  You can get recommended with Trainers, Workouts and Dietplans by setting up the User Preference tags.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-3">
+                <AccordionTrigger>Can I Cancel my Bookings and Memberships anytime?</AccordionTrigger>
+                <AccordionContent>
+                  Yes. You can cancel your bookings and memberships anytime.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+
+          {/* Button Container */}
+          <div className="flex flex-wrap sm:flex-row gap-4 mt-4 sm:mt-6">
+            <Button className="rounded-3xl gap-2 flex" variant="secondary">
+              Register and Book Now
+              <ArrowRightCircleIcon className="h-4 w-4" />
+            </Button>
+          </div>
+      </div>
+
     </>
   );
 }

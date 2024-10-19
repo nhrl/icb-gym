@@ -68,14 +68,23 @@ export default function DietPlanMealForm({ dietplanId, onClose }: DietPlanMealFo
     const api = process.env.NEXT_PUBLIC_API_URL;
     const formattedData = { ...data, dietplanId };
 
+    // Log the form data
+    console.log("Form Data:", formattedData);
+
     try {
-      const response = await fetch(`${api}/api/manager/dietplan/meals`, {
+      const response = await fetch(`${api}/api/manager/plans/diet/meal`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formattedData),
       });
 
+      // Log the response
+      console.log("API Response:", response);
+
       const result = await response.json();
+      // Log the result
+      console.log("API Result:", result);
+
       if (result.success) {
         toast({ title: "Success", description: "Meal added successfully." });
         onClose(); // Close the form after submission

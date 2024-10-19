@@ -1,6 +1,15 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { Slash } from "lucide-react"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 import {
   Card,
   CardContent,
@@ -137,11 +146,27 @@ const fetchUserMembership = async (userId: number) => {
   const membershipStatus = membership?.status || "None";
 
   return (
-    <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="p-4 gap-4 flex flex-col">
+    {/* Breadcrumb */}
+    <div className="w-full h-fit">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/user-profile">User Profile</BreadcrumbLink>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+    </div>
+
+    <div className="flex flex-col sm:flex-row md:flex-row gap-4">
       {/* Left Column: Membership Card + Data Table */}
       <div className="flex flex-col gap-4">
         {/* Membership Card */}
-        <Card className="w-full h-fit">
+        <Card className="w-full h-fit bg-background/50">
           <CardHeader className="flex flex-col gap-2">
             <CardTitle className="flex flex-row justify-between items-center">
               <p className="font-medium">Membership</p>
@@ -206,10 +231,12 @@ const fetchUserMembership = async (userId: number) => {
       </div>
 
       {/* Right Column: User Profile */}
-      <UserProfile onProfileUpdate={handleProfileUpdate} />
-
+      <div className="w-full">
+        <UserProfile onProfileUpdate={handleProfileUpdate} />
+      </div>
       {/* Toaster Component - Positioned globally */}
       <Toaster />
+    </div>
     </div>
   );
 }
