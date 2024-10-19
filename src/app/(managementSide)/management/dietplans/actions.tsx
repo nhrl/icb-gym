@@ -32,10 +32,10 @@ import useSWR from 'swr';  // SWR for client-side data fetching
 type Meals = {
   mealid: number;
   dietplan_id: number;
-  meal: "Breakfast" | "Lunch" | "Dinner";
-  food: string;
+  meal_name: "Breakfast" | "Lunch" | "Dinner";
+  dish: string;
   food_desc: string;
-  recipe: string;
+  ingredients: string;
   food_prep: string;
   protein: number;
   carbs: number;
@@ -45,17 +45,17 @@ type Meals = {
 
 type DietplanActionsProps = {
   dietplan: any;
-  mealsData: Meals[];
   mutate: () => void;
 };
 
-const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mealsData, mutate }) => {
+const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mutate }) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isMealFormOpen, setIsMealFormOpen] = useState(false);
   const [isMealsPopupOpen, setIsMealsPopupOpen] = useState(false);
   const [isPhotoPopupOpen, setIsPhotoPopupOpen] = useState(false); // State for photo popup
   const [selectedMeals, setSelectedMeals] = useState<Meals[]>([]);
   const popupRef = useRef<HTMLDivElement>(null); // Ref for detecting clicks outside the popup
+  const defaultImage = "https://mplhgifjydkvnfsofsoc.supabase.co/storage/v1/object/public/images/error/no%20image.jpg?t=2024-10-19T02%3A30%3A35.308Z";
   // Use SWR hook at the top level of the component
   const api = process.env.NEXT_PUBLIC_API_URL;
   const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -162,7 +162,7 @@ const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mealsData, 
                     <CardHeader>
                       <div className="flex flex-row justify-between items-center">
                         <div>
-                          <CardTitle>{meal.meal}</CardTitle>
+                          <CardTitle>{meal.meal_name}</CardTitle>
                           <CardDescription>Calories: {meal.calories} kcal</CardDescription>
                         </div>
                         {/* Delete Button */}
@@ -189,7 +189,7 @@ const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mealsData, 
                     <CardContent>
                       <div className="mb-2 flex flex-row gap-2 items-center">
                         <span>Food</span>
-                        <Badge variant="outline">{meal.food}</Badge>
+                        <Badge variant="outline">{meal.dish}</Badge>
                       </div>
                       <div className="mb-2 flex flex-row gap-2 items-center">
                         <span>Description</span>
@@ -197,7 +197,7 @@ const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mealsData, 
                       </div>
                       <div className="mb-2 flex flex-row gap-2 items-center">
                         <span>Recipe</span>
-                        <Badge variant="outline">{meal.recipe}</Badge>
+                        <Badge variant="outline">{meal.ingredients}</Badge>
                       </div>
                       <div className="mb-2 flex flex-row gap-2 items-center">
                         <span>Preparation</span>
@@ -266,7 +266,13 @@ const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mealsData, 
             </div>
             <Card className="bg-background border border-border rounded-md w-full sm:w-auto flex items-center justify-center p-6">
               <CardContent>
-                <Image src={dietplan.photoUrl} alt="Dietplan Photo" className="w-full h-auto rounded-md" />
+              <Image 
+                src={dietplan.dietplan_img || defaultImage} // Use default image if null
+                alt="Dietplan Photo" 
+                width={600}
+                height={400}
+                className="w-full h-auto rounded-md"
+              />
               </CardContent>
             </Card>
           </div>

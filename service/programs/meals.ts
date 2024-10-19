@@ -4,66 +4,58 @@ import supabase from "../../database/db";
 // For image folder directory
 const folder = `dietplan/meals`;
 
-export async function addMeal(meals: any[]) {
+export async function addMeal(meal: any) {
     try {
-        const mealDataArray = [];
+      const dietplan_id = Number(meal.get('dietplanId'));
+      const mealName =  meal.get('meal') as string;
+      const food = meal.get('food') as string;
+      const food_desc = meal.get('food_desc') as string;
+      const recipe = meal.get('ingredients') as string;
+      const food_prep = meal.get('preparation') as string;
+      const protein = Number(meal.get('protein'));
+      const carbohydrates = Number(meal.get('carbs'));
+      const fats = Number(meal.get('fats'));
+      const calories = Number(meal.get('calories'));
+      const image = meal.get('photo') as File;
+  
+      // If an image is provided, upload it
+      let imageUrl = null;
+      if (image) {
+        imageUrl = await uploadImage(image, folder); // Assuming folder is defined elsewhere
+      }
 
-        // Loop through each meal and process the data
-        for (const meal of meals) {
-        const dietplan_id = Number(meal.dietplan_id);
-        const mealName = meal.meal as string;
-        const food = meal.food as string;
-        const food_desc = meal.food_desc as string;
-        const recipe = meal.recipe as string;
-        const food_prep = meal.food_prep as string;
-        const protein = Number(meal.protein);
-        const carbohydrates = Number(meal.carbs);
-        const fats = Number(meal.fats);
-        const calories = Number(meal.calories);
-        const image = meal.photo as File; // Handle image if provided
-
-        // If an image is provided, upload it
-        let imageUrl = null;
-        if (image) {
-            imageUrl = await uploadImage(image, folder); // Assuming folder is defined elsewhere
-        }
-
-        // Push meal data into the array for batch insertion
-        mealDataArray.push({
-            dietplan_id: dietplan_id,
-            meal: mealName,
-            food: food,
-            food_desc: food_desc,
-            recipe: recipe,
-            food_prep: food_prep,
-            protein: protein,
-            carbohydrates: carbohydrates,
-            fats: fats,
-            calories: calories,
-            meal_img: imageUrl || null, // Use uploaded image URL or set null if no image
-        });
-        }
-
-        // Insert all meal data into the 'meal' table in a single operation
-        const { error } = await supabase.from('meal').insert(mealDataArray);
-
-        if (error) {
-            return {
-                success: false,
-                message: "Failed to add meals. Please try again.",
-                error: error.message,
-            };
-        }
-
-        return { success: true, message: "New meals added successfully" };
-    } catch (error: any) {
+      // Insert the meal data into the 'meal' table
+      const { error } = await supabase.from('meal').insert({
+        dietplan_id: dietplan_id,
+        meal_name: mealName,
+        dish: food,
+        food_desc: food_desc,
+        ingredients: recipe,
+        food_prep: food_prep,
+        protein: protein,
+        carbohydrates: carbohydrates,
+        fats: fats,
+        calories: calories,
+        meal_img: imageUrl || null, // Use uploaded image URL or set null if no image
+      });
+  
+      if (error) {
         return {
-            success: false,
-            message: "An error occurred. Please try again.",
-            error: error.message,
+          success: false,
+          message: "Failed to add the meal. Please try again.",
+          error: error.message,
         };
+      }
+      return { success: true, message: "Meal added successfully." };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: "An error occurred. Please try again.",
+        error: error.message,
+      };
     }
-}
+  }
+  
   
 export async function getMeal(id: any) {
     try {

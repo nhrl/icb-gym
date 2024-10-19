@@ -65,8 +65,6 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
   const [dietplanId, setDietPlanId] = useState<number | null>(null);
   const { toast } = useToast(); // Use the toast hook from shadcn
 
-  
-
   const dietplanForm = useForm<zod.infer<typeof dietplanSchema>>({
     resolver: zodResolver(dietplanSchema),
     defaultValues: {
@@ -101,7 +99,12 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
       const data = message.data;
       setDietPlanId(data.dietplan_id);
       mutate(`${api}/api/manager/plans/diet`);
-      setStep(2); // Move to the next form step
+      toast({
+        title: "Diet plan Added",
+        description: "New Diet plan successfully added.",
+        duration: 3000,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     } else {
       //error message here
       toast({
@@ -110,8 +113,8 @@ export default function DietplanForm({ onClose }: DietplanFormProps) {
         duration: 3000,
       });
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      onClose(); // Close modal
     }
+    onClose(); // Close modal
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
