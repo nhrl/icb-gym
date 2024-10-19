@@ -16,6 +16,8 @@ import {
   CubeTransparentIcon,
   CalendarIcon,
   Bars3BottomLeftIcon,
+  MoonIcon,
+  SunIcon
 } from "@heroicons/react/24/outline";
 import { useRouter } from 'next/router';
 import { deleteCookie } from 'cookies-next';
@@ -27,6 +29,24 @@ const SideBar: React.FC<SideProps> = ({ className }) => {
   const [activeButton, setActiveButton] = useState<string | null>(null);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+
+  const [theme, setTheme] = useState('light'); // Track theme state
+
+  useEffect(() => {
+    setIsMounted(true); // Ensure sidebar only renders after mount to avoid hydration issues
+    const storedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialTheme = storedTheme || (prefersDark ? 'dark' : 'light');
+    setTheme(initialTheme);
+    document.documentElement.classList.toggle('dark', initialTheme === 'dark');
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+  };
 
   // Only render the sidebar after the component has mounted to avoid hydration errors
   useEffect(() => {
@@ -164,7 +184,7 @@ const SideBar: React.FC<SideProps> = ({ className }) => {
               )}
             </button>
           </div>
-
+          
           {/* Sidebar Content */}
           <div
             className={`h-full text-xs flex flex-col justify-between w-full transition-opacity duration-300 ${
@@ -174,6 +194,10 @@ const SideBar: React.FC<SideProps> = ({ className }) => {
             <div className="pl-4">
               <Image src={logo} alt="icblogo" className="inline h-8 w-8" />
             </div>
+
+            <Button onClick={toggleTheme} variant="outline" className="cursor-pointer">
+              {theme === 'light' ? <div className="flex flex-row items-center text-xs"><SunIcon className="h-3 w-3 mr-2" />Light</div>:  <div className="flex flex-row items-center text-xs"><MoonIcon className="h-3 w-3 mr-2" />Dark</div>}
+            </Button>
 
             {/* Render Sidebar Buttons */}
             <div className="flex flex-col gap-6">
@@ -191,6 +215,8 @@ const SideBar: React.FC<SideProps> = ({ className }) => {
                 {transactionModules()}
               </div>
             </div>
+
+          
 
             <Button variant="outline" className="gap-2 items-center flex flex-row" onClick={signOut}>
               <ArrowRightEndOnRectangleIcon className="h-4 w-4" />

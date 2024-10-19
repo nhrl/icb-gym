@@ -194,7 +194,7 @@ export function DataTable<TData, TValue>({
 
             {/* Modal for adding service */}
             {isModalOpen && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50">
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                 <div className="rounded-md w-full max-w-lg">
                   <ServiceAddForm onClose={closeModal} mutate={mutate}/> {/* Close modal on form submission */}
                 </div>

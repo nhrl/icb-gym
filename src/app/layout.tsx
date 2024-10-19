@@ -24,7 +24,7 @@ export default function RootLayout({
 
   return (
     <html lang="en" className={isManagementLayout ? "" : "dark"}>
-      <body className={geistSans.variable}>
+      <body className={geistSans.variable} suppressHydrationWarning>
         {!isManagementLayout && <NavBar />}
         <main>{children}</main>
         {!isManagementLayout && <Footer />}

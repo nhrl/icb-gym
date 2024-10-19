@@ -47,10 +47,19 @@ interface ProgramEditFormProps {
   mutate: () => void;
 }
 
+// Define a new type for the form's default values
+type ProgramFormValues = {
+  program_id: number;
+  title: string;
+  description: string;
+  fitness_level: "Beginner" | "Intermediate" | "Advanced";
+  fitness_goal: "Weight Loss" | "Muscle Gain" | "General Health" | "Endurance";
+};
+
 export default function ProgramEditForm({ onClose, programData }: ProgramEditFormProps) {
   const { toast } = useToast(); // Use toast for notifications
 
-  const programForm = useForm({
+  const programForm = useForm<ProgramFormValues>({
     defaultValues: {
       program_id: programData.program_id, // Pre-filled data
       title: programData.title,
@@ -62,7 +71,7 @@ export default function ProgramEditForm({ onClose, programData }: ProgramEditFor
 
   const api = process.env.NEXT_PUBLIC_API_URL;
 
-  const handleProgramSubmit = async (data: Program) => {
+  const handleProgramSubmit = async (data: ProgramFormValues) => {
     const formData = new FormData();
     formData.append('title', data.title);
     formData.append('description', data.description);
@@ -72,11 +81,11 @@ export default function ProgramEditForm({ onClose, programData }: ProgramEditFor
 
     const response = await fetch(`${api}/api/manager/plans/workout`, {
       method: 'PUT',
-      body:formData
-    })
+      body: formData
+    });
 
     const message = await response.json();
-    if(message.success) {
+    if (message.success) {
       toast({
         title: "Program Updated",
         description: "The program details have been successfully updated.",
@@ -85,7 +94,7 @@ export default function ProgramEditForm({ onClose, programData }: ProgramEditFor
       await new Promise((resolve) => setTimeout(resolve, 2000));
       mutate(`${api}/api/manager/plans/workout`);
     } else {
-      //Error message here
+      // Error message here
       toast({
         title: "Program Update Error",
         description: "Failed to update program",
@@ -97,7 +106,7 @@ export default function ProgramEditForm({ onClose, programData }: ProgramEditFor
   };
 
   return (
-    <div className="text-foreground text-sm rounded-lg w-full h-[fit] sm:h-full p-[64px]">
+    <div className="text-foreground border-border border bg-background text-sm rounded-lg w-full h-[fit] sm:h-full p-[64px]">
       <Form {...programForm}>
         <form onSubmit={programForm.handleSubmit(handleProgramSubmit)} className="gap-4 flex flex-col">
           {/* Close Button */}

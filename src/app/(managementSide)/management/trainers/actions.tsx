@@ -69,7 +69,7 @@ const TrainerActions: React.FC<TrainerActionsProps> = ({ trainer, mutate }) => {
       {/* Popup for Viewing Assignments */}
       {isAssignmentsPopupOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
+          <div className="bg-background border border-border rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
             {/* Back Button */}
             <div className="flex items-center mb-4">
               <ArrowLeftIcon
@@ -88,15 +88,7 @@ const TrainerActions: React.FC<TrainerActionsProps> = ({ trainer, mutate }) => {
       {/* Modal for Editing Trainer */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="p-4 max-w-lg w-full rounded-lg bg-white">
-            {/* Back Button */}
-            <div className="flex items-center mb-4">
-              <ArrowLeftIcon
-                className="h-6 w-6 cursor-pointer"
-                onClick={handleCloseModal} // Close the edit form on back button click
-              />
-              <h2 className="text-xl font-semibold ml-2">Edit Trainer</h2>
-            </div>
+          <div className="p-4 max-w-lg w-full rounded-lg">
             <TrainerEditForm trainerData={trainer} onClose={handleCloseModal} mutate={mutate} />
           </div>
         </div>
