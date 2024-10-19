@@ -165,7 +165,7 @@ export default function LoginModal() {
             <FormLabel className='font-thin text-[11px] gap-1 flex flex-row text-zinc-600'>
               Don&apos;t have an account? 
               <span 
-                className='font-md text-white cursor-pointer'
+                className='font-md text-foreground cursor-pointer'
                 onClick={() => setIsSignupModal(true)} // Switch to signup modal
               > 
                 Sign Up

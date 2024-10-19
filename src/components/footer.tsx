@@ -19,7 +19,6 @@ const Footer: React.FC<footProps> = ({ className }) => {
   //Footer Links
   const [links] = useState([
     { name: 'Home', href: '/' },
-    { name: 'Services', href: '/services' },
     { name: 'About Us', href: '/about' },
     { name: 'Contact Us', href: '/contact' },
   ]);
@@ -30,7 +29,7 @@ const Footer: React.FC<footProps> = ({ className }) => {
   }
 
   return (
-    <div className={`flex flex-col md:flex-row items-start w-full justify-between p-12 border border-border rounded-2xl ${className}`}>
+    <div className={`flex flex-col md:flex-row items-start w-full justify-between p-12 border border-border ${className}`}>
       
       {/* Left Column - Heading and Logo */}
       <div className='text-xl font-extrabold items-start flex flex-col gap-8'>

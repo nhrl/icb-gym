@@ -40,7 +40,6 @@ const mealSchema = zod.object({
   carbs: zod.number().min(0, "Carbs must be at least 0"),
   fats: zod.number().min(0, "Fats must be at least 0"),
   calories: zod.number().min(0, "Calories must be at least 0"),
-  photo: zod.instanceof(File).optional(), // Add photo as an optional file
 });
 
 interface DietPlanMealFormProps {
@@ -67,32 +66,25 @@ export default function DietPlanMealForm({ dietplanId, onClose }: DietPlanMealFo
 
   const handleMealSubmit = async (data: zod.infer<typeof mealSchema>) => {
     const api = process.env.NEXT_PUBLIC_API_URL;
-    const formData = new FormData();
+    const formattedData = { ...data, dietplanId };
 
-    // Append each field from the schema to FormData
-    formData.append("meal", data.meal); 
-    formData.append("food", data.food); 
-    formData.append("food_desc", data.food_desc); 
-    formData.append("ingredients", data.ingredients);
-    formData.append("preparation", data.preparation);
-    formData.append("protein", String(data.protein)); 
-    formData.append("carbs", String(data.carbs)); 
-    formData.append("fats", String(data.fats)); 
-    formData.append("calories", String(data.calories));
-    formData.append("dietplanId",String(dietplanId));
-
-    // If photo is provided, add it to FormData
-    if (data.photo instanceof File) {
-      formData.append("photo", data.photo);
-    }
+    // Log the form data
+    console.log("Form Data:", formattedData);
 
     try {
       const response = await fetch(`${api}/api/manager/plans/diet/meal`, {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formattedData),
       });
 
+      // Log the response
+      console.log("API Response:", response);
+
       const result = await response.json();
+      // Log the result
+      console.log("API Result:", result);
+
       if (result.success) {
         toast({ title: "Success", description: "Meal added successfully." });
         onClose(); // Close the form after submission
@@ -184,7 +176,7 @@ export default function DietPlanMealForm({ dietplanId, onClose }: DietPlanMealFo
               <FormItem>
                 <FormLabel>Protein (g)</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
+                  <Input type="number" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -194,7 +186,7 @@ export default function DietPlanMealForm({ dietplanId, onClose }: DietPlanMealFo
               <FormItem>
                 <FormLabel>Carbs (g)</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
+                  <Input type="number" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -204,7 +196,7 @@ export default function DietPlanMealForm({ dietplanId, onClose }: DietPlanMealFo
               <FormItem>
                 <FormLabel>Fats (g)</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
+                  <Input type="number" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -214,7 +206,7 @@ export default function DietPlanMealForm({ dietplanId, onClose }: DietPlanMealFo
               <FormItem>
                 <FormLabel>Calories</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
+                  <Input type="number" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

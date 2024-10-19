@@ -108,41 +108,41 @@ export const NavBar: React.FC = () => {
 
   return (
     <>
-      <div className="top-0 sticky bg-background/80 backdrop-filter backdrop-blur z-[200] flex items-center w-full justify-between p-4 ">
+      <div className="top-0 z-50 sticky bg-background flex items-center w-full justify-between p-4 ">
         <Link href="/" passHref>
-          <div className="text-xl font-extrabold items-center flex gap-2 cursor-pointer">
+          <div className="text-2xl font-black items-center flex gap-2 cursor-pointer">
             <Image src={logo} alt="icblogo" className="inline h-8 w-8" priority />
             <span>Incredoball</span>
           </div>
         </Link>
 
-        <div className="gap-2 flex items-center">
+        <div className=" flex gap-2 items-center">
           {user?.isLoggedIn ? (
             <DropdownMenu onOpenChange={toggleDropdown}>
               <DropdownMenuTrigger asChild>
-                <div className="flex items-center gap-2 cursor-pointer">
+                <Button className="flex items-center gap-2 cursor-pointer p-2 rounded-full" variant="outline">
+                  <Avatar className="w-6 h-6">
+                      {user.avatar ? (
+                        <Image
+                          src={user.avatar}
+                          alt="User Avatar"
+                          layout="fill"
+                          objectFit="cover"
+                        />
+                      ) : (
+                        <AvatarFallback>
+                          {user.name[0]}
+                          {user.name.split(" ")[1][0]}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
                   <span className="font-medium">Hello, {user.name}</span>
-                  <Avatar className="w-10 h-10">
-                    {user.avatar ? (
-                      <Image
-                        src={user.avatar}
-                        alt="User Avatar"
-                        layout="fill"
-                        objectFit="cover"
-                      />
-                    ) : (
-                      <AvatarFallback>
-                        {user.name[0]}
-                        {user.name.split(" ")[1][0]}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
                   <ChevronDownIcon
                     className={`h-4 w-4 transition-transform duration-300 ${
                       isDropdownOpen ? "rotate-180" : "rotate-0"
                     }`}
                   />
-                </div>
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-48 mt-2 z-[300]">
                 <Link href="/user-profile" passHref>
@@ -153,9 +153,13 @@ export const NavBar: React.FC = () => {
               </DropdownMenuContent>
               <div onClick={toggleTheme} className="cursor-pointer">
                 {theme === "light" ? (
-                  <MoonIcon className="h-4 w-4 text-foreground" />
+                  <Button className="rounded-full bg-purple-600">
+                    <MoonIcon className="h-4 w-4 text-background" />
+                  </Button>
                 ) : (
-                  <SunIcon className="h-4 w-4 text-foreground" />
+                  <Button className="rounded-full bg-[#CCFF00]">
+                    <SunIcon className="h-4 w-4 text-background" />
+                  </Button>
                 )}
               </div>
             </DropdownMenu>
@@ -164,25 +168,29 @@ export const NavBar: React.FC = () => {
           ) : (
             <>
               <Button
-                className="font-medium w-fit flex gap-2 rounded-xl"
+                className="font-medium w-fit flex gap-2 rounded-full"
                 variant="ghost"
                 onClick={handleLoginClick}
               >
                 Login
               </Button>
               <Button
-                className="font-medium rounded-xl"
-                variant="ghost"
+                className="font-medium rounded-full"
+                variant="secondary"
                 onClick={handleSignupClick}
               >
-                Signup
+                Register an Account
               </Button>
 
-              <div onClick={toggleTheme} className="cursor-pointer">
+              <div onClick={toggleTheme} className="cursor-pointer ">
                 {theme === "light" ? (
-                  <MoonIcon className="h-4 w-4 text-foreground" />
+                  <Button className="rounded-full bg-purple-600">
+                    <MoonIcon className="h-4 w-4 text-background" />
+                  </Button>
                 ) : (
-                  <SunIcon className="h-4 w-4 text-foreground" />
+                  <Button className="rounded-full bg-[#CCFF00]">
+                    <SunIcon className="h-4 w-4 text-background" />
+                  </Button>
                 )}
               </div>
             </>
@@ -191,13 +199,13 @@ export const NavBar: React.FC = () => {
       </div>
 
       {isSignupModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-[300] bg-background/50">
+        <div className="fixed inset-0 flex items-center justify-center z-[300] bg-black/50">
           <SignupModal />
         </div>
       )}
 
       {isLoginModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-[300] bg-background/50">
+        <div className="fixed inset-0 flex items-center justify-center z-[300] bg-black/50">
           <LoginModal />
         </div>
       )}
