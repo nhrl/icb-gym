@@ -40,36 +40,6 @@ export type Meals = {
   calories: number;
 };
 
-// Mock Data for Meals
-const mealsData: Meals[] = [
-  {
-    mealid: 1,
-    dietplan_id: 1,
-    meal: "Breakfast",
-    food: "Oatmeal",
-    food_desc: "Oatmeal with fruits and nuts",
-    recipe: "Mix oats with milk, add fruits",
-    food_prep: "Boil oats, stir fruits",
-    protein: 15,
-    carbs: 30,
-    fats: 10,
-    calories: 300,
-  },
-  {
-    mealid: 1,
-    dietplan_id: 1,
-    meal: "Breakfast",
-    food: "Oatmeal",
-    food_desc: "Oatmeal with fruits and nuts",
-    recipe: "Mix oats with milk, add fruits",
-    food_prep: "Boil oats, stir fruits",
-    protein: 15,
-    carbs: 30,
-    fats: 10,
-    calories: 300,
-  },
-];
-
 // Define the columns for your Dietplans table
 export const columns: ColumnDef<Dietplans>[] = [
   {
@@ -115,7 +85,7 @@ export const columns: ColumnDef<Dietplans>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <DietplanActions dietplan={row.original} mealsData={mealsData} mutate={function (): void {
+    cell: ({ row }) => <DietplanActions dietplan={row.original} mutate={function (): void {
       throw new Error("Function not implemented.");
     } } />,
   },
