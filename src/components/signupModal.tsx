@@ -51,7 +51,12 @@ const genders = [
 
 const api = process.env.NEXT_PUBLIC_API_URL;
 
-export default function SignupModal() {
+
+interface signupProps {
+  onClose: () => void; // Close modal function
+}
+
+export default function SignupModal({onClose}:signupProps){
   const [isLoginModal, setIsLoginModal] = useState(false); // State to switch between modals
   const { toast } = useToast(); // Use the toast hook
 
@@ -104,25 +109,29 @@ export default function SignupModal() {
     }
   };
 
-  const handleRefresh = () => {
-    window.location.href = '/'; // Refresh the page
+  
+  const handleCloseLogin = () => {
+    setIsLoginModal(false);
   };
+
+
+
 
   // Toggle to show login modal instead of signup modal
   if (isLoginModal) {
-    return <LoginModal />;
+    return <LoginModal onClose={handleCloseLogin} />;
   }
 
   return (
     <>
-      <div className="bg-background text-foreground text-sm rounded-lg shadow-lg w-fit h-fit p-[64px] border border-border">
+      <div className="bg-background text-foreground text-sm rounded-lg shadow-lg w-fit h-fit p-[64px] border border-border overflow-y-auto">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="gap-4 flex flex-col">
 
             {/* Logo and Title */}
             <div className="flex md:flex-row lg:flex-row sm:flex-col gap-2 w-full items-center justify-between">
               <Image src={logo} alt="icblogo" className="inline h-8 w-8" />
-              <ArrowLeftIcon className="h-6 w-6 cursor-pointer" onClick={handleRefresh} />
+              <ArrowLeftIcon className="h-6 w-6 cursor-pointer" onClick={onClose} />
             </div>
 
             <div>

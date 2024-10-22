@@ -21,7 +21,12 @@ const loginFormSchema = zod.object({
   password: zod.string().min(8),
 });
 
-export default function LoginModal() {
+interface loginProps {
+  onClose: () => void; // Close modal function
+}
+
+
+export default function LoginModal({onClose}: loginProps) {
   const [isSignupModal, setIsSignupModal] = useState(false); // State to toggle between login and signup
   const { toast } = useToast(); // Use the toast hook
   const form = useForm<zod.infer<typeof loginFormSchema>>({
@@ -100,13 +105,18 @@ export default function LoginModal() {
     }
   };
 
+  const handleCloseSignup = () => {
+    setIsSignupModal(false);
+  };
+
+  
   const handleRefresh = () => {
     window.location.href = '/'; // Change the URL and refresh the page
   };
 
   // Toggle to show signup modal instead of login modal
   if (isSignupModal) {
-    return <SignupModal />;
+    return <SignupModal onClose={handleCloseSignup}/>;
   }
 
   return (
@@ -117,7 +127,7 @@ export default function LoginModal() {
           {/* Logo and Title */}
           <div className='flex md:flex-row lg:flex-row sm:flex-col gap-2 w-full items-center justify-between'>
             <Image src={logo} alt="icblogo" className='inline h-8 w-8' />
-            <ArrowLeftIcon className="h-6 w-6 cursor-pointer" onClick={handleRefresh} />
+            <ArrowLeftIcon className="h-6 w-6 cursor-pointer" onClick={onClose} />
           </div>
 
           <div>
