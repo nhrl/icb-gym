@@ -127,7 +127,7 @@ const SideBar: React.FC<SideProps> = ({ className }) => {
   // Transaction Module
   const transactionModules = () => {
     const buttons = [
-      { name: "Bookings", path: "/bookings" },
+      { name: "Bookings", path: "/management/bookings" },
       { name: "Memberships", path: "/management/memberships" },
     ];
 

@@ -8,7 +8,7 @@ import Link from "next/link";
 import logo from "../assets/logos/logodark.png";
 import SignupModal from "./signupModal";
 import LoginModal from "./loginModal";
-import { ChevronDownIcon, SunIcon, MoonIcon } from "@heroicons/react/24/outline"; // Import MoonIcon
+import { ChevronDownIcon, SunIcon, MoonIcon, Bars3Icon} from "@heroicons/react/24/outline"; // Import MoonIcon
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -96,6 +96,16 @@ export const NavBar: React.FC = () => {
     }
   }, [data]);
 
+  const handleCloseSignup = () => {
+    setIsSignupModalOpen(false);
+  };
+
+  const handleCloseLogin = () => {
+    setIsLoginModalOpen(false);
+  };
+
+
+
   const handleSignupClick = () => setIsSignupModalOpen(true);
   const handleLoginClick = () => setIsLoginModalOpen(true);
   const handleLogout = () => {
@@ -116,8 +126,48 @@ export const NavBar: React.FC = () => {
           </div>
         </Link>
 
-        <div className=" flex gap-2 items-center">
+        <div className=" flex gap-2 flex-row items-center w-full justify-end">
           {user?.isLoggedIn ? (
+            <>
+            {/*  links */}
+            <div className="hidden sm:block md:block w-full" >
+              <div className="flex flex-row text-xs gap-8 w-full justify-center">
+              <Link href="/booking-services" passHref>
+                  <span>Booking</span>
+              </Link>
+
+              <Link href="/programs" passHref>
+                  <span>Programs</span>
+              </Link>
+
+              <Link href="/diet-plans" passHref>
+                  <span>Dietplans</span>
+              </Link>
+              </div>
+            </div>
+
+            
+            <div className="block sm:hidden">
+              <DropdownMenu>
+                <DropdownMenuTrigger className="rounded-full p-[4px] px-2 h-fit">
+                    <Bars3Icon className="h-6 w-6 text-foreground" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem > 
+                    <Link href="/booking-services" passHref>
+                    <span>Booking</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <Link href="/programs" passHref>
+                    <span>Programs</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
             <DropdownMenu onOpenChange={toggleDropdown}>
               <DropdownMenuTrigger asChild>
                 <Button className="flex items-center gap-2 cursor-pointer p-2 rounded-full" variant="outline">
@@ -136,7 +186,7 @@ export const NavBar: React.FC = () => {
                         </AvatarFallback>
                       )}
                     </Avatar>
-                  <span className="font-medium">Hello, {user.name}</span>
+                  <span className="font-medium hidden sm:block">Hello, {user.name}</span>
                   <ChevronDownIcon
                     className={`h-4 w-4 transition-transform duration-300 ${
                       isDropdownOpen ? "rotate-180" : "rotate-0"
@@ -163,24 +213,36 @@ export const NavBar: React.FC = () => {
                 )}
               </div>
             </DropdownMenu>
-
-            
+            </>
           ) : (
             <>
               <Button
-                className="font-medium w-fit flex gap-2 rounded-full"
+                className="font-medium w-fit gap-2 rounded-full hidden sm:block"
                 variant="ghost"
                 onClick={handleLoginClick}
               >
                 Login
               </Button>
               <Button
-                className="font-medium rounded-full"
+                className="font-medium rounded-full hidden sm:block"
                 variant="secondary"
                 onClick={handleSignupClick}
               >
                 Register an Account
               </Button>
+
+              <div className="block sm:hidden">
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="rounded-full p-[4px] px-2 h-fit">
+                      <Bars3Icon className="h-6 w-6 text-foreground" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={handleLoginClick}>Login</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignupClick}>Register an Account</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
 
               <div onClick={toggleTheme} className="cursor-pointer ">
                 {theme === "light" ? (
@@ -200,13 +262,13 @@ export const NavBar: React.FC = () => {
 
       {isSignupModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-[300] bg-black/50">
-          <SignupModal />
+          <SignupModal onClose={handleCloseSignup}/>
         </div>
       )}
 
       {isLoginModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-[300] bg-black/50">
-          <LoginModal />
+          <LoginModal onClose={handleCloseLogin}/>
         </div>
       )}
     </>

@@ -49,28 +49,11 @@ export default function Home() {
 
   const [herosection] = useState([
     {
-      title: "Incredoball Gym and Fitness Assistant",
+      title: "Incredoball Gym and Fitness",
       description: "Incredoball is your ultimate fitness companion. We offer a comprehensive platform that caters to all your fitness needs",
     },
   ]);
 
-  const [subscriptions] = useState([
-    {
-      title: "Standard",
-      description: "Boost your stamina and heart health with this targeted program. Designed to gradually increase endurance, it combines steady-state cardio with interval training.",
-      price: "₱1000",
-    },
-    {
-      title: "Premium",
-      description: "Get access to advanced workout plans, personal coaching, and nutritional guides to fast-track your fitness journey.",
-      price: "₱3000",
-    },
-    {
-      title: "Elite",
-      description: "The ultimate fitness package including 1-on-1 personal training sessions, detailed diet plans, and performance tracking with elite coaching.",
-      price: "₱2000",
-    },
-  ]);
 
   if (!isMounted) {
     // Render nothing or a simple fallback until the component has mounted
@@ -81,7 +64,7 @@ export default function Home() {
     <> 
       {/* Hero Section */}
       <div className="w-full h-fit text-center flex flex-col gap-6 py-12 px-16">
-        <div className="font-black text-[52px] sm:text-[132px] text-left w-full leading-none h-fit">
+        <div className="font-black text-[36px] sm:text-[132px] text-left w-full leading-none h-fit">
           <div className="flex items-center w-full">
             {herosection[0].title.split(" ").slice(0, 2).join(" ")}<br />
             {herosection[0].title.split(" ").slice(2).join(" ")}
@@ -159,19 +142,19 @@ export default function Home() {
           <div>
             <Accordion type="single" collapsible className="w-full text-left">
               <AccordionItem value="item-1">
-                <AccordionTrigger>How can I pay my Memberships and Bookings?</AccordionTrigger>
+                <AccordionTrigger className="text-left">How can I pay my Memberships and Bookings?</AccordionTrigger>
                 <AccordionContent>
                   You can pay your memberships and booking through our frontdesk.
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="item-2">
-                <AccordionTrigger>How do I get recommeded with Trainers, Workouts and Dietplans?</AccordionTrigger>
+              <AccordionItem value="item-2" >
+                <AccordionTrigger className="text-left">How do I get recommeded with Trainers, Workouts and Dietplans?</AccordionTrigger>
                 <AccordionContent>
                   You can get recommended with Trainers, Workouts and Dietplans by setting up the User Preference tags.
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="item-3">
-                <AccordionTrigger>Can I Cancel my Bookings and Memberships anytime?</AccordionTrigger>
+              <AccordionItem value="item-3" >
+                <AccordionTrigger className="text-left" >Can I Cancel my Bookings and Memberships anytime?</AccordionTrigger>
                 <AccordionContent>
                   Yes. You can cancel your bookings and memberships anytime.
                 </AccordionContent>
