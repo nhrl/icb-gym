@@ -26,10 +26,12 @@ import { ArrowLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast"; // Import useToast for notifications
 import { Toaster } from "@/components/ui/toaster";
+import { Textarea } from "@/components/ui/textarea";
 
 // Define the form schema for Assignment
 const assignmentSchema = zod.object({
   service_id: zod.string().nonempty("Service is required"),
+  description:zod.string().nonempty("Description is required"),
   time_start: zod.string().nonempty("Start time is required"),
   time_end: zod.string().nonempty("End time is required"),
   schedule: zod.array(zod.string()).nonempty("At least one day must be selected"),
@@ -66,6 +68,7 @@ export default function TrainerAssignForm({ trainerId, onClose }: TrainerAssignF
     resolver: zodResolver(assignmentSchema),
     defaultValues: {
       service_id: "",
+      description: "",
       time_start: "",
       time_end: "",
       schedule: [],
@@ -107,7 +110,7 @@ export default function TrainerAssignForm({ trainerId, onClose }: TrainerAssignF
       time_start: convertTo24HourFormat(data.time_start),
       time_end: convertTo24HourFormat(data.time_end),
     };
-
+    
     const response = await fetch(`${api}/api/manager/trainer/assign`, { // Replace with your API endpoint
       method: 'POST',
       headers: {
@@ -123,16 +126,16 @@ export default function TrainerAssignForm({ trainerId, onClose }: TrainerAssignF
         duration: 3000,
       });
       await new Promise((resolve) => setTimeout(resolve, 2000));
+      onClose(); // Close modal after submission
     } else {
       console.log(message.error);
       toast({
         title: "Trainer Assigned Error",
-        description: "Failed to assign trainer.",
+        description: message.message  || "Failed to assign trainer.",
         duration: 3000,
       });
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
-    onClose(); // Close modal after submission
   };
 
   const metadata = {
@@ -184,7 +187,20 @@ export default function TrainerAssignForm({ trainerId, onClose }: TrainerAssignF
                 </FormItem>
               )}
             />
-
+            {/* Description */}
+              <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea {...field} className="border p-2 w-full rounded" />
+                      </FormControl>
+                      <FormMessage>{form.formState.errors.description?.message}</FormMessage>
+                    </FormItem>
+                  )}
+              />
             {/* Time Availability (Start and End) */}
             <div className="flex flex-row gap-2">
               <FormField

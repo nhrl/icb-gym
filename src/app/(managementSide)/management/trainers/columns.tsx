@@ -56,6 +56,7 @@ export type Assignment = {
   service_id: number;
   trainer_id: number;
   start_time:string;
+  description:string;
   end_time:string;
   schedule: string[];
   max_capacity: number;
@@ -167,6 +168,12 @@ const deleteAssign = async (assign_id: number) => {
                 </div>
               </CardHeader>
               <CardContent>
+              <div className="mb-2 flex flex-row gap-2 items-center">
+                  Description
+                  <Badge variant="outline">
+                    {assignment.description}
+                  </Badge>
+                </div>
                 <div className="mb-2 flex flex-row gap-2 items-center">
                   Time Availability
                   <Badge variant="outline">
