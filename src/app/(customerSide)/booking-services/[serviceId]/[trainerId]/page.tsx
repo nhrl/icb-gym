@@ -24,97 +24,57 @@ import {
 } from "@/components/ui/dialog";
 import { User } from "lucide-react";
 
+interface Trainer {
+  trainer_id: number;
+  firstname: string;
+  lastname: string;
+  specialty: string;
+  email: string;
+  trainer_img: string;
+  availability: string;
+}
 
+interface Service {
+  service_name: string;
+}
 
-// Mock Data
-const services = [
-  {
-    serviceId: 1,
-    name: "Basketball",
-    desc: "Improve your strength with guided weight lifting programs.",
-    photo: "https://images.unsplash.com/photo-1627627256672-027a4613d028?q=80&w=1774&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-  {
-    serviceId: 2,
-    name: "Yoga",
-    desc: "Find your balance with expert-led yoga sessions.",
-    photo: "/images/yoga.jpg",
-  },
-];
+interface Assignment {
+  assign_id: number;
+  service_id: number;
+  trainer_id: number;
+  description: string;
+  start_time: string;
+  end_time: string;
+  schedule: string[];
+  max_capacity: number;
+  current_capacity: number;
+  rate: number;
+  trainer: Trainer;
+  service: Service;
+}
 
-const trainers = [
-  {
-    trainer_id: 1,
-    firstName: "John",
-    lastName: "Doe",
-    specialty: "Basketball",
-    email_address: "john@example.com",
-    availability: "Full",
-    photo: "https://images.unsplash.com/photo-1549476464-37392f717541?q=80&w=1887&auto=format&fit=crop",
-  },
-  {
-    trainer_id: 2,
-    firstName: "Jane",
-    lastName: "Doe",
-    specialty: "Yoga",
-    email_address: "jane@example.com",
-    availability: "Full",
-    photo: "https://images.unsplash.com/photo-1627627256672-027a4613d028?q=80&w=1774&auto=format&fit=crop",
-  },
+const formatTime = (time: string) => {
+  const [hour, minute] = time.split(':');
+  const date = new Date();
+  date.setHours(parseInt(hour, 10));
+  date.setMinutes(parseInt(minute, 10));
 
-  { 
-    trainer_id: 3,
-    firstName: "John",
-    lastName: "Dane",
-    specialty: "Basketball",
-    email_address: "john@example.com",
-    availability: "Available",
-    photo: "https://images.unsplash.com/photo-1548690312-e3b507d8c110?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-  },
-];
+  const options: Intl.DateTimeFormatOptions = {
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: true
+  };
 
-const trainerAssigns = [
-  {
-    assign_id: 1,
-    service_id: 1,
-    trainer_id: 1,
-    desc: "Improve your strength with guided weight lifting programs.",
-    time_availability: "9 AM - 12 PM",
-    schedule: ["Monday", "Wednesday", "Friday"],
-    max_capacity: 10,
-    current_capacity: 6,
-    rate: 50,
-  },
-  {
-    assign_id: 2,
-    service_id: 2,
-    trainer_id: 2,
-    desc: "Yoga sessions to find balance, peace, and inner strength. Our yoga classes are designed to help you connect with your body and mind, providing a holistic approach to wellness. Whether you are a beginner or an experienced practitioner, our sessions cater to all levels. Join us to improve your flexibility, reduce stress, and enhance your overall well-being. Our experienced instructors will guide you through various poses and breathing techniques, ensuring a safe and supportive environment. Embrace the journey of self-discovery and transformation with our yoga sessions. Find your balance, rejuvenate your spirit, and cultivate a sense of tranquility.",
-    time_availability: "8 AM - 10 AM",
-    schedule: ["Tue", "Thu"],
-    max_capacity: 15,
-    current_capacity: 10,
-    rate: 60,
-  },
-  {
-    assign_id: 3,
-    service_id: 1,
-    trainer_id: 3,
-    desc: "Yoga sessions to find balance, peace, and inner strength. Our yoga classes are designed to help you connect with your body and mind, providing a holistic approach to wellness. Whether you are a beginner or an experienced practitioner, our sessions cater to all levels. Join us to improve your flexibility, reduce stress, and enhance your overall well-being. Our experienced instructors will guide you through various poses and breathing techniques, ensuring a safe and supportive environment. Embrace the journey of self-discovery and transformation with our yoga sessions. Find your balance, rejuvenate your spirit, and cultivate a sense of tranquility.",
-    time_availability: "8 AM - 10 AM",
-    schedule: ["Tuesday", "Thursday"],
-    max_capacity: 20,
-    current_capacity: 13,
-    rate: 60,
-  },
-];
+  return date.toLocaleTimeString('en-US', options);
+};
+
 
 export default function TrainerDetailPage() {
   const { trainerId, serviceId } = useParams();
   const [isFavorite, setIsFavorite] = useState(false);
-  const [trainer, setTrainer] = useState<typeof trainers[0] | null>(null);
-  const [service, setService] = useState<typeof services[0] | null>(null);
-  const [assignment, setAssignment] = useState<typeof trainerAssigns[0] | null>(null);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [howtopay] = useState([
     {
@@ -130,20 +90,39 @@ export default function TrainerDetailPage() {
     },
   ]);
 
+  const api = process.env.NEXT_PUBLIC_API_URL;
+
   useEffect(() => {
-    const foundTrainer = trainers.find((t) => t.trainer_id.toString() === trainerId);
-    setTrainer(foundTrainer || null);
+    const fetchAssignments = async () => {
+      try {
+        const response = await fetch(`${api}/api/customer/service?id=${serviceId}`);
+        const result = await response.json();
 
-    const foundService = services.find((s) => s.serviceId.toString() === serviceId);
-    setService(foundService || null);
+        if (result.success) {
+          setAssignments(result.data);
+        } else {
+          setError(result.message || "Failed to fetch assignments.");
+        }
+      } catch (err) {
+        setError("An error occurred while fetching data.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    const foundAssignment = trainerAssigns.find(
-      (a) => a.trainer_id.toString() === trainerId && a.service_id.toString() === serviceId
-    );
-    setAssignment(foundAssignment || null);
-  }, [trainerId, serviceId]);
+    fetchAssignments();
+  }, [serviceId, api]);
 
-  if (!trainer || !service) return <p>Trainer or Service not found.</p>;
+
+  if (loading) return <p>Loading assignments...</p>;
+  if (error) return <p>Error: {error}</p>;
+
+  const assignment = assignments.find((assign) => assign.trainer_id === parseInt(trainerId as string, 10));
+
+  if (!assignment) return <p>No assignment available for this trainer.</p>;
+
+  const trainer = assignment.trainer;
+  const service = assignment.service;
 
   return (
     <div className="w-full p-12 px-8 sm:px-[180px]">
@@ -155,12 +134,12 @@ export default function TrainerDetailPage() {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink href={`/booking-services/${serviceId}`}>
-              {service.name}
+              {service.service_name}
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href="#">{trainer.firstName} {trainer.lastName}</BreadcrumbLink>
+            <BreadcrumbLink href="#">{trainer.firstname} {trainer.lastname}</BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -168,7 +147,7 @@ export default function TrainerDetailPage() {
       <Card className="mt-8 border-none">
         <CardHeader
           className="h-64 bg-cover bg-center border border-border rounded-lg"
-          style={{ backgroundImage: `url(${trainer.photo})` }}
+          style={{ backgroundImage: `url(${trainer.trainer_img})` }}
         >
           <div className="p-2 px-4 w-fit rounded-full bg-black/90 backdrop-filter backdrop-blur-lg flex items-center justify-center cursor-pointer hover:bg-black/20">
             <UserGroupIcon className="h-4 w-4 mr-2 text-white" />
@@ -193,7 +172,7 @@ export default function TrainerDetailPage() {
                   <div className="flex flex-col w-fit justify-between">
                     <div className="flex flex-row w-fit items-center gap-2">
                       <h2 className="text-2xl font-bold">
-                      {trainer.firstName} {trainer.lastName}
+                      {trainer.firstname} {trainer.lastname}
                       </h2>
                       <Badge 
                         className="rounded-full text-white" 
@@ -202,7 +181,7 @@ export default function TrainerDetailPage() {
                         {trainer.availability}
                       </Badge>
                     </div>
-                    <p className="text-md">{trainer.email_address}</p>
+                    <p className="text-md">{trainer.email}</p>
                     </div>
 
                     <Toggle 
@@ -215,7 +194,7 @@ export default function TrainerDetailPage() {
 
 
                   </div>
-                  <p className="text-lg text-muted-foreground">{assignment.desc}</p>
+                  <p className="text-lg text-muted-foreground">{assignment.description}</p>
               </div>
 
               <Card className=" w-full sm:w-[375px] shadow-lg">
@@ -250,17 +229,25 @@ export default function TrainerDetailPage() {
                   <div className="flex flex-col gap-2">
                     <h3 className="text-sm font-regular">Schedule</h3>
                       <div className="flex flex-wrap sm:flex-row gap-2">
-                        {assignment.schedule.map((day, index) => (
-                          <div key={index} className="text-xs w-fit h-fit p-2 px-4 border-border border  rounded-full text-muted-foreground">
-                            {day}
-                          </div>
-                        ))}
-                      </div>
+                      {(() => {
+                        let parsedSchedule: string[] = [];
+                        try {
+                          parsedSchedule = Array.isArray(assignment.schedule)
+                            ? assignment.schedule
+                            : JSON.parse(assignment.schedule);
+                        } catch (error) {
+                          console.error("Failed to parse schedule:", error);
+                        }
 
+                        return parsedSchedule.map((day, index) => (
+                          <Badge key={index} className="text-xs">{day}</Badge>
+                        ));
+                      })()}
+                      </div>
                       <h3 className="text-sm font-regular">Time</h3>
                       <div className="flex flex-col sm:flex-row gap-2">
                           <div className="text-xs w-fit h-fit p-2 px-4 border-border border  rounded-full text-muted-foreground">
-                            {assignment.time_availability}
+                            {formatTime(assignment.start_time)} - {formatTime(assignment.end_time)}
                           </div>
                       </div>
                     </div>
