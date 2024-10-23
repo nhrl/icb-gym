@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import * as zod from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,6 +40,7 @@ const mealSchema = zod.object({
   carbs: zod.number().min(0, "Carbs must be at least 0"),
   fats: zod.number().min(0, "Fats must be at least 0"),
   calories: zod.number().min(0, "Calories must be at least 0"),
+  photo: zod.instanceof(File).optional(), // Add photo as an optional file
 });
 
 interface DietPlanMealFormProps {
@@ -49,6 +50,7 @@ interface DietPlanMealFormProps {
 
 export default function DietPlanMealForm({ dietplanId, onClose }: DietPlanMealFormProps) {
   const { toast } = useToast();
+  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null); // Store the selected photo
   const form = useForm<zod.infer<typeof mealSchema>>({
     resolver: zodResolver(mealSchema),
     defaultValues: {
@@ -61,35 +63,54 @@ export default function DietPlanMealForm({ dietplanId, onClose }: DietPlanMealFo
       carbs: 0,
       fats: 0,
       calories: 0,
+      photo: undefined, // Initialize with no photo
     },
   });
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    if (file) {
+      setSelectedPhoto(file);
+      form.setValue("photo", file); // Set the file in the form data
+    }
+  };
 
   const handleMealSubmit = async (data: zod.infer<typeof mealSchema>) => {
     const api = process.env.NEXT_PUBLIC_API_URL;
     const formattedData = { ...data, dietplanId };
-
+    const formData = new FormData();
     // Log the form data
     console.log("Form Data:", formattedData);
+    // Append each field to the FormData instance
+    formData.append("meal", formattedData.meal);
+    formData.append("food", formattedData.food);
+    formData.append("food_desc", formattedData.food_desc);
+    formData.append("ingredients", formattedData.ingredients);
+    formData.append("preparation", formattedData.preparation);
+    formData.append("protein", formattedData.protein.toString()); 
+    formData.append("carbs", formattedData.carbs.toString()); 
+    formData.append("fats", formattedData.fats.toString()); 
+    formData.append("calories", formattedData.calories.toString()); 
+    formData.append("dietplanId", formattedData.dietplanId.toString()); 
+
+    if (selectedPhoto) {
+      console.log("Uploaded Photo:", selectedPhoto); // Handle photo upload
+      formData.append('photo', selectedPhoto);
+    }
 
     try {
       const response = await fetch(`${api}/api/manager/plans/diet/meal`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formattedData),
+        method: 'POST',
+        body:formData
       });
 
-      // Log the response
-      console.log("API Response:", response);
-
       const result = await response.json();
-      // Log the result
-      console.log("API Result:", result);
-
       if (result.success) {
         toast({ title: "Success", description: "Meal added successfully." });
         onClose(); // Close the form after submission
       } else {
         toast({ title: "Error", description: "Failed to add meal.", variant: "destructive" });
+        console.log(result.error);
       }
     } catch (error) {
       console.error("Error submitting meal:", error);
@@ -176,7 +197,7 @@ export default function DietPlanMealForm({ dietplanId, onClose }: DietPlanMealFo
               <FormItem>
                 <FormLabel>Protein (g)</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} />
+                  <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -186,7 +207,7 @@ export default function DietPlanMealForm({ dietplanId, onClose }: DietPlanMealFo
               <FormItem>
                 <FormLabel>Carbs (g)</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} />
+                  <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -196,7 +217,7 @@ export default function DietPlanMealForm({ dietplanId, onClose }: DietPlanMealFo
               <FormItem>
                 <FormLabel>Fats (g)</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} />
+                  <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -206,12 +227,36 @@ export default function DietPlanMealForm({ dietplanId, onClose }: DietPlanMealFo
               <FormItem>
                 <FormLabel>Calories</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} />
+                  <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value, 10))}/>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
           </div>
+            {/* Photo Upload */}
+            <FormField
+                control={form.control}
+                name="photo"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Photo</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoChange}
+                        className="border p-2 w-full rounded cursor-pointer file:rounded-md file:text-sm file:font-regular file:border-0 file:bg-muted file:mr-2 file:text-muted-foreground"
+                      />
+                    </FormControl>
+                    {selectedPhoto && (
+                      <p className="text-muted-foreground text-[12px]">
+                        Selected photo: {selectedPhoto.name}
+                      </p>
+                    )}
+                    <FormMessage>{form.formState.errors.photo?.message}</FormMessage>
+                  </FormItem>
+                )}
+            />
 
           <Button type="submit" variant="secondary" className="w-full mt-4">
             <CheckCircleIcon className="h-4 w-4 mr-2" />
