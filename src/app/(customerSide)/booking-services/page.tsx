@@ -80,24 +80,18 @@ export default function Page() {
                   {tag}
                 </div>
               ))}
+              {tags.map((tag, index) => (
+                <div
+                  key={index}
+                  className="text-[#131605] font-medium md:text-sm whitespace-nowrap items-center"
+                >
+                  <RiAsterisk className="h-4 w-4 inline-block mr-2" />
+                  {tag}
+                </div>
+              ))}
             </div>
           </div>
         </div>
-
-        <style jsx>{`
-          @keyframes slide {
-            0% {
-              transform: translateX(0);
-            }
-            100% {
-              transform: translateX(-100%);
-            }
-          }
-          .animate-slide {
-            display: flex;
-            animation: slide 10s linear infinite;
-          }
-        `}</style>
 
         {/* Container for Services */}
         <div className="flex flex-col w-full gap-6 p-12">

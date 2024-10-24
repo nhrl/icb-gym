@@ -188,22 +188,7 @@ export default function Page() {
             </div>
           </div>
         </div>
-
-        <style jsx>{`
-          @keyframes slide {
-            0% {
-              transform: translateX(0);
-            }
-            100% {
-              transform: translateX(-100%);
-            }
-          }
-          .animate-slide {
-            display: flex;
-            animation: slide 10s linear infinite;
-          }
-        `}</style>
-
+        
         {/* Breadcrumb and Title */}
         <div className="flex flex-col w-full gap-6 p-12">
           <div className="w-full h-fit">
@@ -257,13 +242,15 @@ export default function Page() {
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                   }}>
-                    <Toggle 
-                      variant="outline" 
-                      className="w-fit rounded-full bg-black/30 border-white " 
-                      onClick={() => setIsFavorite(!isFavorite)}
-                    >
-                      <HeartIcon className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-transparent' : 'text-white'}`} />
-                    </Toggle>
+                    <div className="w-full text-right">
+                      <Toggle 
+                        variant="outline" 
+                        className="w-fit rounded-full bg-black/30 border-white " 
+                        onClick={() => setIsFavorite(!isFavorite)}
+                      >
+                        <HeartIcon className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-transparent' : 'text-white'}`} />
+                      </Toggle>
+                    </div>
 
 
                       <div className="p-2 px-4 w-fit rounded-full bg-black/90 backdrop-filter backdrop-blur-lg flex items-center justify-center cursor-pointer hover:bg-black/20">
