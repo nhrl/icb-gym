@@ -62,7 +62,7 @@ const getMonthlyBookingData = (data: Booking[]) => {
 };
 
 export default function Page() {
-  const { data, error, isLoading, mutate } = useSWR(`${api}/api/manager/service`, fetcher, { // Lihug lang ko usab Nhor
+  const { data, error, isLoading, mutate } = useSWR(`${api}/api/manager/transaction/booking`, fetcher, { // Lihug lang ko usab Nhor
     revalidateOnFocus: true,
   });
 

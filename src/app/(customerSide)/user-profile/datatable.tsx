@@ -100,8 +100,8 @@ export function DataTable<TData, TValue>({
       .getSelectedRowModel()
       .rows.map((row) => (row.original as Booking).booking_id);
     try {
-      const response = await fetch(`${api}/api/manager/bookings`, {
-        method: "DELETE",
+      const response = await fetch(`${api}/api/manager/transaction/cancelBooking`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids }),
       });

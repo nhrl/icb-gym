@@ -92,7 +92,7 @@ export function DataTable<TData, TValue>({
       .rows.map((row) => (row.original as Booking).booking_id);
 
     try {
-      const response = await fetch(`${api}/api/manager/service`, { //Lihug rako usab Nhorr
+      const response = await fetch(`${api}/api/manager/transaction/booking`, { //Lihug rako usab Nhorr
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids }),

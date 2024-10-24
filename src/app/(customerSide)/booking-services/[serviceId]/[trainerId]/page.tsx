@@ -23,6 +23,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { User } from "lucide-react";
+import CryptoJS from 'crypto-js';
 
 interface Trainer {
   trainer_id: number;
@@ -91,6 +92,32 @@ export default function TrainerDetailPage() {
   ]);
 
   const api = process.env.NEXT_PUBLIC_API_URL;
+  const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || 'lhS7aOXRUPGPDId6mmHJdA00p39HAfU4';
+
+  // Function to fetch and decrypt user cookie from document.cookie
+  const fetchUserFromCookie = () => {
+    const cookies = document.cookie.split("; ").reduce((acc: { [key: string]: string }, cookie) => {
+      const [name, value] = cookie.split("=");
+      acc[name] = value;
+      return acc;
+    }, {});
+
+    const userCookie = cookies['user']; 
+
+    if (!userCookie) {
+      console.error("User cookie not found");
+      return null;
+    }
+
+    try {
+      const decryptedUserBytes = CryptoJS.AES.decrypt(userCookie, secretKey);
+      const decryptedUser = JSON.parse(decryptedUserBytes.toString(CryptoJS.enc.Utf8));
+      return decryptedUser.id; // Assuming user ID is part of the decrypted data
+    } catch (error) {
+      console.error("Error decrypting the user cookie", error);
+      return null;
+    }
+  };
 
   useEffect(() => {
     const fetchAssignments = async () => {
@@ -117,12 +144,37 @@ export default function TrainerDetailPage() {
   if (loading) return <p>Loading assignments...</p>;
   if (error) return <p>Error: {error}</p>;
 
-  const assignment = assignments.find((assign) => assign.trainer_id === parseInt(trainerId as string, 10));
+  const assignment = assignments.find((assign) => assign.assign_id === parseInt(trainerId as string, 10));
 
   if (!assignment) return <p>No assignment available for this trainer.</p>;
 
   const trainer = assignment.trainer;
   const service = assignment.service;
+
+  const addBooking = async () => {
+    const customerId = fetchUserFromCookie();
+    const bookingData= {
+      customer_id: customerId,
+      assign_id: assignment.assign_id,
+      trainer_id: trainer.trainer_id,
+    }
+
+    console.log(bookingData);
+    const response = await fetch(`${api}/api/customer/booking`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(bookingData),
+    });
+
+    const message = await response.json();
+    if(message.success) {
+      console.log(message.message);
+    } else {
+      console.log(message.error);
+    }
+  }
 
   return (
     <div className="w-full p-12 px-8 sm:px-[180px]">
@@ -175,10 +227,16 @@ export default function TrainerDetailPage() {
                       {trainer.firstname} {trainer.lastname}
                       </h2>
                       <Badge 
-                        className="rounded-full text-white" 
-                        variant={trainer.availability === "Full" ? "destructive" : "success"}
+                        variant={
+                          assignment.current_capacity < assignment.max_capacity
+                            ? "success"
+                            : "destructive"
+                        }
+                        className="rounded-full text-white"
                       >
-                        {trainer.availability}
+                        {assignment.current_capacity < assignment.max_capacity
+                          ? "Available"
+                          : "Full"}
                       </Badge>
                     </div>
                     <p className="text-md">{trainer.email}</p>
@@ -255,11 +313,17 @@ export default function TrainerDetailPage() {
                   {/*Button*/}    
                   <div className="gap-2 flex flex-col">
 
-                    <Dialog>
-                      <DialogTrigger> 
-                        <Button variant="default" className="rounded-full w-full bg-secondary text-primary-foreground">
+                  <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="default"
+                          className="rounded-full w-full bg-secondary text-primary-foreground"
+                          disabled={assignment.current_capacity >= assignment.max_capacity}
+                        >
                           <BookOpenIcon className="h-4 w-4 mr-2" />
-                          Book this Trainer
+                          {assignment.current_capacity >= assignment.max_capacity
+                            ? "Fully Booked"
+                            : "Book this Trainer"}
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
@@ -271,7 +335,13 @@ export default function TrainerDetailPage() {
                         </DialogHeader>
                         <div className="flex justify-end space-x-2 mt-4">
                           <Button variant="outline">Cancel</Button>
-                          <Button variant="secondary" className="bg-primary text-primary-foreground">Yes, Book this Trainer</Button>
+                          <Button
+                            variant="secondary"
+                            className="bg-primary text-primary-foreground"
+                            onClick={addBooking}
+                          >
+                            Yes, Book this Trainer
+                          </Button>
                         </div>
                       </DialogContent>
                     </Dialog>

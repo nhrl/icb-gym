@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { MagnifyingGlassIcon, SparklesIcon, HeartIcon, UserGroupIcon, ArrowRightCircleIcon } from "@heroicons/react/24/outline";
 import { RiAsterisk } from "react-icons/ri";
 import { Toggle } from "@/components/ui/toggle";
+import CryptoJS from 'crypto-js';
 
 interface Trainer {
   trainer_id: number;
@@ -56,10 +57,55 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
 
   const api = process.env.NEXT_PUBLIC_API_URL;
+  const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || 'lhS7aOXRUPGPDId6mmHJdA00p39HAfU4';
 
-  const handleCardClick = (trainerID: number) => {
-    router.push(`/booking-services/${serviceId}/${trainerID}`);
+  const handleCardClick = (assignID: number) => {
+    router.push(`/booking-services/${serviceId}/${assignID}`);
   };
+
+   // Function to fetch and decrypt user cookie from document.cookie
+   const fetchUserFromCookie = () => {
+    const cookies = document.cookie.split("; ").reduce((acc: { [key: string]: string }, cookie) => {
+      const [name, value] = cookie.split("=");
+      acc[name] = value;
+      return acc;
+    }, {});
+
+    const userCookie = cookies['user']; 
+
+    if (!userCookie) {
+      console.error("User cookie not found");
+      return null;
+    }
+
+    try {
+      const decryptedUserBytes = CryptoJS.AES.decrypt(userCookie, secretKey);
+      const decryptedUser = JSON.parse(decryptedUserBytes.toString(CryptoJS.enc.Utf8));
+      return decryptedUser.id; // Assuming user ID is part of the decrypted data
+    } catch (error) {
+      console.error("Error decrypting the user cookie", error);
+      return null;
+    }
+  };
+
+  const getRecommendation = async () => {
+    const id = fetchUserFromCookie();
+    console.log(id);
+    try {
+      setLoading(true);
+      const response = await fetch(`${api}/api/customer/recommendation/trainer?serviceId=${serviceId}&userId=${id}`);
+      const result = await response.json();
+
+      if(result.success){
+        setAssignments(result.trainer);
+      } else {
+        setError(result.message || "Failed to fetch assignments.");
+      }
+    } catch (error) {
+      setError("An error occurred while fetching data.");
+    }
+    setLoading(false);
+  }
 
   const fallbackImage = "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png"; 
 
@@ -131,7 +177,7 @@ export default function Page() {
               <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
               Search Trainers
             </Button>
-            <Button className="flex flex-row items-center" variant="outline">
+            <Button className="flex flex-row items-center" variant="outline" onClick={getRecommendation}>
               <SparklesIcon className="h-4 w-4 mr-2" />
               Show Recommendations
             </Button>
@@ -139,56 +185,51 @@ export default function Page() {
         </div>
 
         {/* Grid Layout for Trainer Assignments */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {assignments.map((assign) => (
-            <Card
-              key={assign.assign_id}
-              className="h-fit border-none rounded-3xl flex flex-col justify-between overflow-hidden transform transition-transform duration-300 hover:scale-105 hover:z-10 cursor-pointer"
-              onClick={() => handleCardClick(assign.trainer.trainer_id)}
-            >
-              <CardHeader
-                className="w-full h-[275px] border-border rounded-3xl rounded-b-none border flex flex-col justify-between p-2"
-                style={{
-                  backgroundImage: `url(${getBackgroundImage(assign.trainer.trainer_img)})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }}
+        {assignments.length === 0 ? (
+          <p className="text-center text-xl mt-8">No recommended trainers available.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {assignments.map((assign) => (
+              <Card
+                key={assign.assign_id}
+                className="h-fit border-none rounded-3xl flex flex-col justify-between overflow-hidden transform transition-transform duration-300 hover:scale-105 hover:z-10 cursor-pointer"
+                onClick={() => handleCardClick(assign.assign_id)}
               >
-                <Toggle
-                  variant="outline"
-                  className="w-fit rounded-full bg-black/30 border-white"
-                  onClick={() => setIsFavorite(!isFavorite)}
+                <CardHeader
+                  className="w-full h-[275px] border-border rounded-3xl rounded-b-none border flex flex-col justify-between p-2"
+                  style={{
+                    backgroundImage: `url(${getBackgroundImage(assign.trainer.trainer_img)})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
                 >
-                  <HeartIcon className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-transparent' : 'text-white'}`} />
-                </Toggle>
+                  <Toggle
+                    variant="outline"
+                    className="w-fit rounded-full bg-black/30 border-white"
+                    onClick={() => setIsFavorite(!isFavorite)}
+                  >
+                    <HeartIcon className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-transparent' : 'text-white'}`} />
+                  </Toggle>
+                </CardHeader>
 
-                <div className="p-2 px-4 w-fit rounded-full bg-black/90 flex items-center justify-center">
-                  <UserGroupIcon className="h-4 w-4 mr-2 text-white" />
-                  <div className="flex flex-row gap-2 text-xs text-white">
-                    <p>{assign.current_capacity}</p>
-                    <p>of</p>
-                    <p>{assign.max_capacity}</p>
+                <CardFooter className="p-4 flex flex-col gap-4 items-end">
+                  <div className="flex flex-row justify-between w-full">
+                    <div className="flex flex-col">
+                      <span>{assign.trainer.firstname} {assign.trainer.lastname}</span>
+                      <span className="text-sm">{assign.trainer.email}</span>
+                    </div>
+                    <div>
+                      <p>${assign.rate}/Month</p>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-
-              <CardFooter className="p-4 flex flex-col gap-4 items-end">
-                <div className="flex flex-row justify-between w-full">
-                  <div className="flex flex-col">
-                    <span>{assign.trainer.firstname} {assign.trainer.lastname}</span>
-                    <span className="text-sm">{assign.trainer.email}</span>
-                  </div>
-                  <div>
-                    <p>${assign.rate}/Month</p>
-                  </div>
-                </div>
-                <Button variant="outline" className="rounded-full">
-                  Book Now <ArrowRightCircleIcon className="h-4 w-4 ml-2" />
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+                  <Button variant="outline" className="rounded-full">
+                    Book Now <ArrowRightCircleIcon className="h-4 w-4 ml-2" />
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
