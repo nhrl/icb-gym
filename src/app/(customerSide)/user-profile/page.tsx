@@ -36,37 +36,11 @@ import { Toaster } from "@/components/ui/toaster"; // Import toaster
 import { useToast } from "@/hooks/use-toast";
 import CryptoJS from 'crypto-js';
 import { CodeSandboxLogoIcon } from "@radix-ui/react-icons";
+import useSWR, { mutate } from 'swr';
 
-// Example API function to simulate fetching booking data from backend
-const fetchBookings = async (): Promise<Booking[]> => {
-  return new Promise((resolve) =>
-    setTimeout(() => {
-      resolve([
-        {
-          booking_id: 1,
-          customer_id: 101,
-          trainer_id: 201,
-          payment_status: "Paid",
-          confirmation_status: "Confirmed",
-          created_at: new Date("2024-10-01"),
-        },
-        {
-          booking_id: 2,
-          customer_id: 102,
-          trainer_id: 202,
-          payment_status: "Unpaid",
-          confirmation_status: "Pending",
-          created_at: new Date("2024-10-02"),
-        },
-      ]);
-    }, 1000)
-  );
-};
-
-
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function Page() {
-  const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [membership, setMembership] = useState<any>(null); // Store user's membership
   const { toast } = useToast(); // Toast handler
@@ -95,29 +69,30 @@ const fetchUserFromCookie = () => {
 };
 
 const userId = fetchUserFromCookie(); // Fetch user ID from cookie
-// Fetch user membership
-const fetchUserMembership = async (userId: number) => {
-  try {
-    const api = process.env.NEXT_PUBLIC_API_URL;
-    const response = await fetch(`${api}/api/customer/membership?id=${userId}`);
-    const result = await response.json();
-    return result.membership; // Fetch the latest membership
-  } catch (error) {
-    console.error("Error fetching user membership:", error);
-    return null;
-  }
-};
+const api = process.env.NEXT_PUBLIC_API_URL;
 
+const { data: bookingData, mutate, error } = useSWR(
+    `${api}/api/customer/booking?id=${userId}`,
+    fetcher,
+    { revalidateOnFocus: true }
+  );
+
+  const bookings = bookingData?.data || [];
   useEffect(() => {
+    const fetchUserMembership = async (userId: number) => {
+      try {
+        const response = await fetch(`${api}/api/customer/membership?id=${userId}`);
+        const result = await response.json();
+        setMembership(result.membership);
+      } catch (error) {
+        console.error("Error fetching user membership:", error);
+      }
+    };
+  
     const fetchData = async () => {
       try {
-        const bookingsData = await fetchBookings();
-        setBookings(bookingsData);
-
         if (userId) {
-          const userMembership = await fetchUserMembership(userId);
-          console.log(userMembership);
-          setMembership(userMembership);
+          await fetchUserMembership(userId);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -125,9 +100,9 @@ const fetchUserMembership = async (userId: number) => {
         setLoading(false);
       }
     };
-
+  
     fetchData();
-  }, [userId]);
+  }, [userId, api]);
 
   const handleProfileUpdate = (updatedProfile: any) => {
     console.log("Profile updated with:", updatedProfile);
@@ -225,7 +200,7 @@ const fetchUserMembership = async (userId: number) => {
           <DataTable
             columns={columns}
             data={bookings}
-            mutate={() => console.log("Bookings refreshed")}
+            mutate={mutate}
           />
         </div>
       </div>
