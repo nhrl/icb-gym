@@ -117,20 +117,6 @@ export default function Home() {
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes slide {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-100%);
-          }
-        }
-        .animate-slide {
-          display: flex;
-          animation: slide 10s linear infinite;
-        }
-      `}</style>
 
       <div className="w-full h-fit text-center flex flex-col gap-6 p-[64px]">
         <div className="font-black text-[36px] sm:text-[84px] text-left w-full leading-none h-fit">

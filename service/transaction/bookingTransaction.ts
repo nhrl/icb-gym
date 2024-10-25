@@ -103,31 +103,61 @@ export async function confirmBooking(data: any) {
   }
 }
 
-export async function cancelBooking (data : any) {
+export async function cancelBooking(data: any) {
   try {
-    const {ids} = data;
+    const { ids } = data;
     const confirmation_status = "Canceled";
-    
-    const { data: updatedData, error } = await supabase
-    .from('bookings')
-    .update({
-      confirmation_status: confirmation_status,
-    })
-    .in("booking_id", ids); // Use 'in' to update multiple rows
 
-    if (error) {
+    // Fetch all the bookings that will be canceled to get their assign_ids
+    const { data: bookingsToCancel, error: fetchError } = await supabase
+      .from('bookings')
+      .select('assign_id')
+      .in('booking_id', ids);
+
+    if (fetchError) {
+      return {
+        success: false,
+        message: "Failed to fetch bookings for cancellation.",
+        error: fetchError.message,
+      };
+    }
+
+    // Update booking statuses to "Canceled"
+    const { error: updateError } = await supabase
+      .from('bookings')
+      .update({ confirmation_status: confirmation_status })
+      .in('booking_id', ids);
+
+    if (updateError) {
       return {
         success: false,
         message: "Failed to cancel bookings. Please try again.",
-        error: error.message,
+        error: updateError.message,
       };
     }
-    return { success: true, message: "Bookings canceled successfully", data: updatedData };
-  } catch (error : any) {
-    return { 
-      success: false, 
-      message: 'An error occurred. Please try again.', 
-      error: error.message 
+
+    // Call the decrement_capacity function for each assign_id
+    for (const booking of bookingsToCancel) {
+      const { assign_id } = booking;
+
+      const { error: decrementError } = await supabase
+        .rpc('decrement_capacity', { assign_id_param: assign_id });
+
+      if (decrementError) {
+        return {
+          success: false,
+          message: `Booking canceled, but failed to update capacity for assign_id: ${assign_id}.`,
+          error: decrementError.message,
+        };
+      }
+    }
+
+    return { success: true, message: "Bookings canceled successfully." };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "An unexpected error occurred. Please try again.",
+      error: error.message,
     };
   }
 }
