@@ -57,8 +57,135 @@ export async function addBooking(data: any) {
     const { customer_id, trainer_id, assign_id } = data;
     const payment_status = "Unpaid";
     const confirmation_status = "Pending";
+    const created_at = new Date().toISOString().split('T')[0]; // Get the current date (YYYY-MM-DD)
 
-    // Insert new booking
+    //Fetch the assignment's start_time and end_time using assign_id
+    const { data: assignment, error: assignmentError } = await supabase
+      .from('assign_trainer')
+      .select('start_time, end_time')
+      .eq('assign_id', assign_id)
+      .single();
+
+    if (assignmentError) {
+      return {
+        success: false,
+        message: "Error fetching assignment details.",
+        error: assignmentError.message,
+      };
+    }
+
+    const { start_time, end_time } = assignment;
+
+    //Check if there is any active or pending booking for the same assign_id
+    const { data: existingBooking, error: checkError } = await supabase
+      .from('bookings')
+      .select('booking_id, confirmation_status')
+      .eq('customer_id', customer_id)
+      .eq('assign_id', assign_id);
+
+    if (checkError) {
+      return {
+        success: false,
+        message: "Error checking existing bookings.",
+        error: checkError.message,
+      };
+    }
+
+    //If there is an existing active or pending booking, block the request
+    const activeBooking = existingBooking.find(
+      (booking) => booking.confirmation_status !== "Canceled"
+    );
+
+    if (activeBooking) {
+      return {
+        success: false,
+        message: "You already have an active or pending booking for this service.",
+      };
+    }
+
+    //If there is a canceled booking, reuse the entry and update its status and created_at
+    const canceledBooking = existingBooking.find(
+      (booking) => booking.confirmation_status === "Canceled"
+    );
+
+    if (canceledBooking) {
+      const { error: updateError } = await supabase
+        .from('bookings')
+        .update({
+          confirmation_status: confirmation_status,
+          payment_status: payment_status,
+          created_at: created_at, // Update the created_at column with the current date
+        })
+        .eq('booking_id', canceledBooking.booking_id);
+
+      if (updateError) {
+        return {
+          success: false,
+          message: "Failed to reuse canceled booking. Please try again.",
+          error: updateError.message,
+        };
+      }
+      // Increment capacity when reactivating the booking
+      const { error: incrementError } = await supabase
+      .rpc('increment_capacity', { assign_id_param: assign_id });
+
+      if (incrementError) {
+        return {
+          success: false,
+          message: "Booking reactivated, but failed to update trainer capacity.",
+          error: incrementError.message,
+        };
+      }
+      return { success: true, message: "Booking reactivated successfully." };
+    }
+
+    //Check for time conflicts with other active bookings of the user
+    const { data: conflictingBookings, error: conflictError } = await supabase
+      .from('bookings')
+      .select('booking_id, assign_id')
+      .eq('customer_id', customer_id)
+      .neq('confirmation_status', 'Canceled'); // Ignore canceled bookings
+
+    if (conflictError) {
+      return {
+        success: false,
+        message: "Error checking for time conflicts.",
+        error: conflictError.message,
+      };
+    }
+
+    for (const booking of conflictingBookings) {
+      const { data: conflictingAssignment, error: conflictingAssignmentError } = await supabase
+        .from('assign_trainer')
+        .select('start_time, end_time')
+        .eq('assign_id', booking.assign_id)
+        .single();
+
+      if (conflictingAssignmentError) {
+        return {
+          success: false,
+          message: "Error fetching conflicting assignment details.",
+          error: conflictingAssignmentError.message,
+        };
+      }
+
+      const existingStart = new Date(`1970-01-01T${conflictingAssignment.start_time}`);
+      const existingEnd = new Date(`1970-01-01T${conflictingAssignment.end_time}`);
+      const newStart = new Date(`1970-01-01T${start_time}`);
+      const newEnd = new Date(`1970-01-01T${end_time}`);
+
+      if (
+        (newStart < existingEnd && newEnd > existingStart) ||
+        (existingStart < newEnd && existingEnd > newStart)
+      ) {
+        return {
+          success: false,
+          message: "Time conflict with an existing booking.",
+        };
+      }
+    }
+
+    //Insert a new booking if no canceled booking is available to reuse
     const { error: bookingError } = await supabase
       .from('bookings')
       .insert([
@@ -68,7 +195,8 @@ export async function addBooking(data: any) {
           assign_id: assign_id,
           payment_status: payment_status,
           confirmation_status: confirmation_status,
-        }
+          created_at: created_at, // Set the current date for the new booking
+        },
       ]);
 
     if (bookingError) {
@@ -79,7 +207,7 @@ export async function addBooking(data: any) {
       };
     }
 
-    // Increment current_capacity by 1 in assign_trainer table
+    //Increment the current_capacity by 1 in assign_trainer
     const { error: capacityError } = await supabase
       .rpc('increment_capacity', { assign_id_param: assign_id });
 

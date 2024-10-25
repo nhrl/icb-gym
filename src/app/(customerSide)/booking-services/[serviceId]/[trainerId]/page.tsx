@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/dialog";
 import { User } from "lucide-react";
 import CryptoJS from 'crypto-js';
+import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { Toaster } from "@/components/ui/toaster";
 
 interface Trainer {
   trainer_id: number;
@@ -76,6 +78,7 @@ export default function TrainerDetailPage() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast(); // Use the toast hook from Shadcn
 
   const [howtopay] = useState([
     {
@@ -171,8 +174,18 @@ export default function TrainerDetailPage() {
     const message = await response.json();
     if(message.success) {
       console.log(message.message);
+      toast({
+        title: "Booking Added",
+        description: message.message,
+        duration: 3000,
+      });
     } else {
       console.log(message.error);
+      toast({
+        title: "Booking Failed",
+        description: message.message,
+        duration: 3000,
+      });
     }
   }
 
@@ -376,6 +389,7 @@ export default function TrainerDetailPage() {
         <CardFooter className="p-6">
         </CardFooter>
       </Card>
+      <Toaster />
     </div>
   );
 }

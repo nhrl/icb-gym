@@ -122,7 +122,7 @@ export const NavBar: React.FC = () => {
         <Link href="/" passHref>
           <div className="text-2xl font-black items-center flex gap-2 cursor-pointer">
             <Image src={logo} alt="icblogo" className="inline h-8 w-8" priority />
-            <span>Incredoball</span>
+            <span className="hidden sm:block">Incredoball</span>
           </div>
         </Link>
 
@@ -137,7 +137,7 @@ export const NavBar: React.FC = () => {
               </Link>
 
               <Link href="/programs" passHref>
-                  <span>Programs</span>
+                  <span>Workouts</span>
               </Link>
 
               <Link href="/diet-plans" passHref>
@@ -161,7 +161,7 @@ export const NavBar: React.FC = () => {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
                     <Link href="/programs" passHref>
-                    <span>Programs</span>
+                    <span>Workouts</span>
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>

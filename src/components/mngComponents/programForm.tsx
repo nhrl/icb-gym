@@ -367,6 +367,29 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
                     </Button>
                   </div>
 
+                  {/* Photo Upload for Exercises */}
+                  <FormField
+                    control={programForm.control}
+                    name="photo"
+                    render={() => (
+                      <FormItem>
+                        <FormLabel>Upload Photo</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={handlePhotoChange}
+                            className="border p-2 w-full rounded cursor-pointer file:rounded-md file:text-sm file:font-regular file:border-0 file:bg-muted file:mr-2 file:text-muted-foreground"
+                          />
+                        </FormControl>
+                        {selectedPhoto && (
+                          <p className="text-muted-foreground text-[12px]">Selected photo: {selectedPhoto.name}</p>
+                        )}
+                        <FormMessage>{programForm.formState.errors.photo?.message}</FormMessage>
+                      </FormItem>
+                    )}
+                  />
+
                   {/* Exercise Name */}
                   <FormField
                     control={exercisesForm.control}
