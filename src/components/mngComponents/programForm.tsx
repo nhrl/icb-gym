@@ -187,6 +187,18 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
     }
   };
 
+  const handleExercisePhotoChange = (
+    index: number,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    if (file) {
+      const updatedExercises = exercisesForm.getValues("exercises");
+      updatedExercises[index].photo = file;
+      exercisesForm.setValue("exercises", updatedExercises); // Update the form state
+    }
+  };
+
   const metadata = {
     title: step === 1 ? "Add New Program" : "Add Exercises",
     description: step === 1 ? "Please enter the program details below" : "Please enter the exercises below",
@@ -369,8 +381,8 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
 
                   {/* Photo Upload for Exercises */}
                   <FormField
-                    control={programForm.control}
-                    name="photo"
+                    control={exercisesForm.control}
+                    name={`exercises.${index}.photo`}
                     render={() => (
                       <FormItem>
                         <FormLabel>Upload Photo</FormLabel>
@@ -378,14 +390,11 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
                           <Input
                             type="file"
                             accept="image/*"
-                            onChange={handlePhotoChange}
+                            onChange={(e) => handleExercisePhotoChange(index, e)}
                             className="border p-2 w-full rounded cursor-pointer file:rounded-md file:text-sm file:font-regular file:border-0 file:bg-muted file:mr-2 file:text-muted-foreground"
                           />
                         </FormControl>
-                        {selectedPhoto && (
-                          <p className="text-muted-foreground text-[12px]">Selected photo: {selectedPhoto.name}</p>
-                        )}
-                        <FormMessage>{programForm.formState.errors.photo?.message}</FormMessage>
+                        <FormMessage>{exercisesForm.formState.errors.exercises?.[index]?.photo?.message}</FormMessage>
                       </FormItem>
                     )}
                   />
