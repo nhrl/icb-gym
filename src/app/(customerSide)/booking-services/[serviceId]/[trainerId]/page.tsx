@@ -79,6 +79,7 @@ export default function TrainerDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast(); // Use the toast hook from Shadcn
+  const [breadcrumbLink, setBreadcrumbLink] = useState(`/booking-services/${serviceId}`);
 
   const [howtopay] = useState([
     {
@@ -132,6 +133,11 @@ export default function TrainerDetailPage() {
           setAssignments(result.data);
         } else {
           setError(result.message || "Failed to fetch assignments.");
+        }
+
+        const showRecommendations = sessionStorage.getItem("showTrainerRecommendations") === "true";
+        if (showRecommendations) {
+          setBreadcrumbLink(`/booking-services/${serviceId}?recommended=true`);
         }
       } catch (err) {
         setError("An error occurred while fetching data.");
@@ -198,7 +204,7 @@ export default function TrainerDetailPage() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href={`/booking-services/${serviceId}`}>
+            <BreadcrumbLink href={breadcrumbLink}>
               {service.service_name}
             </BreadcrumbLink>
           </BreadcrumbItem>

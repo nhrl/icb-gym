@@ -14,6 +14,8 @@ import { MagnifyingGlassIcon, HeartIcon, SparklesIcon } from '@heroicons/react/2
 import { RiAsterisk } from 'react-icons/ri';
 import { Toggle } from '@/components/ui/toggle';
 import CryptoJS from 'crypto-js';
+import { useCallback } from 'react';
+import { tree } from 'next/dist/build/templates/app-page';
 
 interface Workout {
   program_id: number;
@@ -31,6 +33,7 @@ export default function Page() {
   const [workouts, setWorkouts] = useState<Workout[]>([]); // Initialize as an empty array
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [buttonText, setButtonText] = useState("Show Recommendations");
 
   const [tags] = useState([
     "Book Trainers on Preferred Time",
@@ -43,45 +46,60 @@ export default function Page() {
 
   const api = process.env.NEXT_PUBLIC_API_URL;
   const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || 'lhS7aOXRUPGPDId6mmHJdA00p39HAfU4';
-   // Function to fetch and decrypt user cookie from document.cookie
-   const fetchUserFromCookie = () => {
+  // Function to fetch and decrypt user cookie from document.cookie
+  const fetchUserFromCookie = useCallback(() => {
     const cookies = document.cookie.split("; ").reduce((acc: { [key: string]: string }, cookie) => {
       const [name, value] = cookie.split("=");
       acc[name] = value;
       return acc;
     }, {});
-
-    const userCookie = cookies['user']; 
-
+  
+    const userCookie = cookies['user'];
+  
     if (!userCookie) {
       console.error("User cookie not found");
       return null;
     }
-
+  
     try {
       const decryptedUserBytes = CryptoJS.AES.decrypt(userCookie, secretKey);
       const decryptedUser = JSON.parse(decryptedUserBytes.toString(CryptoJS.enc.Utf8));
-      return decryptedUser.id; // Assuming user ID is part of the decrypted data
+      return decryptedUser.id;
     } catch (error) {
       console.error("Error decrypting the user cookie", error);
       return null;
     }
-  };
+  }, [secretKey]);
+
+  const fetchProgram = useCallback(async (recommended: boolean = false) => {
+    try {
+      setLoading(true);
+      const url = recommended
+        ? `${api}/api/customer/recommendation/program?userId=${fetchUserFromCookie()}`
+        : `${api}/api/manager/plans/workout`;
+  
+      const response = await fetch(url);
+      const data = await response.json();
+      setWorkouts(data.programs || data.program || []);
+    } catch (error) {
+      console.error("Error fetching diet plans:", error);
+      setError("Failed to fetch diet plans.");
+    } finally {
+      setLoading(false);
+    }
+  }, [api, fetchUserFromCookie]);
 
   useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`${api}/api/manager/plans/workout`);
-        const data = await response.json();
-        setWorkouts(data.program || []); // Set workouts to an empty array if no data
-      } catch (error) {
-        console.error("Error fetching services:", error);
-      }
-      setLoading(false);
-    };
-    fetchServices();
-  }, [api]);
+    const searchParams = new URLSearchParams(window.location.search);
+    const recommended = searchParams.get('recommended') === 'true';
+    fetchProgram(recommended);
+  
+    if (recommended) {
+      setButtonText("Show All Programs");
+    } else {
+      setButtonText("Show Recommendations");
+    }
+  }, [fetchProgram]);
 
   const router = useRouter();
 
@@ -94,19 +112,31 @@ export default function Page() {
   };
 
   const showProgramRecommendations = async () => {
-    const id = fetchUserFromCookie();
-    console.log(id);
-    try {
-      setLoading(true);
-      const response = await fetch(`${api}/api/customer/recommendation/program?userId=${id}`);
-      const result = await response.json();
-      if(result.success){
-        setWorkouts(result.programs);
-      } else {
-        setError(result.message || "Failed to fetch programs.");
+    const searchParams = new URLSearchParams(window.location.search);
+    const recommended = searchParams.get('recommended') === 'true';
+
+    if(recommended) {
+      sessionStorage.setItem("showProgramRecommendations", "false");
+      setButtonText("Show Recommendations");
+      await fetchProgram(false); // Fetch all diet plans
+      router.push('/programs');
+    } else {
+      const id = fetchUserFromCookie();
+      try {
+        setLoading(true);
+        const response = await fetch(`${api}/api/customer/recommendation/program?userId=${id}`);
+        const result = await response.json();
+        if(result.success){
+          setWorkouts(result.programs);
+          sessionStorage.setItem("showProgramRecommendations", "true");
+          setButtonText("Show All Programs");
+          router.push('/programs?recommended=true');
+        } else {
+          setError(result.message || "Failed to fetch programs.");
+        }
+      } catch (error) {
+        setError("An error occurred while fetching data.");
       }
-    } catch (error) {
-      setError("An error occurred while fetching data.");
     }
     setLoading(false);
   }
@@ -143,7 +173,7 @@ export default function Page() {
               </Button>
               <Button className="flex flex-row items-center" variant="outline" onClick={showProgramRecommendations}>
                 <SparklesIcon className="h-4 w-4 mr-2" />
-                Show Recommendations
+                {buttonText}
               </Button>
             </div>
           </div>

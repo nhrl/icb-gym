@@ -14,13 +14,14 @@ import { MagnifyingGlassIcon, HeartIcon, SparklesIcon } from '@heroicons/react/2
 import { RiAsterisk } from 'react-icons/ri';
 import { Toggle } from '@/components/ui/toggle';
 import CryptoJS from 'crypto-js';
+import { useCallback } from 'react';
 
 interface DietPlan {
   dietplan_id: number;
   name: string;
   description: string;
   fitness_goal: string;
-  photo: string;
+  dietplan_img: string;
 }
 
 const fallbackImage = "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png";
@@ -30,7 +31,7 @@ export default function DietPlansPage() {
   const [dietPlans, setDietPlans] = useState<DietPlan[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const [buttonText, setButtonText] = useState("Show Recommendations");
   const [tags] = useState([
     "Custom Meal Plans",
     "Calorie Tracking",
@@ -40,58 +41,62 @@ export default function DietPlansPage() {
     "Diet Progress Monitoring",
   ]);
 
-  const mockData = [
-    {
-      dietplan_id: 1,
-      name: "Keto Diet Plan",
-      description: "A low-carb, high-fat diet designed to promote weight loss and improve energy levels.",
-      fitness_goal: "Weight Loss",
-      photo: "https://m.media-amazon.com/images/S/assets.wholefoodsmarket.com//content/af/db/c83977574b62ad4db1696035f438/article-keto-mealplan.jpg",
-    },
-    {
-      dietplan_id: 2,
-      name: "High-Protein Diet",
-      description: "Ideal for muscle gain and repair, focusing on foods rich in protein.",
-      fitness_goal: "Muscle Gain",
-      photo: "https://images.unsplash.com/photo-1432139555190-58524dae6a55?q=80&w=1776&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    },
-    {
-      dietplan_id: 3,
-      name: "Mediterranean Diet",
-      description: "A balanced diet based on fruits, vegetables, olive oil, and lean proteins.",
-      fitness_goal: "General Health",
-      photo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSP-z1yP7OeX7UDQLly912k-TnfTj3HFkciNg&s",
-    },
-    {
-      dietplan_id: 4,
-      name: "Vegan Diet Plan",
-      description: "A plant-based diet avoiding all animal products, ideal for ethical and health-conscious individuals.",
-      fitness_goal: "General Health",
-      photo: "https://images.unsplash.com/photo-1444952483853-7c36e902e722?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    },
-    {
-      dietplan_id: 5,
-      name: "Paleo Diet Plan",
-      description: "Focused on consuming whole foods and avoiding processed items to maintain optimal health.",
-      fitness_goal: "General Health",
-      photo: "https://images.greenchef.com/w_3840,q_auto,f_auto,c_limit,fl_lossy/hellofresh_website/us/greenchef/user-guides/paleo/paleo-101/Paleo-foods.jpg",
-    },
-    {
-      dietplan_id: 6,
-      name: "Gluten-Free Diet Plan",
-      description: "A diet excluding gluten to support individuals with gluten sensitivity or celiac disease.",
-      fitness_goal: "General Health",
-      photo: "https://images.everydayhealth.com/images/diet-nutrition/what-is-a-gluten-free-diet-alt-1440x810.jpg",
-    },
-  ];
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || 'lhS7aOXRUPGPDId6mmHJdA00p39HAfU4';
+  // Function to fetch and decrypt user cookie from document.cookie
+  const fetchUserFromCookie = useCallback(() => {
+    const cookies = document.cookie.split("; ").reduce((acc: { [key: string]: string }, cookie) => {
+      const [name, value] = cookie.split("=");
+      acc[name] = value;
+      return acc;
+    }, {});
+  
+    const userCookie = cookies['user'];
+  
+    if (!userCookie) {
+      console.error("User cookie not found");
+      return null;
+    }
+  
+    try {
+      const decryptedUserBytes = CryptoJS.AES.decrypt(userCookie, secretKey);
+      const decryptedUser = JSON.parse(decryptedUserBytes.toString(CryptoJS.enc.Utf8));
+      return decryptedUser.id;
+    } catch (error) {
+      console.error("Error decrypting the user cookie", error);
+      return null;
+    }
+  }, [secretKey]);
+
+  const fetchDietPlans = useCallback(async (recommended: boolean = false) => {
+    try {
+      setLoading(true);
+      const url = recommended
+        ? `${api}/api/customer/recommendation/dietplan?userId=${fetchUserFromCookie()}`
+        : `${api}/api/manager/plans/diet`;
+  
+      const response = await fetch(url);
+      const data = await response.json();
+      setDietPlans(data.dietplan || data.data || []);
+    } catch (error) {
+      console.error("Error fetching diet plans:", error);
+      setError("Failed to fetch diet plans.");
+    } finally {
+      setLoading(false);
+    }
+  }, [api, fetchUserFromCookie]);
 
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setDietPlans(mockData);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    const searchParams = new URLSearchParams(window.location.search);
+    const recommended = searchParams.get('recommended') === 'true';
+    fetchDietPlans(recommended);
+  
+    if (recommended) {
+      setButtonText("Show All Diet Plans");
+    } else {
+      setButtonText("Show Recommendations");
+    }
+  }, [fetchDietPlans]);
 
   const router = useRouter();
 
@@ -101,6 +106,37 @@ export default function DietPlansPage() {
 
   const getBackgroundImage = (photo: string) => {
     return photo && photo.trim() !== "" ? photo : fallbackImage;
+  };
+
+  const showDietplanRecommendations = async () => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const recommended = searchParams.get('recommended') === 'true';
+
+    if (recommended) {
+      sessionStorage.setItem("showDietplanRecommendations", "false");
+      setButtonText("Show Recommendations");
+      await fetchDietPlans(false); // Fetch all diet plans
+      router.push('/diet-plan');
+    } else {
+      const id = fetchUserFromCookie();
+      try {
+        setLoading(true);
+        const response = await fetch(`${api}/api/customer/recommendation/dietplan?userId=${id}`);
+        const result = await response.json();
+        if (result.success) {
+          setDietPlans(result.data);
+          sessionStorage.setItem("showDietplanRecommendations", "true");
+          setButtonText("Show All Diet Plans");
+          router.push('/diet-plan?recommended=true');
+        } else {
+          setError(result.message || "Failed to fetch recommendations.");
+        }
+      } catch (error) {
+        setError("An error occurred while fetching recommendations.");
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   if (loading) return <p>Loading diet plans...</p>;
@@ -134,9 +170,9 @@ export default function DietPlansPage() {
                 <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
                 Search Diet Plans
               </Button>
-              <Button className="flex flex-row items-center" variant="outline">
+              <Button className="flex flex-row items-center" variant="outline" onClick={showDietplanRecommendations}>
                 <SparklesIcon className="h-4 w-4 mr-2" />
-                Show Recommendations
+                {buttonText}
               </Button>
             </div>
           </div>
@@ -154,7 +190,7 @@ export default function DietPlansPage() {
                   <CardHeader
                     className="w-full h-[275px] border border-border rounded-xl flex flex-row justify-end"
                     style={{
-                      backgroundImage: `linear-gradient(to top, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1)), url(${getBackgroundImage(dietPlan.photo)})`,
+                      backgroundImage: `linear-gradient(to top, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1)), url(${getBackgroundImage(dietPlan.dietplan_img)})`,
                       backgroundSize: "cover",
                       backgroundPosition: "center",
                     }}

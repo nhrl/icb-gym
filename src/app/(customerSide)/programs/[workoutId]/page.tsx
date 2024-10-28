@@ -53,6 +53,7 @@ export default function WorkoutDetailPage() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [workout, setWorkout] = useState<Workout>();
   const [exercises, setExercises] = useState<Exercise[]>([]); // Exercises state
+  const [breadcrumbLink, setBreadcrumbLink] = useState("/programs");
 
   const api = process.env.NEXT_PUBLIC_API_URL;
 
@@ -93,6 +94,11 @@ export default function WorkoutDetailPage() {
         console.error("Error fetching exercises:", error);
       }
     }
+    const showRecommendations = sessionStorage.getItem("showProgramRecommendations") === "true";
+    if (showRecommendations) {
+      setBreadcrumbLink("/programs?recommended=true");
+    }
+
     fetchWorkout();
     fetchExercise();
   }, [workoutId, api]);
@@ -109,7 +115,7 @@ export default function WorkoutDetailPage() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/programs">Workouts</BreadcrumbLink>
+            <BreadcrumbLink href={breadcrumbLink}>Workouts</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
