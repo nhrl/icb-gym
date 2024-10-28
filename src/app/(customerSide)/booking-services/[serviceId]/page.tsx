@@ -20,6 +20,7 @@ import { MagnifyingGlassIcon, SparklesIcon, HeartIcon, UserGroupIcon, ArrowRight
 import { RiAsterisk } from "react-icons/ri";
 import { Toggle } from "@/components/ui/toggle";
 import CryptoJS from 'crypto-js';
+import { useCallback } from 'react';
 
 interface Trainer {
   trainer_id: number;
@@ -55,6 +56,7 @@ export default function Page() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [buttonText, setButtonText] = useState("Show Recommendations");
 
   const [tags] = useState([
     "Book Trainers on Preferred Time",
@@ -72,46 +74,87 @@ export default function Page() {
     router.push(`/booking-services/${serviceId}/${assignID}`);
   };
 
-   // Function to fetch and decrypt user cookie from document.cookie
-   const fetchUserFromCookie = () => {
+  // Function to fetch and decrypt user cookie from document.cookie
+  const fetchUserFromCookie = useCallback(() => {
     const cookies = document.cookie.split("; ").reduce((acc: { [key: string]: string }, cookie) => {
       const [name, value] = cookie.split("=");
       acc[name] = value;
       return acc;
     }, {});
-
-    const userCookie = cookies['user']; 
-
+  
+    const userCookie = cookies['user'];
+  
     if (!userCookie) {
       console.error("User cookie not found");
       return null;
     }
-
+  
     try {
       const decryptedUserBytes = CryptoJS.AES.decrypt(userCookie, secretKey);
       const decryptedUser = JSON.parse(decryptedUserBytes.toString(CryptoJS.enc.Utf8));
-      return decryptedUser.id; // Assuming user ID is part of the decrypted data
+      return decryptedUser.id;
     } catch (error) {
       console.error("Error decrypting the user cookie", error);
       return null;
     }
-  };
+  }, [secretKey]);
 
-  const getRecommendation = async () => {
-    const id = fetchUserFromCookie();
-    console.log(id);
+  const fetchAssignments = useCallback(async (recommended: boolean = false) => {
     try {
       setLoading(true);
-      const response = await fetch(`${api}/api/customer/recommendation/trainer?serviceId=${serviceId}&userId=${id}`);
-      const result = await response.json();
-
-      if(result.success){
-        setAssignments(result.trainer);
-      } else {
-        setError(result.message || "Failed to fetch assignments.");
-      }
+      const url = recommended
+        ? `${api}/api/customer/recommendation/trainer?serviceId=${serviceId}&userId=${fetchUserFromCookie()}`
+        : `${api}/api/customer/service?id=${serviceId}`;
+  
+      const response = await fetch(url);
+      const data = await response.json();
+      setAssignments(data.trainer || data.data || []);
     } catch (error) {
-      setError("An error occurred while fetching data.");
+      console.error("Error fetching diet plans:", error);
+      setError("Failed to fetch diet plans.");
+    } finally {
+      setLoading(false);
+    }
+  }, [api, fetchUserFromCookie, serviceId]);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const recommended = searchParams.get('recommended') === 'true';
+    fetchAssignments(recommended);
+  
+    if (recommended) {
+      setButtonText("Show All Trainers");
+    } else {
+      setButtonText("Show Recommendations");
+    }
+  }, [fetchAssignments]);
+
+  const getRecommendation = async () => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const recommended = searchParams.get('recommended') === 'true';
+    if(recommended) {
+      sessionStorage.setItem("showTrainerRecommendations", "false");
+      setButtonText("Show Recommendations");
+      await fetchAssignments(false); // Fetch all diet plans
+      router.push(`/booking-services/${serviceId}`);
+    } else {
+      const id = fetchUserFromCookie();
+      try {
+        setLoading(true);
+        const response = await fetch(`${api}/api/customer/recommendation/trainer?serviceId=${serviceId}&userId=${id}`);
+        const result = await response.json();
+
+        if(result.success){
+          setAssignments(result.trainer);
+          sessionStorage.setItem("showTrainerRecommendations", "true");
+          setButtonText("Show All Trainer");
+          router.push(`/booking-services/${serviceId}?recommended=true`)
+        } else {
+          setError(result.message || "Failed to fetch assignments.");
+        }
+      } catch (error) {
+          setError("An error occurred while fetching data.");
+      }
     }
     setLoading(false);
   }
@@ -122,27 +165,7 @@ export default function Page() {
     return photo && photo.trim() !== "" ? photo : fallbackImage;
   };
 
-  useEffect(() => {
-    const fetchAssignments = async () => {
-      try {
-        const response = await fetch(`${api}/api/customer/service?id=${serviceId}`);
-        const result = await response.json();
-
-        if (result.success) {
-          setAssignments(result.data);
-        } else {
-          setError(result.message || "Failed to fetch assignments.");
-        }
-      } catch (err) {
-        setError("An error occurred while fetching data.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAssignments();
-  }, [serviceId, api]);
-
+ 
   if (loading) return <p>Loading assignments...</p>;
   if (error) return <p>Error: {error}</p>;
 
@@ -199,7 +222,7 @@ export default function Page() {
             </Button>
             <Button className="flex flex-row items-center" variant="outline" onClick={getRecommendation}>
               <SparklesIcon className="h-4 w-4 mr-2" />
-              Show Recommendations
+              {buttonText}
             </Button>
           </div>
         </div>
