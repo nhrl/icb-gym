@@ -140,7 +140,7 @@ export const NavBar: React.FC = () => {
                   <span>Workouts</span>
               </Link>
 
-              <Link href="/diet-plans" passHref>
+              <Link href="/diet-plan" passHref>
                   <span>Dietplans</span>
               </Link>
               </div>

@@ -56,6 +56,15 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [tags] = useState([
+    "Book Trainers on Preferred Time",
+    "Progress Tracking",
+    "Digital Membership Card",
+    "Diet Plans",
+    "Workout Programs",
+    "User Preference Recommendation",
+  ]);
+
   const api = process.env.NEXT_PUBLIC_API_URL;
   const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || 'lhS7aOXRUPGPDId6mmHJdA00p39HAfU4';
 
@@ -141,18 +150,29 @@ export default function Page() {
   return (
     <div className="w-full flex flex-col rounded-2xl">
       <div className="p-2 bg-[#CCFF00] h-fit w-full flex flex-col gap-6 py-6">
-        {/* Scrolling Features */}
-        <div className="relative overflow-hidden w-full">
-          <div className="flex gap-14 animate-slide">
-            {["Book Trainers", "Progress Tracking", "Workout Programs"].map((tag, index) => (
-              <div key={index} className="text-[#131605] font-medium md:text-sm whitespace-nowrap items-center">
-                <RiAsterisk className="h-4 w-4 inline-block mr-2" />
-                {tag}
-              </div>
-            ))}
+          <div className="relative overflow-hidden w-full">
+            <div className="flex gap-14 animate-slide">
+              {tags.map((tag, index) => (
+                <div
+                  key={index}
+                  className="text-[#131605] font-medium md:text-sm whitespace-nowrap items-center"
+                >
+                  <RiAsterisk className="h-4 w-4 inline-block mr-2" />
+                  {tag}
+                </div>
+              ))}
+              {tags.map((tag, index) => (
+                <div
+                  key={index}
+                  className="text-[#131605] font-medium md:text-sm whitespace-nowrap items-center"
+                >
+                  <RiAsterisk className="h-4 w-4 inline-block mr-2" />
+                  {tag}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
       <div className="flex flex-col w-full gap-6 p-12">
         {/* Breadcrumb Navigation */}
@@ -192,7 +212,7 @@ export default function Page() {
             {assignments.map((assign) => (
               <Card
                 key={assign.assign_id}
-                className="h-fit border-none rounded-3xl flex flex-col justify-between overflow-hidden transform transition-transform duration-300 hover:scale-105 hover:z-10 cursor-pointer"
+                className="h-fit border-border border rounded-3xl flex flex-col justify-between overflow-hidden transform transition-transform duration-300 hover:scale-105 hover:z-10 cursor-pointer"
                 onClick={() => handleCardClick(assign.assign_id)}
               >
                 <CardHeader

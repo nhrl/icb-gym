@@ -123,5 +123,5 @@ body {
 }
 .animate-slide {
   display: flex;
-  animation: slide 10s linear infinite;
+  animation: slide 15s linear infinite;
 }
