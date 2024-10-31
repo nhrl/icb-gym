@@ -32,6 +32,7 @@ export default function DietPlansPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [buttonText, setButtonText] = useState("Show Recommendations");
+  const [searchTerm, setSearchTerm] = useState(""); // New state for search term
   const [tags] = useState([
     "Custom Meal Plans",
     "Calorie Tracking",
@@ -142,6 +143,9 @@ export default function DietPlansPage() {
   if (loading) return <p>Loading diet plans...</p>;
   if (error) return <p>Error: {error}</p>;
 
+  const filteredDietplans = dietPlans.filter((dietplan) =>
+    dietplan.name.toLocaleLowerCase().includes(searchTerm.toLowerCase())
+  );
   return (
     <>
       <div className="w-full flex flex-col rounded-2xl">
@@ -161,17 +165,20 @@ export default function DietPlansPage() {
           </div>
         </div>
 
-        <div className="flex flex-col w-full gap-6 p-12 sm:px-[128px]">
+        <div className="flex flex-col w-full gap-6 p-12">
           <div className="flex flex-col sm:flex-row w-full justify-between">
             <h1 className="text-[36px] font-black">Diet Plans</h1>
             <div className="flex flex-col sm:flex-row gap-2">
-              {/* Search bar */}
-              <Input placeholder="Search for diet plans..." className="max-w-sm" />
+              <Input 
+                placeholder="Search for diet plans..." 
+                className="max-w-sm" 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
               <Button className="flex flex-row items-center">
                 <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
                 Search Diet Plans
               </Button>
-              {/* Show Recommendations button */}
               <Button className="flex flex-row items-center" variant="outline" onClick={showDietplanRecommendations}>
                 <SparklesIcon className="h-4 w-4 mr-2" />
                 {buttonText}
@@ -180,10 +187,10 @@ export default function DietPlansPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {dietPlans.length === 0 ? (
+            {filteredDietplans.length === 0 ? (
               <p>No diet plans available.</p>
             ) : (
-              dietPlans.map((dietPlan) => (
+              filteredDietplans.map((dietPlan) => (
                 <Card
                   key={dietPlan.dietplan_id}
                   className="border-border border p-4  flex flex-col rounded-3xl justify-between cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:z-10 hover:shadow-lg shadow-lg gap-4"
