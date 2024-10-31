@@ -57,6 +57,7 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [buttonText, setButtonText] = useState("Show Recommendations");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [tags] = useState([
     "Book Trainers on Preferred Time",
@@ -169,6 +170,10 @@ export default function Page() {
   if (loading) return <p>Loading assignments...</p>;
   if (error) return <p>Error: {error}</p>;
 
+  const filteredTrainer = assignments.filter((assign) =>
+    `${assign.trainer.firstname} ${assign.trainer.lastname}`.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const serviceName = assignments.length > 0 ? assignments[0].service.service_name : "Service";
   return (
     <div className="w-full flex flex-col rounded-2xl">
@@ -215,7 +220,12 @@ export default function Page() {
           <h1 className="text-[36px] font-black">{serviceName}</h1>
 
           <div className="flex flex-col sm:flex-row gap-2">
-            <Input placeholder="Search for trainers..." className="max-w-sm" />
+            <Input
+              placeholder="Search for trainers..."
+              className="max-w-sm"
+              value={searchTerm} // Bind input to searchTerm
+              onChange={(e) => setSearchTerm(e.target.value)} // Update searchTerm state
+            />
             <Button className="flex flex-row items-center">
               <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
               Search Trainers
@@ -232,7 +242,7 @@ export default function Page() {
           <p className="text-center text-xl mt-8">No recommended trainers available.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {assignments.map((assign) => (
+            {filteredTrainer.map((assign) => (
               <Card
                 key={assign.assign_id}
                 className="h-fit border-border border rounded-3xl flex flex-col justify-between overflow-hidden transform transition-transform duration-300 hover:scale-105 hover:z-10 cursor-pointer"

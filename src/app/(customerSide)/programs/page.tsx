@@ -34,6 +34,7 @@ export default function Page() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [buttonText, setButtonText] = useState("Show Recommendations");
+  const [searchTerm, setSearchTerm] = useState(""); // New state for search term
 
   const [tags] = useState([
     "Book Trainers on Preferred Time",
@@ -141,6 +142,10 @@ export default function Page() {
     setLoading(false);
   }
 
+  const filteredProgram = workouts.filter((workout) =>
+    workout.title.toLocaleLowerCase().includes(searchTerm.toLocaleLowerCase())
+  );
+
   if (loading) return <p>Loading programs...</p>;
   if (error) return <p>Error: {error}</p>;
   return (
@@ -166,7 +171,12 @@ export default function Page() {
           <div className="flex flex-col sm:flex-row w-full justify-between">
             <h1 className="text-[36px] font-black">Workouts</h1>
             <div className="flex flex-col sm:flex-row gap-2">
-              <Input placeholder="Search for workouts..." className="max-w-sm" />
+              <Input 
+                placeholder="Search for workouts..." 
+                className="max-w-sm" 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
               <Button className="flex flex-row items-center">
                 <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
                 Search Workouts
@@ -179,10 +189,10 @@ export default function Page() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {workouts.length === 0 ? (
+            {filteredProgram.length === 0 ? (
               <p>No workouts available.</p>
             ) : (
-              workouts.map((workout) => (
+              filteredProgram.map((workout) => (
                 <Card
                   key={workout.program_id}
                   className="border-none flex flex-col rounded-3xl justify-between cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:z-10 hover:shadow-lg shadow-none gap-4"
