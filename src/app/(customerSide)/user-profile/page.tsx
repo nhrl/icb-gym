@@ -121,7 +121,7 @@ const { data: bookingData, mutate, error } = useSWR(
   const membershipStatus = membership?.status || "None";
 
   return (
-    <div className="p-4 gap-4 flex flex-col">
+    <div className="p-4 px-4 sm:px-[128px] gap-4 flex flex-col">
     {/* Breadcrumb */}
     <div className="w-full h-fit">
       <Breadcrumb>
@@ -157,7 +157,7 @@ const { data: bookingData, mutate, error } = useSWR(
                     ? "pending"
                     : "destructive"
                 }
-                className="w-fit text-foreground rounded-full"
+                className="w-fit rounded-full"
               >
                 { membershipStatus }
               </Badge>

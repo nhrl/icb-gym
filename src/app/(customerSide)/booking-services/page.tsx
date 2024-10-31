@@ -83,7 +83,7 @@ export default function Page() {
         </div>
 
         {/* Container for Services */}
-        <div className="flex flex-col w-full gap-6 p-12">
+        <div className="flex flex-col w-full gap-6 p-12 px-[128px]">
           <div className="flex flex-col sm:flex-row w-full justify-between">
             <h1 className="text-[36px] font-black">Services</h1>
 

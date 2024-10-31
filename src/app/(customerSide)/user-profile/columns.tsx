@@ -67,7 +67,7 @@ export const columns: ColumnDef<Booking>[] = [
 
       return (
         <Badge
-          className="rounded-full w-fit flex items-center gap-2 text-white bg-opacity-80"
+          className="rounded-full w-fit flex items-center gap-2 bg-opacity-80"
           variant={variant}
         >
           <span className={`w-1 h-1 rounded-full ${dotColor}`}></span>
@@ -96,7 +96,7 @@ export const columns: ColumnDef<Booking>[] = [
 
       return (
         <Badge
-          className="rounded-full w-fit flex items-center gap-2 text-white bg-opacity-80"
+          className="rounded-full w-fit flex items-center gap-2 bg-opacity-80"
           variant={variant}
         >
           <span className={`w-1 h-1 rounded-full ${dotColor}`}></span>

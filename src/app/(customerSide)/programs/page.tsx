@@ -167,7 +167,7 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="flex flex-col w-full gap-6 p-12">
+        <div className="flex flex-col w-full gap-6 p-12 sm:px-[128px]">
           <div className="flex flex-col sm:flex-row w-full justify-between">
             <h1 className="text-[36px] font-black">Workouts</h1>
             <div className="flex flex-col sm:flex-row gap-2">
@@ -195,11 +195,11 @@ export default function Page() {
               filteredProgram.map((workout) => (
                 <Card
                   key={workout.program_id}
-                  className="border-none flex flex-col rounded-3xl justify-between cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:z-10 hover:shadow-lg shadow-none gap-4"
+                  className="border-border p-4 flex flex-col rounded-3xl justify-between cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:z-10 hover:shadow-lg shadow-none gap-4"
                   onClick={() => handleCardClick(workout.program_id)}
                 >
                   <CardHeader
-                    className="w-full h-[275px] border border-border rounded-3xl flex flex-row justify-end"
+                    className="w-full h-[275px] border border-border rounded-xl flex flex-row justify-end"
                     style={{
                       backgroundImage: `linear-gradient(to top, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1)), url(${getBackgroundImage(workout.program_img)})`,
                       backgroundSize: "cover",

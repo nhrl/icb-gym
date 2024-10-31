@@ -224,8 +224,8 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onProfileUpdate }) => 
     <div className="w-full h-full">
       <Card>
         <CardHeader className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex items-left flex-col sm:flex-row gap-6 sm:gap-0 justify-between mb-6">
+            <div className="flex gap-4">
               <Avatar className="w-20 h-20 relative overflow-hidden rounded-full bg-gray-300">
                 {profileData?.profile_img ? (
                   <Image
@@ -242,7 +242,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onProfileUpdate }) => 
                 )}
               </Avatar>
               <div>
-                <CardTitle className="text-2xl font-semibold">
+                <CardTitle className="text-xl font-semibold">
                   {profileData?.firstname || ""} {profileData?.lastname || ""}
                 </CardTitle>
                 <p className="text-muted-foreground">
