@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState , useEffect} from 'react';
-import { useRouter } from 'next/navigation'; // Correct import from 'next/navigation'
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Card,
   CardFooter,
@@ -12,14 +12,13 @@ import { Button } from '@/components/ui/button';
 import { MagnifyingGlassIcon, ArrowUpRightIcon } from '@heroicons/react/24/outline';
 import { RiAsterisk } from 'react-icons/ri';
 
-
-const fallbackImage = "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png"; // Fallback image path
+const fallbackImage = "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png";
 
 interface Service {
   service_id: number;
   service_name: string;
   service_img: string;
-  desc: string
+  desc: string;
 }
 
 export default function Page() {
@@ -34,6 +33,7 @@ export default function Page() {
 
   const router = useRouter();
   const [services, setServices] = useState<Service[]>([]);
+  const [searchTerm, setSearchTerm] = useState(""); // New state for search term
 
   const api = process.env.NEXT_PUBLIC_API_URL;
   useEffect(() => {
@@ -41,7 +41,7 @@ export default function Page() {
       try {
         const response = await fetch(`${api}/api/manager/service`);
         const data = await response.json();
-        setServices(data.data); // Assuming data.services contains an array of service objects
+        setServices(data.data);
       } catch (error) {
         console.error("Error fetching services:", error);
       }
@@ -49,32 +49,26 @@ export default function Page() {
     fetchServices();
   }, [api]);
 
-  const handleCardClick = (serviceId:any) => {
+  const handleCardClick = (serviceId: any) => {
     router.push(`/booking-services/${serviceId}`);
   };
 
-  const getBackgroundImage = (photo:any) => {
-    // Return the photo if it exists, otherwise use the fallback image
+  const getBackgroundImage = (photo: any) => {
     return photo && photo.trim() !== "" ? photo : fallbackImage;
   };
+
+  // Filtered services based on search term
+  const filteredServices = services.filter((service) =>
+    service.service_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <>
       <div className="w-full flex flex-col rounded-2xl">
-
         {/* Features Section */}
         <div className="p-2 bg-[#CCFF00] h-fit w-full flex flex-col gap-6 py-6">
           <div className="relative overflow-hidden w-full">
             <div className="flex gap-14 animate-slide">
-              {tags.map((tag, index) => (
-                <div
-                  key={index}
-                  className="text-[#131605] font-medium md:text-sm whitespace-nowrap items-center"
-                >
-                  <RiAsterisk className="h-4 w-4 inline-block mr-2" />
-                  {tag}
-                </div>
-              ))}
               {tags.map((tag, index) => (
                 <div
                   key={index}
@@ -94,7 +88,12 @@ export default function Page() {
             <h1 className="text-[36px] font-black">Services</h1>
 
             <div className="flex flex-col sm:flex-row gap-2">
-              <Input placeholder="Search for services..." className="max-w-sm" />
+              <Input
+                placeholder="Search for services..."
+                className="max-w-sm"
+                value={searchTerm} // Bind input to searchTerm state
+                onChange={(e) => setSearchTerm(e.target.value)} // Update searchTerm state on input change
+              />
               <Button className="flex flex-row items-center">
                 <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
                 Search Services
@@ -104,26 +103,26 @@ export default function Page() {
 
           {/* Grid Layout for Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {services.map((service:any) => (
+            {filteredServices.map((service: any) => (
               <Card
-              key={service.service_id}
-              className="h-[275px] rounded-3xl flex flex-col justify-between cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:z-10 hover:shadow-lg"
-              style={{
-                backgroundImage: `linear-gradient(to top, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1)), url(${getBackgroundImage(service.service_img)})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
-              onClick={() => handleCardClick(service.service_id)}
-            >
-              <CardHeader className="w-full flex flex-row justify-end">
-                <div className="h-10 w-10 rounded-full bg-white/10 backdrop-filter backdrop-blur-lg flex items-center justify-center cursor-pointer hover:bg-white/20">
-                  <ArrowUpRightIcon className="h-4 w-4 text-white" />
-                </div>
-              </CardHeader>
-              <CardFooter>
-                <span className="text-2xl text-white">{service.service_name}</span>
-              </CardFooter>
-            </Card>
+                key={service.service_id}
+                className="h-[275px] rounded-3xl flex flex-col justify-between cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:z-10 hover:shadow-lg"
+                style={{
+                  backgroundImage: `linear-gradient(to top, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1)), url(${getBackgroundImage(service.service_img)})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
+                onClick={() => handleCardClick(service.service_id)}
+              >
+                <CardHeader className="w-full flex flex-row justify-end">
+                  <div className="h-10 w-10 rounded-full bg-white/10 backdrop-filter backdrop-blur-lg flex items-center justify-center cursor-pointer hover:bg-white/20">
+                    <ArrowUpRightIcon className="h-4 w-4 text-white" />
+                  </div>
+                </CardHeader>
+                <CardFooter>
+                  <span className="text-2xl text-white">{service.service_name}</span>
+                </CardFooter>
+              </Card>
             ))}
           </div>
         </div>
