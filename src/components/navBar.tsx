@@ -118,10 +118,10 @@ export const NavBar: React.FC = () => {
 
   return (
     <>
-      <div className="top-0 z-50 sticky bg-background flex items-center w-full justify-between p-4 ">
+      <div className="top-0 z-50 sticky bg-background flex items-center w-full justify-between p-4 sm:px-[128px]">
         <Link href="/" passHref>
-          <div className="text-2xl font-black items-center flex gap-2 cursor-pointer">
-            <Image src={logo} alt="icblogo" className="inline h-8 w-8" priority />
+          <div className="text-xl font-black items-center flex gap-2 cursor-pointer">
+            <Image src={logo} alt="icblogo" className="inline h-7 w-7" priority />
             <span className="hidden sm:block">Incredoball</span>
           </div>
         </Link>
@@ -129,20 +129,20 @@ export const NavBar: React.FC = () => {
         <div className=" flex gap-2 flex-row items-center w-full justify-end">
           {user?.isLoggedIn ? (
             <>
-            {/*  links */}
-            <div className="hidden sm:block md:block w-full" >
+           {/* Links */}
+            <div className="hidden sm:block md:block w-full">
               <div className="flex flex-row text-xs gap-8 w-full justify-center">
-              <Link href="/booking-services" passHref>
-                  <span>Booking</span>
-              </Link>
+                <Link href="/booking-services" passHref>
+                  <span className="link-hover-effect">Booking</span>
+                </Link>
 
-              <Link href="/programs" passHref>
-                  <span>Workouts</span>
-              </Link>
+                <Link href="/programs" passHref>
+                  <span className="link-hover-effect">Workouts</span>
+                </Link>
 
-              <Link href="/diet-plan" passHref>
-                  <span>Dietplans</span>
-              </Link>
+                <Link href="/diet-plan" passHref>
+                  <span className="link-hover-effect">Dietplans</span>
+                </Link>
               </div>
             </div>
 
@@ -170,7 +170,7 @@ export const NavBar: React.FC = () => {
 
             <DropdownMenu onOpenChange={toggleDropdown}>
               <DropdownMenuTrigger asChild>
-                <Button className="flex items-center gap-2 cursor-pointer p-2 rounded-full" variant="outline">
+                <Button className="flex items-center gap-2 cursor-pointer p-2 rounded-full" variant="outline" size="sm">
                   <Avatar className="w-6 h-6">
                       {user.avatar ? (
                         <Image
@@ -199,15 +199,19 @@ export const NavBar: React.FC = () => {
                   <DropdownMenuItem>Profile</DropdownMenuItem>
                 </Link>
                 <DropdownMenuSeparator />
+                <Link href="/progress" passHref>
+                  <DropdownMenuItem>Progress</DropdownMenuItem>
+                </Link>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
               </DropdownMenuContent>
               <div onClick={toggleTheme} className="cursor-pointer">
                 {theme === "light" ? (
-                  <Button className="rounded-full bg-purple-600">
+                  <Button className="rounded-full bg-purple-600" size="sm">
                     <MoonIcon className="h-4 w-4 text-background" />
                   </Button>
                 ) : (
-                  <Button className="rounded-full bg-[#CCFF00]">
+                  <Button className="rounded-full bg-[#CCFF00]" size="sm">
                     <SunIcon className="h-4 w-4 text-background" />
                   </Button>
                 )}

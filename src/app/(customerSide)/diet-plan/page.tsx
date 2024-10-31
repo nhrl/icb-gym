@@ -161,15 +161,17 @@ export default function DietPlansPage() {
           </div>
         </div>
 
-        <div className="flex flex-col w-full gap-6 p-12">
+        <div className="flex flex-col w-full gap-6 p-12 sm:px-[128px]">
           <div className="flex flex-col sm:flex-row w-full justify-between">
             <h1 className="text-[36px] font-black">Diet Plans</h1>
             <div className="flex flex-col sm:flex-row gap-2">
+              {/* Search bar */}
               <Input placeholder="Search for diet plans..." className="max-w-sm" />
               <Button className="flex flex-row items-center">
                 <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
                 Search Diet Plans
               </Button>
+              {/* Show Recommendations button */}
               <Button className="flex flex-row items-center" variant="outline" onClick={showDietplanRecommendations}>
                 <SparklesIcon className="h-4 w-4 mr-2" />
                 {buttonText}

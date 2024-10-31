@@ -81,7 +81,7 @@ export const columns: ColumnDef<Equipment>[] = [
     accessorKey: "name",
     header: ({ column }) => (
       <Button
-        variant="ghostTable"
+        variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         className="flex items-center gap-2 p-0 justify-start"
       >

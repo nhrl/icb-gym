@@ -197,7 +197,7 @@ export default function Page() {
           </div>
         </div>
 
-      <div className="flex flex-col w-full gap-6 p-12">
+      <div className="flex flex-col w-full gap-6 p-12 px-[128px]">
         {/* Breadcrumb Navigation */}
         <Breadcrumb>
           <BreadcrumbList>

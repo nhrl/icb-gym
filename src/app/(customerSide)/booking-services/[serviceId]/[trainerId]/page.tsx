@@ -336,7 +336,7 @@ export default function TrainerDetailPage() {
                       <DialogTrigger asChild>
                         <Button
                           variant="default"
-                          className="rounded-full w-full bg-secondary text-primary-foreground"
+                          className="rounded-full w-full"
                           disabled={assignment.current_capacity >= assignment.max_capacity}
                         >
                           <BookOpenIcon className="h-4 w-4 mr-2" />
