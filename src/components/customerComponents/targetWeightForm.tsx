@@ -80,8 +80,8 @@ export default function TargetWeightForm({
       customer_id: user_id,
       target_weight: data.target_weight,
     };
-
-    const response = await fetch(`${api}/api/customer/target-weight`, {
+    console.log(payload);
+    const response = await fetch(`${api}/api/customer/progress/targetWeight`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

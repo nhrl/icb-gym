@@ -33,146 +33,68 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ScaleIcon } from 'lucide-react';
+import CryptoJS from 'crypto-js';
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
+import useSWR, { mutate } from 'swr';
 
 // Define the structure of a progress entry
 interface Progress {
   progress_id: number;
   customer_id: number;
-  week: number;
+  week_number: number;
   desc: string;
   workout_count: number;
-  current_weight: number;
+  weight: number;
   bodyfat_percentage: number;
   date_added: string;
+  photo: string;
 }
 
-
-const mockProgressData = [
-  {
-    progress_id: 1,
-    customer_id: 101,
-    week: 1,
-    desc: "Started the journey strong with consistent workouts and mindful eating.",
-    workout_count: 4,
-    current_weight: 72,
-    bodyfat_percentage: 18,
-    date_added: "2024-08-29",
-  },
-  {
-    progress_id: 2,
-    customer_id: 101,
-    week: 2,
-    desc: "Pushed hard this week, focusing on strength training and cardio.",
-    workout_count: 5,
-    current_weight: 71.5,
-    bodyfat_percentage: 17.8,
-    date_added: "2024-09-05",
-  },
-  {
-    progress_id: 3,
-    customer_id: 101,
-    week: 3,
-    desc: "Took it easy mid-week but made up with a strong weekend workout.",
-    workout_count: 3,
-    current_weight: 71,
-    bodyfat_percentage: 17.5,
-    date_added: "2024-09-12",
-  },
-  {
-    progress_id: 4,
-    customer_id: 101,
-    week: 4,
-    desc: "Focused on core exercises and flexibility this week.",
-    workout_count: 4,
-    current_weight: 70.8,
-    bodyfat_percentage: 17.3,
-    date_added: "2024-09-19",
-  },
-  {
-    progress_id: 5,
-    customer_id: 101,
-    week: 5,
-    desc: "Hit a new personal best in strength and improved cardio endurance.",
-    workout_count: 5,
-    current_weight: 70.5,
-    bodyfat_percentage: 17,
-    date_added: "2024-09-26",
-  },
-  {
-    progress_id: 6,
-    customer_id: 101,
-    week: 6,
-    desc: "Focused on high-intensity interval training and endurance workouts.",
-    workout_count: 4,
-    current_weight: 70.2,
-    bodyfat_percentage: 16.9,
-    date_added: "2024-10-03",
-  },
-  {
-    progress_id: 7,
-    customer_id: 101,
-    week: 7,
-    desc: "Improved overall stamina and maintained workout consistency.",
-    workout_count: 5,
-    current_weight: 70,
-    bodyfat_percentage: 16.8,
-    date_added: "2024-10-10",
-  },
-  {
-    progress_id: 8,
-    customer_id: 101,
-    week: 8,
-    desc: "Included more flexibility exercises and cooldown routines.",
-    workout_count: 3,
-    current_weight: 69.8,
-    bodyfat_percentage: 16.7,
-    date_added: "2024-10-17",
-  },
-  {
-    progress_id: 9,
-    customer_id: 101,
-    week: 9,
-    desc: "Incorporated more varied cardio activities for endurance.",
-    workout_count: 5,
-    current_weight: 69.5,
-    bodyfat_percentage: 16.5,
-    date_added: "2024-10-24",
-  },
-  {
-    progress_id: 10,
-    customer_id: 101,
-    week: 10,
-    desc: "Final week: Strong focus on overall fitness and flexibility.",
-    workout_count: 4,
-    current_weight: 69.3,
-    bodyfat_percentage: 16.3,
-    date_added: "2024-10-31",
-  },
-];
-
-
-
 const ITEMS_PER_PAGE = 8;
+const fallbackImage = "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png";
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 function ProgressTable() {
-  const [progressData, setProgressData] = useState<Progress[]>(mockProgressData);
+  const [progressData, setProgressData] = useState<Progress[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [isAddFormOpen, setIsAddFormOpen] = useState(false); // State to control the add form dialog visibility
-  const previousWeek = progressData.length > 0 ? Math.max(...progressData.map(p => p.week)) : 0;
-
-  useEffect(() => {
-    async function fetchProgressData() {
-      try {
-        const response = await fetch("/api/progress?customer_id=your_customer_id");
-        const data = await response.json();
-        setProgressData(data);
-      } catch (error) {
-        console.error("Error fetching progress data:", error);
-      }
+  const previousWeek = progressData.length > 0 ? Math.max(...progressData.map(p => p.week_number)) : 0;
+  const { toast } = useToast();
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  const fetchUserFromCookie = () => {
+    if (typeof window === "undefined") return null; // Prevent running on server
+      const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || "lhS7aOXRUPGPDId6mmHJdA00p39HAfU4";
+      const cookies = document.cookie.split("; ").reduce((acc: { [key: string]: string }, cookie) => {
+      const [name, value] = cookie.split("=");
+      acc[name] = value;
+      return acc;
+    }, {});
+  
+    const userCookie = cookies["user"];
+    if (!userCookie) return null;
+  
+    try {
+      const decryptedUserBytes = CryptoJS.AES.decrypt(userCookie, secretKey);
+      const decryptedUser = JSON.parse(decryptedUserBytes.toString(CryptoJS.enc.Utf8));
+      return decryptedUser.id;
+    } catch (error) {
+      console.error("Error decrypting user cookie:", error);
+      return null;
     }
-    fetchProgressData();
-  }, []);
+};
+
+const userId = fetchUserFromCookie();
+
+const { data, mutate } = useSWR(`${api}/api/customer/progress?id=${userId}`, fetcher);
+
+useEffect(() => {
+  if (data?.data) {
+    setProgressData(data.data || []);
+  }
+}, [data]);
+
 
   // Toggle sort order
   const toggleSortOrder = () => {
@@ -192,10 +114,37 @@ function ProgressTable() {
   const currentData = sortedData.slice(firstIndex, lastIndex);  // Now using sortedData
   const totalPages = Math.ceil(progressData.length / ITEMS_PER_PAGE);
 
-    // Function to handle closing the form dialog
-    const handleCloseForm = () => {
-      setIsAddFormOpen(false);
-    };
+  // Function to handle closing the form dialog
+  const handleCloseForm = () => {
+    setIsAddFormOpen(false);
+  };
+
+  const deleteProgress =  async (progress_id : any) => {
+    const id = fetchUserFromCookie();
+    const response = await fetch(`${api}/api/customer/progress`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ progress_id }),
+    })
+
+    const message = await response.json();
+    if(message.success) {
+      toast({
+        title: "Progress Deleted",
+        description: "Your progress has been successfully deleted.",
+        duration: 3000,
+      });
+      mutate(`${api}/api/customer/progress?id=${id}`);
+    } else {
+      toast({
+        title: "Deleting Progress Failed",
+        description: "Failed to delete your progress.",
+        duration: 3000,
+      });
+    }
+  }
 
   return (
     <div className='p-4 flex flex-col gap-4'>
@@ -220,7 +169,7 @@ function ProgressTable() {
 
           <Dialog open={isAddFormOpen} onOpenChange={setIsAddFormOpen}>
             <DialogContent>
-            <ProgressAddForm onClose={handleCloseForm} onAdd={() => setProgressData([...progressData])} previousWeek={previousWeek} />
+            <ProgressAddForm onClose={handleCloseForm} onAdd={() => setProgressData([...progressData])} previousWeek={previousWeek} mutate={mutate}/>
             </DialogContent>
           </Dialog>
           </div>
@@ -228,12 +177,12 @@ function ProgressTable() {
 
       {/* Dynamic Progress Entries */}
       {currentData.map((progress) => (
-        <Dialog key={progress.progress_id}>
+        <Dialog key={progress.progress_id} >
           <DialogTrigger className='w-full rounded-md flex flex-row justify-between border p-2 px-4 items-center'>
               <div className="flex flex-row items-center gap-4">
-                Week {progress.week}
+                Week {progress.week_number}
                 <div className="flex text-xs text-muted-foreground flex-row items-center">
-                  {progress.date_added}
+                  {new Date(progress.date_added).toISOString().slice(0, 10)}
                 </div>
               </div>
               <p className="text-xs text-muted-foreground flex flex-row items-center">
@@ -242,9 +191,13 @@ function ProgressTable() {
               </p>
           </DialogTrigger>
           <DialogContent className="gap-4 flex flex-col">
-            <DialogHeader className="h-48 bg-cover bg-center border rounded-lg mt-6" />
+            <DialogHeader className="h-48 bg-cover bg-center border rounded-lg mt-6" 
+              style={{
+                backgroundImage: `url(${progress.photo || fallbackImage})`,
+              }}
+            />
             <DialogTitle className='flex flex-row justify-between items-center align-top'> 
-              <div>Week {progress.week}</div>
+              <div>Week {progress.week_number}</div>
               <div className='flex flex-row gap-2 rounded-full border text-xs p-2 px-4 items-center font-thin'>
                 <BoltIcon className='h-3 w-3 text-yellow-400' />
                 <p>Workouts</p>
@@ -254,7 +207,7 @@ function ProgressTable() {
             
             <div className='font-regular text-xs'>
                 <p>Date Added</p>
-                <p className='text-muted-foreground'>{progress.date_added}</p>
+                <p className='text-muted-foreground'>{new Date(progress.date_added).toISOString().slice(0, 10)}</p>
             </div>
 
             <DialogDescription className="flex flex-col gap-4 mt-3">
@@ -267,7 +220,7 @@ function ProgressTable() {
             <div className='flex flex-row justify-between gap-4'>
               <div className='flex flex-row gap-2 w-full rounded-full justify-between border text-xs p-2 px-4 items-center font-thin'>
                   <p className='flex flex-row items-center'><ScaleIcon className='h-3 w-3 mr-2' />Weight</p>
-                  <p>{progress.current_weight}</p>
+                  <p>{progress.weight}</p>
               </div>
               <div className='flex flex-row gap-2 w-full rounded-full justify-between border text-xs p-2 px-4 items-center font-thin'>
                   <p>Est. Bodyfat %</p>
@@ -293,7 +246,7 @@ function ProgressTable() {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction className='text-background'>Yes, Delete This</AlertDialogAction>
+                    <AlertDialogAction className='text-background' onClick={() => deleteProgress(progress.progress_id)}>Yes, Delete This</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog> 
@@ -324,6 +277,7 @@ function ProgressTable() {
           </PaginationItem>
         </PaginationContent>
       </Pagination>
+      <Toaster />
     </div>
   );
 }
