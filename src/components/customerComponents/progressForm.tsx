@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { mutate } from "swr";
+import CryptoJS from 'crypto-js';
 
 // Define the form schema for adding a new progress entry
 const progressSchema = zod.object({
@@ -27,12 +28,11 @@ const progressSchema = zod.object({
     .preprocess((val) => Number(val), zod.number().min(1, "Week number is required")),
   desc: zod.string().min(1, "Description is required").max(150, "Description must be less than 150 characters"),
   workout_count: zod
-    .preprocess((val) => Number(val), zod.number().min(0, "Workout count is required")),
+  .preprocess((val) => val === "" ? undefined : Number(val), zod.number().min(1, "Workout count is required").max(7, "Workout count doesn't exceed 7")),
   weight: zod
     .preprocess((val) => Number(val), zod.number().min(1, "Weight is required")),
   bodyfat_percentage: zod
     .preprocess((val) => Number(val), zod.number().min(0, "Bodyfat percentage is required")),
-  date_added: zod.string().optional(),
   photo: zod.instanceof(File).optional(),
 });
 
@@ -40,6 +40,7 @@ interface ProgressAddFormProps {
   onClose: () => void;
   onAdd: (data: zod.infer<typeof progressSchema>) => void;
   previousWeek?: number; // Pass the last week's number if available
+  mutate: () => void;
 }
 
 export default function ProgressAddForm({ onClose, onAdd, previousWeek = 0 }: ProgressAddFormProps) {
@@ -57,22 +58,47 @@ export default function ProgressAddForm({ onClose, onAdd, previousWeek = 0 }: Pr
   });
 
   const api = process.env.NEXT_PUBLIC_API_URL;
+  const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || 'lhS7aOXRUPGPDId6mmHJdA00p39HAfU4';
+
+  const fetchUserFromCookie = () => {
+    const cookies = document.cookie.split("; ").reduce((acc: { [key: string]: string }, cookie) => {
+      const [name, value] = cookie.split("=");
+      acc[name] = value;
+      return acc;
+    }, {});
+
+    const userCookie = cookies['user']; 
+
+    if (!userCookie) {
+      console.error("User cookie not found");
+      return null;
+    }
+
+    try {
+      const decryptedUserBytes = CryptoJS.AES.decrypt(userCookie, secretKey);
+      const decryptedUser = JSON.parse(decryptedUserBytes.toString(CryptoJS.enc.Utf8));
+      return decryptedUser.id; // Assuming user ID is part of the decrypted data
+    } catch (error) {
+      console.error("Error decrypting the user cookie", error);
+      return null;
+    }
+  };
 
   const handleFormSubmit = async (data: zod.infer<typeof progressSchema>) => {
+    const id = fetchUserFromCookie();
     const formData = new FormData();
     formData.append("week", data.week.toString());
     formData.append("desc", data.desc);
     formData.append("workout_count", data.workout_count.toString());
     formData.append("weight", data.weight.toString());
     formData.append("bodyfat_percentage", data.bodyfat_percentage.toString());
-    formData.append("date_added", new Date().toISOString());
-
+    formData.append("userID",id.toString());
     if (data.photo) {
       formData.append("photo", data.photo);
     }
-
+    
     try {
-      const response = await fetch(`${api}/api/manager/progress`, {
+      const response = await fetch(`${api}/api/customer/progress`, {
         method: "POST",
         body: formData,
       });
@@ -82,12 +108,16 @@ export default function ProgressAddForm({ onClose, onAdd, previousWeek = 0 }: Pr
       if (message.success) {
         toastSuccess();
         onAdd(data);
-        mutate(`${api}/api/manager/progress`);
+        mutate(`${api}/api/customer/progress?id=${id}`);
+        mutate(`${api}/api/customer/progress/streak?id=${id}`);
+        mutate(`${api}/api/customer/progress/workoutCount?id=${id}`)
       } else {
         toastError(message.message || "Something went wrong.");
+        console.log(message.error);
       }
     } catch (error) {
       toastError("An error occurred while adding the progress entry.");
+      console.log(error);
     }
     onClose();
   };

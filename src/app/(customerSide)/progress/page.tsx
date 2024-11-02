@@ -24,150 +24,121 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { HandThumbUpIcon, ScaleIcon, ArrowUpIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
+import { HandThumbUpIcon, ScaleIcon, ArrowUpIcon, PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { FireIcon } from "@heroicons/react/16/solid";
 import Barchart from "./chart";
 import ProgressTable from "./progresstable";
 import TargetWeightForm from "@/components/customerComponents/targetWeightForm";
+import useSWR, { mutate } from 'swr';
+import CryptoJS from 'crypto-js';
 
+interface Progress {
+  progress_id: number;
+  customer_id: number;
+  week_number: number;
+  desc: string;
+  workout_count: number;
+  weight: number;
+  bodyfat_percentage: number;
+  date_added: string;
+  photo: string;
+}
 
-const mockProgressData = [
-  {
-    progress_id: 1,
-    customer_id: 101,
-    week: 1,
-    desc: "Started the journey strong with consistent workouts and mindful eating.",
-    workout_count: 4,
-    current_weight: 72,
-    bodyfat_percentage: 18,
-    date_added: "2024-08-29",
-  },
-  {
-    progress_id: 2,
-    customer_id: 101,
-    week: 2,
-    desc: "Pushed hard this week, focusing on strength training and cardio.",
-    workout_count: 5,
-    current_weight: 71.5,
-    bodyfat_percentage: 17.8,
-    date_added: "2024-09-05",
-  },
-  {
-    progress_id: 3,
-    customer_id: 101,
-    week: 3,
-    desc: "Took it easy mid-week but made up with a strong weekend workout.",
-    workout_count: 3,
-    current_weight: 71,
-    bodyfat_percentage: 17.5,
-    date_added: "2024-09-12",
-  },
-  {
-    progress_id: 4,
-    customer_id: 101,
-    week: 4,
-    desc: "Focused on core exercises and flexibility this week.",
-    workout_count: 4,
-    current_weight: 70.8,
-    bodyfat_percentage: 17.3,
-    date_added: "2024-09-19",
-  },
-  {
-    progress_id: 5,
-    customer_id: 101,
-    week: 5,
-    desc: "Hit a new personal best in strength and improved cardio endurance.",
-    workout_count: 5,
-    current_weight: 70.5,
-    bodyfat_percentage: 17,
-    date_added: "2024-09-26",
-  },
-  {
-    progress_id: 6,
-    customer_id: 101,
-    week: 6,
-    desc: "Focused on high-intensity interval training and endurance workouts.",
-    workout_count: 4,
-    current_weight: 70.2,
-    bodyfat_percentage: 16.9,
-    date_added: "2024-10-03",
-  },
-  {
-    progress_id: 7,
-    customer_id: 101,
-    week: 7,
-    desc: "Improved overall stamina and maintained workout consistency.",
-    workout_count: 5,
-    current_weight: 70,
-    bodyfat_percentage: 16.8,
-    date_added: "2024-10-10",
-  },
-  {
-    progress_id: 8,
-    customer_id: 101,
-    week: 8,
-    desc: "Included more flexibility exercises and cooldown routines.",
-    workout_count: 3,
-    current_weight: 69.8,
-    bodyfat_percentage: 16.7,
-    date_added: "2024-10-17",
-  },
-  {
-    progress_id: 9,
-    customer_id: 101,
-    week: 9,
-    desc: "Incorporated more varied cardio activities for endurance.",
-    workout_count: 5,
-    current_weight: 69.5,
-    bodyfat_percentage: 16.5,
-    date_added: "2024-10-24",
-  },
-  {
-    progress_id: 10,
-    customer_id: 101,
-    week: 10,
-    desc: "Final week: Strong focus on overall fitness and flexibility.",
-    workout_count: 4,
-    current_weight: 69.3,
-    bodyfat_percentage: 16.3,
-    date_added: "2024-10-31",
-  },
-];
-
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function Page() {
   const [gymStreakData, setGymStreakData] = useState({
     current: 0,
     best: 0,
   });
-
-  // Set initial targetWeightData with latest weight
-  const getLatestWeight = () => {
-    const latestProgress = mockProgressData.reduce((latest, entry) =>
-      new Date(entry.date_added) > new Date(latest.date_added) ? entry : latest
-    );
-    return latestProgress.current_weight;
+  const [progressData, setProgressData] = useState<Progress[]>([]);
+  const [targetWeightData, setTargetWeightData] = useState({
+    currentWeight: 0,
+    targetWeight: 0,
+  });
+  
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  const fetchUserFromCookie = () => {
+    if (typeof window === "undefined") return null;
+    const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || "lhS7aOXRUPGPDId6mmHJdA00p39HAfU4";
+    const cookies = document.cookie.split("; ").reduce((acc: { [key: string]: string }, cookie) => {
+      const [name, value] = cookie.split("=");
+      acc[name] = value;
+      return acc;
+    }, {});
+  
+    const userCookie = cookies["user"];
+    if (!userCookie) return null;
+  
+    try {
+      const decryptedUserBytes = CryptoJS.AES.decrypt(userCookie, secretKey);
+      const decryptedUser = JSON.parse(decryptedUserBytes.toString(CryptoJS.enc.Utf8));
+      return decryptedUser.id;
+    } catch (error) {
+      console.error("Error decrypting user cookie:", error);
+      return null;
+    }
   };
 
-  const [targetWeightData, setTargetWeightData] = useState({
-    currentWeight: getLatestWeight(), // Set the latest weight directly
-    targetWeight: 69.3,
-  });
+  const userId = fetchUserFromCookie();
+  const { data, error } = useSWR(`${api}/api/customer/progress?id=${userId}`, fetcher);
+
+  useEffect(() => {
+    if (data?.data) {
+      setProgressData(data.data || []);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (progressData.length > 0) {
+        // Define getLatestWeight function within useEffect
+        const getLatestWeight = () => {
+            const latestProgress = progressData.reduce((latest, entry) =>
+                new Date(entry.date_added) > new Date(latest.date_added) ? entry : latest
+            );
+            return latestProgress.weight;
+        };
+
+        const latestWeight = getLatestWeight();
+        setTargetWeightData((prev) => ({ ...prev, currentWeight: latestWeight }));
+    }
+  }, [progressData]);
+
+  const getLatestWeight = () => {
+    const latestProgress = progressData.reduce((latest, entry) =>
+      new Date(entry.date_added) > new Date(latest.date_added) ? entry : latest
+    );
+    return latestProgress.weight;
+  };
 
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
-  
+
   const handleCloseForm = () => {
     setIsAddFormOpen(false);
+  };
+
+  const handleRemoveTargetWeight = async () => {
+    try {
+      // Call your API endpoint to remove target weight
+      await fetch(`${api}/api/customer/progress/targetWeight?id=${userId}`, {
+        method: "DELETE",
+      });
+
+      // Update the local state after removing target weight
+      setTargetWeightData((prev) => ({ ...prev, targetWeight: 0 }));
+    } catch (error) {
+      console.error("Error removing target weight:", error);
+    }
   };
 
   useEffect(() => {
     async function fetchGymStreakData() {
       try {
-        const response = await fetch("/api/gymstreak?customer_id=your_customer_id");
+        const response = await fetch(`${api}/api/customer/progress/streak?id=${userId}`);
         const data = await response.json();
         setGymStreakData({
-          current: data.current_gymstreak,
-          best: data.best_gymstreak,
+          current: data?.data?.current_gymstreak ?? 0,
+          best: data?.data?.best_gymstreak ?? 0,
         });
       } catch (error) {
         console.error("Error fetching gym streak data:", error);
@@ -176,20 +147,19 @@ export default function Page() {
 
     async function fetchTargetWeightData() {
       try {
-        const response = await fetch("/api/targetweight?customer_id=your_customer_id");
+        const response = await fetch(`${api}/api/customer/progress/targetWeight?id=${userId}`);
         const data = await response.json();
         setTargetWeightData((prevState) => ({
           ...prevState,
-          targetWeight: data.target_weight,
+          targetWeight: data?.data?.target_weight ?? 0,
         }));
       } catch (error) {
         console.error("Error fetching target weight data:", error);
       }
     }
-
     fetchGymStreakData();
     fetchTargetWeightData();
-  }, []);
+  }, [api, userId, data]);
 
   return (
     <div className="flex flex-col gap-4 p-4 md:px-[128px] min-h-screen">
@@ -261,36 +231,45 @@ export default function Page() {
                 <CardDescription>This is your target body weight</CardDescription>
               </div>
 
-              {/* Dialog Trigger for Set Target Weight */}
-              <Dialog open={isAddFormOpen} onOpenChange={setIsAddFormOpen}>
-                <DialogTrigger asChild>
-                  <Button className="p-2 px-4 border rounded-full flex gap-2 text-xs items-center mt-2 md:mt-0">
-                    <PencilSquareIcon className="h-3 w-3" />
-                    <p>Set Target Weight</p>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Set Target Weight</DialogTitle>
-                  </DialogHeader>
-                  <TargetWeightForm
-                    onSubmit={(data) => {
-                      setTargetWeightData({
-                        ...targetWeightData,
-                        targetWeight: data.target_weight,
-                      });
-                      handleCloseForm();
-                    }}
-                    
-                  />
-                </DialogContent>
-              </Dialog>
+              {/* Conditionally render Set/Remove Target Weight buttons */}
+              {targetWeightData.targetWeight === 0 ? (
+                <Dialog open={isAddFormOpen} onOpenChange={setIsAddFormOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="p-2 px-4 border rounded-full flex gap-2 text-xs items-center mt-2 md:mt-0">
+                      <PencilSquareIcon className="h-3 w-3" />
+                      <p>Set Target Weight</p>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Set Target Weight</DialogTitle>
+                    </DialogHeader>
+                    <TargetWeightForm
+                      onSubmit={(data) => {
+                        setTargetWeightData({
+                          ...targetWeightData,
+                          targetWeight: data.target_weight,
+                        });
+                        handleCloseForm();
+                      }}
+                    />
+                  </DialogContent>
+                </Dialog>
+              ) : (
+                <Button
+                  className="p-2 px-4 border rounded-full flex gap-2 text-xs items-center mt-2 md:mt-0"
+                  onClick={handleRemoveTargetWeight}
+                >
+                  <TrashIcon className="h-3 w-3" />
+                  <p>Remove Target Weight</p>
+                </Button>
+              )}
             </CardHeader>
             <CardContent className="flex justify-center items-center">
               <CardDescription>
                 <span className="flex gap-2 items-center">
                   <span className="text-[32px] md:text-[48px] font-black text-foreground">
-                    {targetWeightData.targetWeight}
+                    {targetWeightData.targetWeight || 0}
                   </span>
                   <span className="text-[20px] md:text-[28px] font-semibold text-foreground-muted">Kg</span>
                 </span>
@@ -303,12 +282,10 @@ export default function Page() {
               </div>
               
               {targetWeightData.currentWeight <= targetWeightData.targetWeight ? (
-                // Display this message if target weight is reached
                 <div className="text-sm text-green-500 text-center md:text-left">
                   <p>You have reached your target weight!</p>
                 </div>
               ) : (
-                // Display the progress percentage if target weight is not reached
                 <div className="flex items-center gap-2 text-sm">
                   <ArrowUpIcon className="h-4 w-4" />
                   <p>{((targetWeightData.targetWeight / targetWeightData.currentWeight) * 100).toFixed(2)} %</p>
