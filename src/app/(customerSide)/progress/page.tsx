@@ -24,7 +24,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { HandThumbUpIcon, ScaleIcon, ArrowUpIcon, PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { HandThumbUpIcon, ScaleIcon, ArrowUpIcon, PencilSquareIcon, TrashIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
 import { FireIcon } from "@heroicons/react/16/solid";
 import Barchart from "./chart";
 import ProgressTable from "./progresstable";
@@ -281,14 +281,20 @@ export default function Page() {
                 <p className="text-green-400">{targetWeightData.currentWeight} Kg</p>
               </div>
               
-              {targetWeightData.currentWeight <= targetWeightData.targetWeight ? (
+              {targetWeightData.currentWeight === targetWeightData.targetWeight ? (
                 <div className="text-sm text-green-500 text-center md:text-left">
                   <p>You have reached your target weight!</p>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 text-sm">
-                  <ArrowUpIcon className="h-4 w-4" />
-                  <p>{((targetWeightData.targetWeight / targetWeightData.currentWeight) * 100).toFixed(2)} %</p>
+                  {targetWeightData.currentWeight > targetWeightData.targetWeight ? (
+                    <ArrowUpIcon className="h-4 w-4" />
+                  ) : (
+                    <ArrowDownIcon className="h-4 w-4" />
+                  )}
+                  <p>
+                    {Math.abs(((targetWeightData.currentWeight - targetWeightData.targetWeight) / targetWeightData.currentWeight) * 100).toFixed(2)} %
+                  </p>
                   <p>from target</p>
                 </div>
               )}
