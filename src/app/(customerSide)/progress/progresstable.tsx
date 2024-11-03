@@ -43,7 +43,7 @@ interface Progress {
   progress_id: number;
   customer_id: number;
   week_number: number;
-  desc: string;
+  description: string;
   workout_count: number;
   weight: number;
   bodyfat_percentage: number;
@@ -212,7 +212,7 @@ useEffect(() => {
 
             <DialogDescription className="flex flex-col gap-4 mt-3">
               <div className="flex flex-col justify-between">
-                <p>{progress.desc}</p>
+                <p>{progress.description}</p>
               </div>
             </DialogDescription>
 
