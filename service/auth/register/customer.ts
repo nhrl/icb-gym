@@ -14,7 +14,7 @@ export async function registerCustomer(info: any) {
     try {
         // Extract customer data
         const { firstname, lastname, gender, email, username, password } = info;
-        const profile_img = gender === 'M' ? MALE_IMG_URL : FEMALE_IMG_URL;
+        const profile_img = (gender === 'male' || gender === 'female') ? MALE_IMG_URL : FEMALE_IMG_URL;
         const newPass = await encryptPassword(password);
 
         // Combine firstname and lastname to create display name
