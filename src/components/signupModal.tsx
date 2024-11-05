@@ -264,6 +264,7 @@ export default function SignupModal({onClose}:signupProps){
               <Button
                 type="submit"
                 className="mt-4 py-2 px-4 rounded w-full flex flex-row gap-2 hover:bg-white hover:text-[#0a0a0a]"
+                variant="secondary"
               >
                 <ArrowUpLeftIcon className="h-4 w-4" />
                 Sign Up

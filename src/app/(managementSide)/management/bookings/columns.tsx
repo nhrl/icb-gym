@@ -51,14 +51,14 @@ export const columns: ColumnDef<Booking>[] = [
     accessorKey: "payment_status",
     header: "Payment Status",
     cell: ({ row }) => {
-      const paymentStatus = row.original.payment_status;
+      const paymentStatus = row.original.payment_status as string;
       const paymentStatusToVariantMap: { [key: string]: "success" | "destructive" } = {
         Paid: "success",
         Unpaid: "destructive",
       };
       const variant = paymentStatusToVariantMap[paymentStatus] || "secondary";
-      const dotColor = variant === "success" ? "bg-green-500" : "bg-background";
-
+      const dotColor = variant === "success" ? "bg-green-500" : "bg-red-500";
+  
       return (
         <Badge className="rounded-full w-fit flex items-center gap-2" variant={variant}>
           <span className={`w-1 h-1 rounded-full ${dotColor}`}></span>
@@ -71,15 +71,19 @@ export const columns: ColumnDef<Booking>[] = [
     accessorKey: "confirmation_status",
     header: "Confirmation Status",
     cell: ({ row }) => {
-      const confirmationStatus = row.original.confirmation_status;
+      const confirmationStatus = row.original.confirmation_status as string;
       const statusToVariantMap: { [key: string]: "success" | "destructive" | "secondary" } = {
         Confirmed: "success",
         Pending: "secondary",
         Canceled: "destructive",
       };
       const variant = statusToVariantMap[confirmationStatus] || "secondary";
-      const dotColor = variant === "success" ? "bg-green-500" : variant === "destructive" ? "bg-red-500" : "bg-background";
-
+      const dotColor = {
+        success: "bg-green-500",
+        destructive: "bg-red-500",
+        secondary: "bg-gray-500",
+      }[variant];
+  
       return (
         <Badge className="rounded-full w-fit flex items-center gap-2" variant={variant}>
           <span className={`w-1 h-1 rounded-full ${dotColor}`}></span>

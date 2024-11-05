@@ -115,7 +115,7 @@ export default function DietPlanDetailPage() {
     );
 
   return (
-    <div className="w-full p-12 px-8 sm:px-[180px]">
+    <div className="w-full p-12 px-8 sm:px-[128px]">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -182,48 +182,52 @@ export default function DietPlanDetailPage() {
                     </p>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="gap-4 flex flex-col">
-                  <DialogHeader
-                    className="h-48 bg-cover bg-center border rounded-lg mt-6"
-                    style={{
-                      backgroundImage: `url(${meal.meal_img || fallbackImage})`,
-                    }}
-                  />
-                  <DialogTitle className="text-2xl font-semibold">
-                    {meal.dish}
-                  </DialogTitle>
-                  <DialogDescription>{meal.food_desc}</DialogDescription>
+                <DialogContent className="gap-4 flex flex-col overflow-y-auto max-h-[80vh] scrollbar-hide">
+                  <div className="flex-shrink-0">
+                    <DialogHeader
+                      className="h-48 bg-cover bg-center border rounded-lg mt-6"
+                      style={{
+                        backgroundImage: `url(${meal.meal_img || fallbackImage})`,
+                      }}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    <DialogTitle className="text-2xl font-semibold">
+                      {meal.dish}
+                    </DialogTitle>
+                    <DialogDescription>{meal.food_desc}</DialogDescription>
 
-                  <DialogDescription className="flex flex-col gap-4 mt-3">
-                    <div className="flex flex-col justify-between">
-                      <h2 className="font-bold text-md text-foreground">Recipe</h2>
-                      <p>{meal.ingredients}</p>
-                    </div>
-                    <div className="flex flex-col justify-between">
-                      <h2 className="font-bold text-md text-foreground">Food Prep</h2>
-                      <p>{meal.food_prep}</p>
-                    </div>
+                    <DialogDescription className="flex flex-col gap-4 mt-3">
+                      <div className="flex flex-col justify-between">
+                        <h2 className="font-bold text-md text-foreground">Recipe</h2>
+                        <p>{meal.ingredients}</p>
+                      </div>
+                      <div className="flex flex-col justify-between">
+                        <h2 className="font-bold text-md text-foreground">Food Prep</h2>
+                        <p>{meal.food_prep}</p>
+                      </div>
 
-                    {/* Macros */}
-                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      {/* Macros */}
+                      <div className="grid grid-cols-2 gap-4 mt-4">
                         <div className="rounded-lg px-4 py-2 border flex justify-between shadow-sm">
                           <h2 className="text-foreground">Protein</h2>
                           <p>{meal.protein}g</p>
                         </div>
                         <div className="rounded-lg px-4 py-2 border flex justify-between shadow-sm">
-                          <h2 className="text-foreground" >Carbohydrates</h2>
+                          <h2 className="text-foreground">Carbohydrates</h2>
                           <p>{meal.carbohydrates}g</p>
                         </div>
                         <div className="rounded-lg px-4 py-2 border flex justify-between shadow-sm">
-                          <h2 className="text-foreground" >Fats</h2>
+                          <h2 className="text-foreground">Fats</h2>
                           <p>{meal.fats}g</p>
                         </div>
                         <div className="rounded-lg px-4 py-2 border flex justify-between shadow-sm">
                           <h2 className="text-foreground">Calories</h2>
                           <p>{meal.calories}</p>
                         </div>
-                    </div>
-                  </DialogDescription>
+                      </div>
+                    </DialogDescription>
+                  </div>
                 </DialogContent>
               </Dialog>
             ))

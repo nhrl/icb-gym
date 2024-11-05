@@ -65,39 +65,19 @@ export default function Page() {
   return (
     <>
       <div className="w-full flex flex-col rounded-2xl">
-        {/* Features Section */}
-        <div className="p-2 bg-[#CCFF00] h-fit w-full flex flex-col gap-6 py-6">
-          <div className="relative overflow-hidden w-full">
-            <div className="flex gap-14 animate-slide">
-              {tags.map((tag, index) => (
-                <div
-                  key={index}
-                  className="text-[#131605] font-medium md:text-sm whitespace-nowrap items-center"
-                >
-                  <RiAsterisk className="h-4 w-4 inline-block mr-2" />
-                  {tag}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
 
         {/* Container for Services */}
-        <div className="flex flex-col w-full gap-6 p-12 px-[128px]">
-          <div className="flex flex-col sm:flex-row w-full justify-between">
-            <h1 className="text-[36px] font-black">Services</h1>
+        <div className="flex flex-col w-full gap-6 p-12 sm:px-[128px]">
+          <div className="flex flex-col sm:flex-row w-full justify-between items-center">
+            <h1 className="text-[32px] font-semibold">Choose a Service</h1>
 
             <div className="flex flex-col sm:flex-row gap-2">
               <Input
                 placeholder="Search for services..."
-                className="max-w-sm"
+                className="max-w-sm bg-foreground/5 border-border"
                 value={searchTerm} // Bind input to searchTerm state
                 onChange={(e) => setSearchTerm(e.target.value)} // Update searchTerm state on input change
               />
-              <Button className="flex flex-row items-center">
-                <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
-                Search Services
-              </Button>
             </div>
           </div>
 
@@ -106,7 +86,7 @@ export default function Page() {
             {filteredServices.map((service: any) => (
               <Card
                 key={service.service_id}
-                className="h-[275px] rounded-3xl flex flex-col justify-between cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:z-10 hover:shadow-lg"
+                className="h-[275px] flex flex-col justify-between cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:z-10 hover:shadow-lg"
                 style={{
                   backgroundImage: `linear-gradient(to top, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1)), url(${getBackgroundImage(service.service_img)})`,
                   backgroundSize: "cover",

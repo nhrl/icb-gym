@@ -196,7 +196,7 @@ export default function TrainerDetailPage() {
   }
 
   return (
-    <div className="w-full p-12 px-8 sm:px-[180px]">
+    <div className="w-full p-12 px-8 sm:px-[128px]">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -229,6 +229,8 @@ export default function TrainerDetailPage() {
             </div>
           </div>
         </CardHeader>
+
+
         
         <CardContent className="p-6 px-0 ">
           
@@ -251,7 +253,7 @@ export default function TrainerDetailPage() {
                             ? "success"
                             : "destructive"
                         }
-                        className="rounded-full text-white"
+                        className="rounded-full"
                       >
                         {assignment.current_capacity < assignment.max_capacity
                           ? "Available"
@@ -274,6 +276,22 @@ export default function TrainerDetailPage() {
                   <p className="text-lg text-muted-foreground">{assignment.description}</p>
               </div>
 
+              <div className="flex flex-col gap-2">
+              <Card className="flex flex-col justify-between">
+                <CardHeader className="font-medium items-left  text-xl">
+                    <p>Capacity</p>
+                </CardHeader>
+
+                <CardContent className="flex flex-row items-center text-center gap-3">
+                  <div>
+                    <p>{assignment.current_capacity}</p>
+                  </div>
+                  <div >
+                    <p >{assignment.max_capacity}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card className=" w-full sm:w-[375px] shadow-lg">
                 <CardHeader>
                   <div className="flex flex-row gap-2">
@@ -283,24 +301,6 @@ export default function TrainerDetailPage() {
                 </CardHeader>
 
                 <CardContent className="flex flex-col gap-6">
-
-                  <Card className="flex flex-row items-center justify-between">
-                    <CardHeader>
-                      <div className="text-lg font-semibold flex-col flex gap-2 items-left text-left">
-                        <UserGroupIcon className="w-4 h-4"/>
-                          <p>Capacity</p>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="flex flex-row items-center justify-center p-0 h-full">
-                      <div className="h-full px-4 border-border border">
-                      <p className="text-[48px] font-bold">{assignment.current_capacity}</p>
-                      </div>
-                      <div className="h-full px-4 border-border border border-x-0">
-                      <p className="text-[48px] font-bold">{assignment.max_capacity}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
 
                   {/*Schedule*/}
                   <div className="flex flex-col gap-2">
@@ -317,7 +317,7 @@ export default function TrainerDetailPage() {
                         }
 
                         return parsedSchedule.map((day, index) => (
-                          <Badge key={index} className="text-xs">{day}</Badge>
+                          <Badge key={index} className="text-xs w-fit h-fit p-2 px-4 border-border border  rounded-full text-muted-foreground" variant="outline">{day}</Badge>
                         ));
                       })()}
                       </div>
@@ -335,7 +335,7 @@ export default function TrainerDetailPage() {
                   <Dialog>
                       <DialogTrigger asChild>
                         <Button
-                          variant="default"
+                          variant="secondary"
                           className="rounded-full w-full"
                           disabled={assignment.current_capacity >= assignment.max_capacity}
                         >
@@ -387,6 +387,7 @@ export default function TrainerDetailPage() {
                     </div>
                 </CardContent>
               </Card>
+            </div>
             </div>
           ) : (
             <p className="text-md text-muted-foreground mt-6">No assignment available for this trainer.</p>
