@@ -114,7 +114,7 @@ export default function SignupModal({ onClose }: SignupProps) {
       } else {
         toast({
           title: "Signup failed!",
-          description: message.error || "Something went wrong. Please try again.",
+          description: message.message || "Something went wrong. Please try again.",
           variant: "destructive",
           duration: 3000,
         });
@@ -190,26 +190,35 @@ export default function SignupModal({ onClose }: SignupProps) {
         <div className="bg-background text-foreground text-sm rounded-lg shadow-lg w-fit h-fit p-[64px] border border-border">
           <Form {...otpForm}>
             <form onSubmit={otpForm.handleSubmit(handleOtpSubmit)} className="gap-4 flex flex-col">
-              <FormLabel className="text-xl font-md">Enter OTP</FormLabel>
-              <p className="text-zinc-600 text-[12px]">Please enter the OTP sent to {email}</p>
+              <div>
+                <FormLabel className="text-xl font-md">Enter OTP</FormLabel>
+                <p className="text-zinc-600 text-[12px]">Please enter the OTP sent to {email}</p>
 
-              <FormField
-                control={otpForm.control}
-                name="otp"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>OTP</FormLabel>
-                    <FormControl>
-                      <Input {...field} type="text" className="border p-2 w-full rounded" />
-                    </FormControl>
-                    <FormMessage>{otpForm.formState.errors.otp?.message}</FormMessage>
-                  </FormItem>
-                )}
-              />
-
-              <Button type="submit" className="mt-4 py-2 px-4 rounded w-full">
-                Verify OTP
+                <FormField
+                  control={otpForm.control}
+                  name="otp"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>OTP</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="text" className="border p-2 w-full rounded" />
+                      </FormControl>
+                      <FormMessage>{otpForm.formState.errors.otp?.message}</FormMessage>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            {/* Form Buttons */}
+            <div className="items-center gap-4 flex flex-col">
+              <Button
+                type="submit"
+                className="mt-4 py-2 px-4 rounded w-full flex flex-row gap-2 hover:bg-white hover:text-[#0a0a0a]"
+                variant="secondary"
+              >
+                <ArrowUpLeftIcon className="h-4 w-4" />
+                Confirm
               </Button>
+            </div>
             </form>
           </Form>
           <Toaster />

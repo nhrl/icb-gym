@@ -168,7 +168,7 @@ export default function LoginModal({onClose}: loginProps) {
 
           {/* Form Buttons */}
           <div className='items-center gap-4 flex flex-col'>
-            <Button type="submit" className="mt-4 py-2 px-4 rounded w-full flex flex-row gap-2 hover:bg-primary/90 hover:text-[#0a0a0a]">
+            <Button type="submit" className="mt-4 py-2 px-4 rounded w-full flex flex-row gap-2 hover:bg-primary/90 hover:text-[#0a0a0a]" variant="secondary">
               <ArrowRightEndOnRectangleIcon className="h-4 w-4" />
               Log In
             </Button>

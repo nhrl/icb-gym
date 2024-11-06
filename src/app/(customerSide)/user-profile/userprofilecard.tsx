@@ -222,7 +222,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onProfileUpdate }) => 
   const defaultProfile = profileData?.profile_img || 'https://mplhgifjydkvnfsofsoc.supabase.co/storage/v1/object/public/images/trainer/default.jpg';
   return (
     <div className="w-full h-full">
-      <Card>
+      <Card className="bg-card">
         <CardHeader className="flex flex-col gap-2">
           <div className="flex items-left flex-col sm:flex-row gap-6 sm:gap-0 justify-between mb-6">
             <div className="flex gap-4">
@@ -284,10 +284,10 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onProfileUpdate }) => 
                   key={goal}
                   value={goal}
                   onClick={() => handleGoalToggle(goal)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-md border hover:bg-muted-foreground cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-2 rounded-md border hover:bg-muted-foreground/5 cursor-pointer"
                 >
                   {(profileData?.selectedGoals || []).includes(goal) && (
-                    <CheckIcon className="h-4 w-4 text-primary-foreground" />
+                    <CheckIcon className="h-4 w-4" />
                   )}
                   <span className="whitespace-nowrap">{goal}</span>
                 </ToggleGroupItem>
@@ -310,10 +310,10 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onProfileUpdate }) => 
                 <ToggleGroupItem
                   key={time}
                   value={time}
-                  className="w-auto flex items-center gap-2 px-4 py-2 rounded-md border hover:bg-muted-foreground cursor-pointer"
+                  className="w-auto flex items-center gap-2 px-4 py-2 rounded-md border hover:bg-muted-foreground/5 cursor-pointer"
                 >
                   {profileData?.timePreference === time && (
-                    <CheckIcon className="h-4 w-4 text-primary-foreground" />
+                    <CheckIcon className="h-4 w-4" />
                   )}
                   <span className="whitespace-nowrap">{time}</span>
                 </ToggleGroupItem>
@@ -336,10 +336,10 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onProfileUpdate }) => 
                 <ToggleGroupItem
                   key={level}
                   value={level}
-                  className="w-auto flex items-center gap-2 px-4 py-2 rounded-md border hover:bg-muted-foreground cursor-pointer"
+                  className="w-auto flex items-center gap-2 px-4 py-2 rounded-md border hover:bg-muted-foreground/5 cursor-pointer"
                 >
                   {profileData?.fitness_level === level && (
-                    <CheckIcon className="h-4 w-4 text-primary-foreground" />
+                    <CheckIcon className="h-4 w-4" />
                   )}
                   <span className="whitespace-nowrap">{level}</span>
                 </ToggleGroupItem>
@@ -393,8 +393,8 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onProfileUpdate }) => 
               />
 
               <div className="w-full flex justify-end">
-                <Button type="submit" variant="default" className="w-fit">
-                  <ArrowPathIcon className="h-6 w-6 pr-2" />
+                <Button type="submit" variant="secondary" className="w-fit">
+                  <ArrowPathIcon className="h-2 w-2" />
                   Update Profile
                 </Button>
               </div>
