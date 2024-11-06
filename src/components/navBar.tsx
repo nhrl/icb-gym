@@ -118,22 +118,24 @@ export const NavBar: React.FC = () => {
 
   return (
     <>
-      <div className="top-0 z-50 sticky bg-background flex items-center w-full justify-between p-4 sm:px-[128px]">
-        <Link href="/" passHref>
-          <div className="text-xl font-black items-center flex gap-2 cursor-pointer">
-            <Image src={logo} alt="icblogo" className="inline h-7 w-7" priority />
-            <span className="hidden sm:block">Incredoball</span>
-          </div>
-        </Link>
+      <div className="top-0 z-50 sticky bg-background/95 flex items-center w-full justify-between  backdrop-blur-md border-b border-border shadow-lg p-4 px-6">
 
-        <div className=" flex gap-2 flex-row items-center w-full justify-end">
+        <div className=" flex gap-8 flex-row items-center w-full justify-between">
+          
+          <Link href="/" passHref>
+            <div className="text-xl font-semibold items-center flex gap-2 cursor-pointer mr-8">
+              <Image src={logo} alt="icblogo" className="h-7 w-7" priority />
+              <span className="hidden sm:block">Incredoball</span>
+            </div>
+          </Link>
+
           {user?.isLoggedIn ? (
             <>
            {/* Links */}
             <div className="hidden sm:block md:block w-full">
-              <div className="flex flex-row text-xs gap-8 w-full justify-center">
-                <Link href="/booking-services" passHref>
-                  <span className="link-hover-effect">Booking</span>
+              <div className="flex flex-row text-md gap-8 w-full font-medium">
+                <Link  href="/booking-services" passHref>
+                  <span className="link-hover-effect" >Booking</span>
                 </Link>
 
                 <Link href="/programs" passHref>
@@ -146,80 +148,90 @@ export const NavBar: React.FC = () => {
               </div>
             </div>
 
-            
-            <div className="block sm:hidden">
-              <DropdownMenu>
-                <DropdownMenuTrigger className="rounded-full p-[4px] px-2 h-fit">
-                    <Bars3Icon className="h-6 w-6 text-foreground" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem > 
-                    <Link href="/booking-services" passHref>
-                    <span>Booking</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <Link href="/programs" passHref>
-                    <span>Workouts</span>
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            <DropdownMenu onOpenChange={toggleDropdown}>
-              <DropdownMenuTrigger asChild>
-                <Button className="flex items-center gap-2 cursor-pointer p-2 rounded-full" variant="outline" size="sm">
-                  <Avatar className="w-6 h-6">
-                      {user.avatar ? (
-                        <Image
-                          src={user.avatar}
-                          alt="User Avatar"
-                          layout="fill"
-                          objectFit="cover"
-                        />
-                      ) : (
-                        <AvatarFallback>
-                          {user.name[0]}
-                          {user.name.split(" ")[1][0]}
-                        </AvatarFallback>
-                      )}
-                    </Avatar>
-                  <span className="font-medium hidden sm:block">Hello, {user.name}</span>
-                  <ChevronDownIcon
-                    className={`h-4 w-4 transition-transform duration-300 ${
-                      isDropdownOpen ? "rotate-180" : "rotate-0"
-                    }`}
-                  />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-48 mt-2 z-[300]">
-                <Link href="/user-profile" passHref>
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
-                </Link>
-                <DropdownMenuSeparator />
-                <Link href="/progress" passHref>
-                  <DropdownMenuItem>Progress</DropdownMenuItem>
-                </Link>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
-              </DropdownMenuContent>
-              <div onClick={toggleTheme} className="cursor-pointer">
-                {theme === "light" ? (
-                  <Button className="rounded-full bg-purple-600" size="sm">
-                    <MoonIcon className="h-4 w-4 text-background" />
-                  </Button>
-                ) : (
-                  <Button className="rounded-full bg-[#CCFF00]" size="sm">
-                    <SunIcon className="h-4 w-4 text-background" />
-                  </Button>
-                )}
+            <div className="flex flex-row gap-2">
+              <div className="block sm:hidden">
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="rounded-full p-[4px] px-2 h-fit">
+                      <Bars3Icon className="h-6 w-6 text-foreground" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem > 
+                      <Link href="/booking-services" passHref>
+                      <span>Booking</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <Link href="/programs" passHref>
+                      <span>Workouts</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <Link href="/diet-plan" passHref>
+                      <span>Diet plans</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
-            </DropdownMenu>
+
+              <div className="flex flex-row gap-2">
+              <DropdownMenu onOpenChange={toggleDropdown}>
+                <DropdownMenuTrigger asChild>
+                  <Button className="flex items-center gap-2 cursor-pointer p-2 rounded-full" variant="outline" size="sm">
+                    <Avatar className="w-6 h-6">
+                        {user.avatar ? (
+                          <Image
+                            src={user.avatar}
+                            alt="User Avatar"
+                            layout="fill"
+                            objectFit="cover"
+                          />
+                        ) : (
+                          <AvatarFallback>
+                            {user.name[0]}
+                            {user.name.split(" ")[1][0]}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                    <span className="font-medium hidden sm:block">Hello, {user.name}</span>
+                    <ChevronDownIcon
+                      className={`h-4 w-4 transition-transform duration-300 ${
+                        isDropdownOpen ? "rotate-180" : "rotate-0"
+                      }`}
+                    />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-48 mt-2 z-[300]">
+                  <Link href="/user-profile" passHref>
+                    <DropdownMenuItem>Profile</DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuSeparator />
+                  <Link href="/progress" passHref>
+                    <DropdownMenuItem>Progress</DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
+                </DropdownMenuContent>
+                <div onClick={toggleTheme} className="cursor-pointer">
+                  {theme === "light" ? (
+                    <Button className="rounded-full bg-secondary" size="sm">
+                      <MoonIcon className="h-4 w-4 text-background" />
+                    </Button>
+                  ) : (
+                    <Button className="rounded-full bg-[#CCFF00]" size="sm">
+                      <SunIcon className="h-4 w-4 text-background" />
+                    </Button>
+                  )}
+                </div>
+              </DropdownMenu>
+              </div>
+            </div>
             </>
           ) : (
             <>
+            <div className="flex flex-row gap-2">
               <Button
                 className="font-medium w-fit gap-2 rounded-full hidden sm:block"
                 variant="ghost"
@@ -250,7 +262,7 @@ export const NavBar: React.FC = () => {
 
               <div onClick={toggleTheme} className="cursor-pointer ">
                 {theme === "light" ? (
-                  <Button className="rounded-full bg-purple-600">
+                  <Button className="rounded-full bg-secondary">
                     <MoonIcon className="h-4 w-4 text-background" />
                   </Button>
                 ) : (
@@ -258,6 +270,7 @@ export const NavBar: React.FC = () => {
                     <SunIcon className="h-4 w-4 text-background" />
                   </Button>
                 )}
+              </div>
               </div>
             </>
           )}

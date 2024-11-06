@@ -141,7 +141,7 @@ const { data: bookingData, mutate, error } = useSWR(
       {/* Left Column: Membership Card + Data Table */}
       <div className="flex flex-col gap-4">
         {/* Membership Card */}
-        <Card className="w-full h-fit bg-background/50">
+        <Card className="w-full h-fit bg-card">
           <CardHeader className="flex flex-col gap-2">
             <CardTitle className="flex flex-row justify-between items-center">
               <p className="font-medium">Membership</p>

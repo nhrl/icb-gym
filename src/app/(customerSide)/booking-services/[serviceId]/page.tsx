@@ -21,6 +21,7 @@ import { RiAsterisk } from "react-icons/ri";
 import { Toggle } from "@/components/ui/toggle";
 import CryptoJS from 'crypto-js';
 import { useCallback } from 'react';
+import { Badge } from '@/components/ui/badge';
 
 interface Trainer {
   trainer_id: number;
@@ -49,7 +50,7 @@ interface Assignment {
 }
 
 export default function Page() {
-  const { serviceId } = useParams(); // Get service_id from the URL
+  const { serviceId } = useParams();
   const router = useRouter();
 
   const [assignments, setAssignments] = useState<Assignment[]>([]);
@@ -58,15 +59,7 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
   const [buttonText, setButtonText] = useState("Show Recommendations");
   const [searchTerm, setSearchTerm] = useState("");
-
-  const [tags] = useState([
-    "Book Trainers on Preferred Time",
-    "Progress Tracking",
-    "Digital Membership Card",
-    "Diet Plans",
-    "Workout Programs",
-    "User Preference Recommendation",
-  ]);
+  const [isRecommended, setIsRecommended] = useState(false);
 
   const api = process.env.NEXT_PUBLIC_API_URL;
   const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || 'lhS7aOXRUPGPDId6mmHJdA00p39HAfU4';
@@ -75,21 +68,19 @@ export default function Page() {
     router.push(`/booking-services/${serviceId}/${assignID}`);
   };
 
-  // Function to fetch and decrypt user cookie from document.cookie
   const fetchUserFromCookie = useCallback(() => {
     const cookies = document.cookie.split("; ").reduce((acc: { [key: string]: string }, cookie) => {
       const [name, value] = cookie.split("=");
       acc[name] = value;
       return acc;
     }, {});
-  
+
     const userCookie = cookies['user'];
-  
     if (!userCookie) {
       console.error("User cookie not found");
       return null;
     }
-  
+
     try {
       const decryptedUserBytes = CryptoJS.AES.decrypt(userCookie, secretKey);
       const decryptedUser = JSON.parse(decryptedUserBytes.toString(CryptoJS.enc.Utf8));
@@ -106,38 +97,28 @@ export default function Page() {
       const url = recommended
         ? `${api}/api/customer/recommendation/trainer?serviceId=${serviceId}&userId=${fetchUserFromCookie()}`
         : `${api}/api/customer/service?id=${serviceId}`;
-  
+
       const response = await fetch(url);
       const data = await response.json();
       setAssignments(data.trainer || data.data || []);
+      setIsRecommended(recommended);
     } catch (error) {
-      console.error("Error fetching diet plans:", error);
-      setError("Failed to fetch diet plans.");
+      console.error("Error fetching assignments:", error);
+      setError("Failed to fetch assignments.");
     } finally {
       setLoading(false);
     }
   }, [api, fetchUserFromCookie, serviceId]);
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const recommended = searchParams.get('recommended') === 'true';
-    fetchAssignments(recommended);
-  
-    if (recommended) {
-      setButtonText("Show All Trainers");
-    } else {
-      setButtonText("Show Recommendations");
-    }
-  }, [fetchAssignments]);
+    fetchAssignments(isRecommended);
+  }, [fetchAssignments, isRecommended]);
 
   const getRecommendation = async () => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const recommended = searchParams.get('recommended') === 'true';
-    if(recommended) {
-      sessionStorage.setItem("showTrainerRecommendations", "false");
+    if (isRecommended) {
       setButtonText("Show Recommendations");
-      await fetchAssignments(false); // Fetch all diet plans
-      router.push(`/booking-services/${serviceId}`);
+      setIsRecommended(false);
+      await fetchAssignments(false);
     } else {
       const id = fetchUserFromCookie();
       try {
@@ -145,28 +126,27 @@ export default function Page() {
         const response = await fetch(`${api}/api/customer/recommendation/trainer?serviceId=${serviceId}&userId=${id}`);
         const result = await response.json();
 
-        if(result.success){
+        if (result.success) {
           setAssignments(result.trainer);
-          sessionStorage.setItem("showTrainerRecommendations", "true");
-          setButtonText("Show All Trainer");
-          router.push(`/booking-services/${serviceId}?recommended=true`)
+          setButtonText("Show All Trainers");
+          setIsRecommended(true);
         } else {
           setError(result.message || "Failed to fetch assignments.");
         }
       } catch (error) {
-          setError("An error occurred while fetching data.");
+        setError("An error occurred while fetching data.");
+      } finally {
+        setLoading(false);
       }
     }
-    setLoading(false);
-  }
+  };
 
-  const fallbackImage = "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png"; 
+  const fallbackImage = "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png";
 
   const getBackgroundImage = (photo: string) => {
     return photo && photo.trim() !== "" ? photo : fallbackImage;
   };
 
- 
   if (loading) return <p>Loading assignments...</p>;
   if (error) return <p>Error: {error}</p>;
 
@@ -175,34 +155,12 @@ export default function Page() {
   );
 
   const serviceName = assignments.length > 0 ? assignments[0].service.service_name : "Service";
+
   return (
     <div className="w-full flex flex-col rounded-2xl">
-      <div className="p-2 bg-[#CCFF00] h-fit w-full flex flex-col gap-6 py-6">
-          <div className="relative overflow-hidden w-full">
-            <div className="flex gap-14 animate-slide">
-              {tags.map((tag, index) => (
-                <div
-                  key={index}
-                  className="text-[#131605] font-medium md:text-sm whitespace-nowrap items-center"
-                >
-                  <RiAsterisk className="h-4 w-4 inline-block mr-2" />
-                  {tag}
-                </div>
-              ))}
-              {tags.map((tag, index) => (
-                <div
-                  key={index}
-                  className="text-[#131605] font-medium md:text-sm whitespace-nowrap items-center"
-                >
-                  <RiAsterisk className="h-4 w-4 inline-block mr-2" />
-                  {tag}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
 
-      <div className="flex flex-col w-full gap-6 p-12 px-[128px]">
+
+      <div className="flex flex-col w-full gap-6 p-12 sm:px-[128px]">
         {/* Breadcrumb Navigation */}
         <Breadcrumb>
           <BreadcrumbList>
@@ -222,16 +180,12 @@ export default function Page() {
           <div className="flex flex-col sm:flex-row gap-2">
             <Input
               placeholder="Search for trainers..."
-              className="max-w-sm"
+              className="max-w-sm px-4 bg-foreground/5 border-border "
               value={searchTerm} // Bind input to searchTerm
               onChange={(e) => setSearchTerm(e.target.value)} // Update searchTerm state
             />
-            <Button className="flex flex-row items-center">
-              <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
-              Search Trainers
-            </Button>
-            <Button className="flex flex-row items-center" variant="outline" onClick={getRecommendation}>
-              <SparklesIcon className="h-4 w-4 mr-2" />
+            <Button className="flex flex-row items-center" variant="default" onClick={getRecommendation} size="sm">
+              <SparklesIcon className="h-4 w-4 mr-1" />
               {buttonText}
             </Button>
           </div>
@@ -245,27 +199,30 @@ export default function Page() {
             {filteredTrainer.map((assign) => (
               <Card
                 key={assign.assign_id}
-                className="h-fit border-border border rounded-3xl flex flex-col justify-between overflow-hidden transform transition-transform duration-300 hover:scale-105 hover:z-10 cursor-pointer"
+                className="h-fit border-border border flex flex-col justify-between overflow-hidden transform transition-transform duration-300 hover:scale-105 hover:z-10 cursor-pointer"
                 onClick={() => handleCardClick(assign.assign_id)}
               >
                 <CardHeader
-                  className="w-full h-[275px] border-border rounded-3xl rounded-b-none border flex flex-col justify-between p-2"
+                  className="w-full h-[275px] rounded-b-none border-b flex flex-col justify-between p-2"
                   style={{
                     backgroundImage: `url(${getBackgroundImage(assign.trainer.trainer_img)})`,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                   }}
                 >
-                  <Toggle
+                  {/* <Toggle
                     variant="outline"
                     className="w-fit rounded-full bg-black/30 border-white"
                     onClick={() => setIsFavorite(!isFavorite)}
                   >
                     <HeartIcon className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-transparent' : 'text-white'}`} />
-                  </Toggle>
+                  </Toggle> */}
                 </CardHeader>
 
                 <CardFooter className="p-4 flex flex-col gap-4 items-end">
+                  {isRecommended && (
+                      <Badge className="text-xs w-fit flex flex-row" variant="recommended"><SparklesIcon className='h-3 w-3 mr-2'/>Recommended</Badge>
+                    )}
                   <div className="flex flex-row justify-between w-full">
                     <div className="flex flex-col">
                       <span>{assign.trainer.firstname} {assign.trainer.lastname}</span>
@@ -275,8 +232,8 @@ export default function Page() {
                       <p>${assign.rate}/Month</p>
                     </div>
                   </div>
-                  <Button variant="outline" className="rounded-full">
-                    Book Now <ArrowRightCircleIcon className="h-4 w-4 ml-2" />
+                  <Button variant="outline" className="rounded-full items-center flex flex-row">
+                    Book Now <ArrowRightCircleIcon className="h-4 w-4 ml-1" />
                   </Button>
                 </CardFooter>
               </Card>

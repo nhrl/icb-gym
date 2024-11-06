@@ -20,7 +20,7 @@ import {
   SparklesIcon,
   BoltIcon 
 } from "@heroicons/react/24/outline";
-
+import SignupModal from "../components/signupModal";
 import {
   Accordion,
   AccordionContent,
@@ -32,12 +32,16 @@ import {
 
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
+  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
 
   useEffect(() => {
-    // Set isMounted to true after the component is mounted
     setIsMounted(true);
   }, []);
 
+  const openSignupModal = () => setIsSignupModalOpen(true);
+  const closeSignupModal = () => setIsSignupModalOpen(false);
+
+  
   const [tags] = useState([
     "Book Trainers on Preferred Time",
     "Progress Tracking",
@@ -54,12 +58,10 @@ export default function Home() {
     },
   ]);
 
-
   if (!isMounted) {
-    // Render nothing or a simple fallback until the component has mounted
     return null;
   }
-
+  
   return (
     <> 
       {/* Hero Section */}
@@ -77,7 +79,7 @@ export default function Home() {
               <InformationCircleIcon className="h-4 w-4" />
               About Us
             </Button>
-            <Button className="rounded-3xl gap-2 flex" variant="secondary">
+            <Button className="rounded-3xl gap-2 flex" variant="secondary" onClick={openSignupModal}>
               Join Incredoball Now
               <ArrowRightCircleIcon className="h-4 w-4" />
             </Button>
@@ -150,13 +152,17 @@ export default function Home() {
 
           {/* Button Container */}
           <div className="flex flex-wrap sm:flex-row gap-4 mt-4 sm:mt-6">
-            <Button className="rounded-3xl gap-2 flex" variant="secondary">
+            <Button className="rounded-3xl gap-2 flex" variant="secondary" onClick={openSignupModal}>
               Register and Book Now
               <ArrowRightCircleIcon className="h-4 w-4" />
             </Button>
           </div>
       </div>
 
+      {isSignupModalOpen && (       
+        <div className="fixed inset-0 flex items-center justify-center z-[300] bg-black/50">
+          <SignupModal onClose={closeSignupModal}/>
+        </div>)}
     </>
   );
 }
