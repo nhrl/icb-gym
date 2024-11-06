@@ -126,7 +126,7 @@ export default function TargetWeightForm({
           />
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" variant="secondary">
             <CheckCircleIcon className="h-3 w-3" />
             Set Target Weight
           </Button>

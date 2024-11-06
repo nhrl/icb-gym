@@ -159,6 +159,7 @@ useEffect(() => {
             <p>{sortOrder === "newest" ? "Newest First" : "Oldest First"}</p>
           </Toggle>
           <Button
+            variant="secondary"
             className='text-xs'
             size="sm"
             onClick={() => setIsAddFormOpen(true)} // Open the form dialog
@@ -231,7 +232,7 @@ useEffect(() => {
             <DialogFooter className='mt-4'>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button size="sm" className="flex ml-auto flex-row gap-2 text-xs font-normal">
+                  <Button size="sm" className="flex ml-auto flex-row gap-2 text-xs font-normal items-center rounded-full" variant="outline">
                     <TrashIcon className="h-3 w-3" />
                     Delete Progress
                   </Button>

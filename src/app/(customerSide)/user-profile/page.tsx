@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Slash } from "lucide-react"
+import Image from "next/image";
+import logo from "@/assets/logos/logodark.png";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -141,11 +142,11 @@ const { data: bookingData, mutate, error } = useSWR(
       {/* Left Column: Membership Card + Data Table */}
       <div className="flex flex-col gap-4">
         {/* Membership Card */}
-        <Card className="w-full h-fit bg-card">
+        <Card className="w-full h-fit membershipcard-bg">
           <CardHeader className="flex flex-col gap-2">
             <CardTitle className="flex flex-row justify-between items-center">
-              <p className="font-medium">Membership</p>
-              <CreditCardIcon className="w-5 h-5 text-foreground" />
+              <p className="font-semibold text-3xl italic">Membership</p>
+              <Image src={logo} alt="icblogo" className="h-7 w-7" priority />
             </CardTitle>
             <div className="flex flex-row gap-2">
               <CardDescription>Status</CardDescription>

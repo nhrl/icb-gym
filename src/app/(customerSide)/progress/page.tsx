@@ -162,7 +162,7 @@ export default function Page() {
   }, [api, userId, data]);
 
   return (
-    <div className="flex flex-col gap-4 p-4 md:px-[128px] min-h-screen">
+    <div className="flex flex-col gap-4 p-4 md:px-[128px] min-h-screen ">
       {/* Breadcrumb */}
       <div className="w-full h-fit">
         <Breadcrumb>
@@ -189,7 +189,7 @@ export default function Page() {
         <div className="flex flex-col flex-1 gap-4">
 
           {/* Gym Streak Card */}
-          <Card className="flex-1 flex flex-col justify-between">
+          <Card className="flex-1 flex flex-col justify-between bg-card">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <div className="rounded-full border p-1 bg-red-500 mr-2">
@@ -221,21 +221,21 @@ export default function Page() {
           </Card>
 
           {/* Target Weight Card with Dialog Trigger */}
-          <Card className="flex-1 flex flex-col justify-between">
+          <Card className="flex-1 flex flex-col justify-between bg-card">
             <CardHeader className="flex flex-col md:flex-row justify-between items-center align-top">
-              <div className="flex flex-col gap-2">
+
                 <CardTitle className="flex items-center">
-                  <ScaleIcon className="h-4 w-4 mr-2" />
+                  <div className="rounded-full border p-1 bg-secondary text-white mr-2">
+                    <ScaleIcon className="h-3 w-3" />
+                  </div>
                   Target Body Weight
                 </CardTitle>
-                <CardDescription>This is your target body weight</CardDescription>
-              </div>
 
               {/* Conditionally render Set/Remove Target Weight buttons */}
               {targetWeightData.targetWeight === 0 ? (
                 <Dialog open={isAddFormOpen} onOpenChange={setIsAddFormOpen}>
                   <DialogTrigger asChild>
-                    <Button className="p-2 px-4 border rounded-full flex gap-2 text-xs items-center mt-2 md:mt-0">
+                    <Button className="p-2 px-4 border rounded-full flex gap-2 text-xs items-center mt-2 md:mt-0" size="sm" variant="outline">
                       <PencilSquareIcon className="h-3 w-3" />
                       <p>Set Target Weight</p>
                     </Button>
@@ -259,6 +259,7 @@ export default function Page() {
                 <Button
                   className="p-2 px-4 border rounded-full flex gap-2 text-xs items-center mt-2 md:mt-0"
                   onClick={handleRemoveTargetWeight}
+                  size="sm" variant="outline"
                 >
                   <TrashIcon className="h-3 w-3" />
                   <p>Remove Target Weight</p>
@@ -271,7 +272,7 @@ export default function Page() {
                   <span className="text-[32px] md:text-[48px] font-black text-foreground">
                     {targetWeightData.targetWeight || 0}
                   </span>
-                  <span className="text-[20px] md:text-[28px] font-semibold text-foreground-muted">Kg</span>
+                  <span className="text-[20px] md:text-[28px] font-medium text-foreground-muted">Kg</span>
                 </span>
               </CardDescription>
             </CardContent>
@@ -295,7 +296,7 @@ export default function Page() {
                   <p>
                     {Math.abs(((targetWeightData.currentWeight - targetWeightData.targetWeight) / targetWeightData.currentWeight) * 100).toFixed(2)} %
                   </p>
-                  <p>from target</p>
+                  <p>from last week</p>
                 </div>
               )}
             </CardFooter>
@@ -304,7 +305,7 @@ export default function Page() {
       </div>
       
       {/* Progress Table */}
-      <div className="w-full rounded-lg p-4 border border-border overflow-x-auto">
+      <div className="w-full rounded-lg p-4 border border-border overflow-x-auto bg-card">
         <ProgressTable />
       </div>
     </div>

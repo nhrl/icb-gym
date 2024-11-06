@@ -65,7 +65,7 @@ function Barchart() {
   }, [data]);
 
   return (
-    <Card className="h-full flex flex-col justify-between">
+    <Card className="h-full flex flex-col justify-between bg-card">
       <CardHeader>
         <CardTitle>Workouts per Month</CardTitle>
         <CardDescription>January - December 2024</CardDescription>
