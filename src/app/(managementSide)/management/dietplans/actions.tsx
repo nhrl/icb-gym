@@ -38,7 +38,7 @@ type Meals = {
   ingredients: string;
   food_prep: string;
   protein: number;
-  carbs: number;
+  carbohydrates: number;
   fats: number;
   calories: number;
 };
@@ -209,7 +209,7 @@ const DietplanActions: React.FC<DietplanActionsProps> = ({ dietplan, mutate }) =
                       </div>
                       <div className="mb-2 flex flex-row gap-2 items-center">
                         <span>Carbs</span>
-                        <Badge variant="outline">{meal.carbs}g</Badge>
+                        <Badge variant="outline">{meal.carbohydrates}g</Badge>
                       </div>
                       <div className="mb-2 flex flex-row gap-2 items-center">
                         <span>Fats</span>
