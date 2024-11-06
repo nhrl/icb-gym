@@ -64,8 +64,8 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
   const [step, setStep] = useState(1); // Step to track which form to show
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null); // Store the selected photo
   const [programId, setProgramId] = useState<number | null>(null);
-
   const { toast } = useToast(); // Use toast for notifications
+  const [selectedExercisePhotos, setSelectedExercisePhotos] = useState<string[]>([]);
 
   const programForm = useForm<zod.infer<typeof programSchema>>({
     resolver: zodResolver(programSchema),
@@ -187,15 +187,19 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
     }
   };
 
-  const handleExercisePhotoChange = (
-    index: number,
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleExercisePhotoChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
     if (file) {
       const updatedExercises = exercisesForm.getValues("exercises");
       updatedExercises[index].photo = file;
-      exercisesForm.setValue("exercises", updatedExercises); // Update the form state
+      exercisesForm.setValue("exercises", updatedExercises);
+
+      // Update the displayed file name for this input
+      setSelectedExercisePhotos((prev) => {
+        const updatedPhotos = [...prev];
+        updatedPhotos[index] = file.name;
+        return updatedPhotos;
+      });
     }
   };
 
@@ -381,20 +385,36 @@ export default function ProgramForm({ onClose }: ProgramFormProps) {
 
                   {/* Photo Upload for Exercises */}
                   <FormField
+                    key={field.id}
                     control={exercisesForm.control}
                     name={`exercises.${index}.photo`}
                     render={() => (
                       <FormItem>
                         <FormLabel>Upload Photo</FormLabel>
                         <FormControl>
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handleExercisePhotoChange(index, e)}
-                            className="border p-2 w-full rounded cursor-pointer file:rounded-md file:text-sm file:font-regular file:border-0 file:bg-muted file:mr-2 file:text-muted-foreground"
-                          />
+                          <div className="relative">
+                            {/* Hidden file input */}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleExercisePhotoChange(index, e)}
+                              className="hidden"
+                              id={`file-input-${index}`}
+                            />
+                            
+                            {/* Visible text input displaying the file name */}
+                            <Input
+                              type="text"
+                              readOnly
+                              value={selectedExercisePhotos[index] || ""}
+                              onClick={() => document.getElementById(`file-input-${index}`)?.click()}
+                              className="border p-2 w-full rounded cursor-pointer"
+                            />
+                          </div>
                         </FormControl>
-                        <FormMessage>{exercisesForm.formState.errors.exercises?.[index]?.photo?.message}</FormMessage>
+                        <FormMessage>
+                          {exercisesForm.formState.errors.exercises?.[index]?.photo?.message}
+                        </FormMessage>
                       </FormItem>
                     )}
                   />
