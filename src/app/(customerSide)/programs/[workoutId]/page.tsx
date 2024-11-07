@@ -286,11 +286,11 @@ export default function WorkoutDetailPage() {
                   <DialogFooter className="flex justify-between gap-4 mt-6">
                     <div className="w-full rounded-lg px-4 py-2 border flex justify-between shadow-lg">
                       <h2>Sets</h2>
-                      <p className="text-secondary">{exercise.sets}</p>
+                      <p className="text-muted-foreground">{exercise.sets}</p>
                     </div>
                     <div className="w-full rounded-lg px-4 py-2 border flex justify-between shadow-lg">
                       <h2>Reps</h2>
-                      <p className="text-secondary">{exercise.reps}</p>
+                      <p className="text-muted-foreground">{exercise.reps}</p>
                     </div>
                   </DialogFooter>
                 </DialogContent>
