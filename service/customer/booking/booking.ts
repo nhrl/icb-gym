@@ -230,29 +230,51 @@ export async function addBooking(data: any) {
   }
 }
 
-export async function getUserBookings(customer_id : any) {
+export async function getUserBookings(customer_id: any) {
   try {
-    const {data, error} = await supabase
-    .from('bookings')
-    .select()
-    .eq('customer_id',customer_id)
-
-    if(error) {
+    // Perform a join to fetch bookings and trainer information
+    const { data, error } = await supabase
+      .from('bookings')
+      .select(`
+        booking_id, 
+        customer_id, 
+        assign_id, 
+        payment_status, 
+        confirmation_status, 
+        created_at, 
+        trainer_id,
+        trainers:trainer_id (firstname, lastname)
+      `) 
+      .eq('customer_id',customer_id)// Join trainers table using trainer_id
+    
+    if (error) {
       return {
         success: false,
         message: 'Error fetching customer bookings.',
         error: error.message,
       };
     }
+
+    // Transform data to return trainer's first and last name instead of trainer_id
+    const transformedData = data.map((booking: any) => ({
+      booking_id: booking.booking_id,
+      customer_id: booking.customer_id,
+      trainer_name: booking.trainers ? `${booking.trainers.firstname} ${booking.trainers.lastname}` : 'Trainer not found',
+      assign_id: booking.assign_id,
+      payment_status: booking.payment_status,
+      confirmation_status: booking.confirmation_status,
+      created_at: booking.created_at,
+    }));
+
     return {
-      success :true,
-      message: "Successfully fetch user bookings",
-      data: data
-    }
-  } catch (error : any) {
+      success: true,
+      message: 'Successfully fetched user bookings',
+      data: transformedData,
+    };
+  } catch (error: any) {
     return {
       success: false,
-      message: "An unexpected error occurred. Please try again.",
+      message: 'An unexpected error occurred. Please try again.',
       error: error.message,
     };
   }

@@ -7,7 +7,7 @@ import { ColumnDef } from "@tanstack/react-table";
 export type Booking = {
   booking_id: number;
   customer_id: number; // foreign key
-  trainer_id: number; // foreign key
+  trainer_name: string; // foreign key
   payment_status: string;
   confirmation_status: string;
   created_at: Date;
@@ -51,9 +51,9 @@ export const columns: ColumnDef<Booking>[] = [
   },
   {
     accessorKey: "trainer_id",
-    header: "Trainer ID",
+    header: "Trainer",
     cell: ({ row }) => (
-      <span className="text-foreground">{row.original.trainer_id}</span>
+      <span className="text-foreground">{row.original.trainer_name}</span>
     ),
   },
   {
