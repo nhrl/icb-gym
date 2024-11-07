@@ -28,6 +28,7 @@ const ProgramActions: React.FC<ProgramActionsProps> = ({ program, mutate }) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isPhotoPopupOpen, setIsPhotoPopupOpen] = useState(false);
   const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false); // Control visibility of Add Exercise form
+  const defaultImage = "https://mplhgifjydkvnfsofsoc.supabase.co/storage/v1/object/public/images/error/no%20image.jpg?t=2024-10-19T02%3A30%3A35.308Z";
   const popupRef = useRef<HTMLDivElement>(null);
 
   const api = process.env.NEXT_PUBLIC_API_URL;
@@ -152,7 +153,12 @@ const ProgramActions: React.FC<ProgramActionsProps> = ({ program, mutate }) => {
             </div>
             <Card className="bg-background border border-border rounded-md w-full sm:w-auto flex items-center justify-center p-6">
               <CardContent>
-                <Image src={program.photoUrl} alt="Program Photo" className="w-full h-auto rounded-md" />
+                <Image 
+                  src={program.program_img || defaultImage} 
+                  alt="Program Photo" 
+                  width={600}
+                  height={400}
+                  className="w-full h-auto rounded-md" />
               </CardContent>
             </Card>
           </div>

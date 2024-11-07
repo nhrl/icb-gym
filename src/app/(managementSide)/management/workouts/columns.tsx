@@ -24,7 +24,7 @@ export type Program = {
   description: string;
   fitness_level: "Beginner" | "Intermediate" | "Advanced";
   fitness_goal: "Weight Loss" | "Muscle Gain" | "General Health" | "Endurance";
-  photoUrl: string;
+  program_img: string;
 };
 
 export type Exercise = {

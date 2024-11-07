@@ -4,44 +4,43 @@ import supabase from "../../database/db";
 // For image folder directory
 const folder = `workout/exercise`;
 
-export async function addExercises(exercises: any[]) {
+export async function addExercise(exercise: any) {
     try {
-      const exerciseData = [];
-      for (const exercise of exercises) {
-        const program_id = Number(exercise.program_id);
-        const exercise_name = exercise.name as string;
-        const exercise_description = exercise.desc as string;
-        const reps = Number(exercise.reps);
-        const sets = Number(exercise.sets);
-        const image = exercise.photo as File; // Handle image if provided
+      const program_id = Number(exercise.get('program_id'));
+      const exercise_name = exercise.get('name') as string;
+      const exercise_description = exercise.get('desc') as string;
+      const reps = Number(exercise.get('reps'));
+      const sets = Number(exercise.get('sets'));
+      const image = exercise.get('photo') as File;
   
-        // If an image is provided, upload it
-        let imageUrl = null;
-        if (image) {
-          imageUrl = await uploadImage(image, folder);
-        }
-  
-        exerciseData.push({
-          program_id: program_id,
-          exercise_name: exercise_name,
-          exercise_description: exercise_description,
-          reps: reps,
-          sets: sets,
-          exercise_img: imageUrl || null,
-        });
+      // If an image is provided, upload it
+      let imageUrl = null;
+      if (image) {
+        imageUrl = await uploadImage(image, folder);
       }
   
-      // Insert all exercises into the 'exercise' table
+      // Prepare the exercise data
+      const exerciseData = {
+        program_id: program_id,
+        exercise_name: exercise_name,
+        exercise_description: exercise_description,
+        reps: reps,
+        sets: sets,
+        exercise_img: imageUrl || null,
+      };
+  
+      // Insert the exercise into the 'exercise' table
       const { error } = await supabase.from('exercise').insert(exerciseData);
   
       if (error) {
         return {
           success: false,
-          message: "Failed to add exercises. Please try again.",
+          message: "Failed to add exercise. Please try again.",
           error: error.message,
         };
       }
-      return { success: true, message: "New exercises added successfully" };
+  
+      return { success: true, message: "Exercise added successfully" };
     } catch (error: any) {
       return {
         success: false,
@@ -49,7 +48,8 @@ export async function addExercises(exercises: any[]) {
         error: error.message,
       };
     }
-}
+  }
+  
 
 export async function getExercise(id: any) {
     try {
