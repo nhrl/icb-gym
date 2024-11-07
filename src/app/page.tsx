@@ -6,7 +6,7 @@ import { RiAsterisk } from "react-icons/ri";
 import { useState, useEffect } from "react";
 import { Button } from "../components/ui/button";
 import {Badge} from "../components/ui/badge";
-import Progress from "@/assets/progress.png";
+import Progress from "@/assets/Progress.png";
 import Recommend from "@/assets/Recommend.png";
 import { 
   InformationCircleIcon, 
