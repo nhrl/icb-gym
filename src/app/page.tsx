@@ -4,21 +4,10 @@ import Image from "next/image";
 import { RiAsterisk } from "react-icons/ri";
 import { useState, useEffect } from "react";
 import { Button } from "../components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tag } from "@/components/ui/tag";
+
 import { 
   InformationCircleIcon, 
-  ArrowUpLeftIcon,
   ArrowRightCircleIcon, 
-  SparklesIcon,
-  BoltIcon 
 } from "@heroicons/react/24/outline";
 import SignupModal from "../components/signupModal";
 import {
@@ -152,7 +141,7 @@ export default function Home() {
 
           {/* Button Container */}
           <div className="flex flex-wrap sm:flex-row gap-4 mt-4 sm:mt-6">
-            <Button className="rounded-3xl gap-2 flex" variant="secondary" onClick={openSignupModal}>
+            <Button className="rounded-3xl gap-2 flex" variant="outline" onClick={openSignupModal}>
               Register and Book Now
               <ArrowRightCircleIcon className="h-4 w-4" />
             </Button>

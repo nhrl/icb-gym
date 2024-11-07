@@ -191,10 +191,10 @@ export default function Page() {
                   </CardContent>
                   <CardFooter className="flex flex-row w-full items-left justify-between p-0 gap-2">
                     <div className='flex flex-row gap-2'>
-                      <div className="p-2 px-4 w-fit rounded-full bg-background/90 flex items-center justify-center cursor-pointer hover:bg-black/20 border-border border">
+                      <div className="p-2 px-4 w-fit rounded-full bg-background/90 flex items-center justify-center order-border border">
                         <p className="text-xs text-foreground">{workout.fitness_level}</p>
                       </div>
-                      <div className="p-2 px-4 w-fit rounded-full bg-foreground/90 flex items-center justify-center cursor-pointer hover:bg-foreground/20 border-border border">
+                      <div className="p-2 px-4 w-fit rounded-full bg-foreground/90 flex items-center justify-center border-border border">
                         <p className="text-xs text-background">{workout.fitness_goal}</p>
                       </div>
                     </div>

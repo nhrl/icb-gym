@@ -11,7 +11,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { BookOpenIcon, QuestionMarkCircleIcon, UserGroupIcon, HeartIcon } from "@heroicons/react/24/outline";
+import { BookOpenIcon, QuestionMarkCircleIcon, ClockIcon, CalendarDaysIcon, UserGroupIcon, HeartIcon, BookmarkIcon } from "@heroicons/react/24/outline";
 import { Badge } from "@/components/ui/badge";
 import { Toggle } from "@/components/ui/toggle";
 import {
@@ -196,7 +196,7 @@ export default function TrainerDetailPage() {
   }
 
   return (
-    <div className="w-full p-12 px-8 sm:px-[128px]">
+    <div className="w-full p-12 px-8 sm:px-[254px]">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -215,7 +215,7 @@ export default function TrainerDetailPage() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <Card className="mt-8 border-none">
+      <Card className="mt-8 border-none shadow-none">
         <CardHeader
           className="h-64 bg-cover bg-center border border-border rounded-lg"
           style={{ backgroundImage: `url(${trainer.trainer_img})` }}
@@ -265,29 +265,34 @@ export default function TrainerDetailPage() {
 
                     <Toggle 
                       variant="outline" 
-                      className="w-fit rounded-full" 
+                      className="w-fit items-center gap-2 rounded-full px-4"  
                       onClick={() => setIsFavorite(!isFavorite)}
                     >
-                      <HeartIcon className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-transparent' : 'text-foreground'}`} />
+                      <BookmarkIcon className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-transparent' : 'text-foreground'}`} />
+                      Save to Favorites
                     </Toggle>
-
-
                   </div>
                   <p className="text-lg text-muted-foreground">{assignment.description}</p>
               </div>
 
-              <div className="flex flex-col gap-2">
-              <Card className="flex flex-col justify-between">
-                <CardHeader className="font-medium items-left  text-xl">
-                    <p>Capacity</p>
+              <div className="flex flex-col gap-4">
+              <Card className="flex flex-col justify-between text-center shadow-lg">
+                <CardHeader className="font-medium items-center text-xl">
+                  <div className="flex flex-col gap-2 items-center">
+                    <div className="rounded-full w-fit bg-secondary p-2">
+                      <UserGroupIcon className="w-4 h-4 text-white"/>
+                    </div>
+                    <p>Client Capacity</p>
+                    </div>
                 </CardHeader>
 
-                <CardContent className="flex flex-row items-center text-center gap-3">
-                  <div>
+                <CardContent className="flex flex-col items-center gap-3">
+                  <div className="text-center font-black text-[50px]">
                     <p>{assignment.current_capacity}</p>
                   </div>
-                  <div >
-                    <p >{assignment.max_capacity}</p>
+                  <div className="text-xs text-muted-foreground">
+                    <p>of {assignment.max_capacity} users</p>
+                    <p>have booked this trainer</p>
                   </div>
                 </CardContent>
               </Card>
@@ -295,7 +300,7 @@ export default function TrainerDetailPage() {
               <Card className=" w-full sm:w-[375px] shadow-lg">
                 <CardHeader>
                   <div className="flex flex-row gap-2">
-                  <p className="text-2xl font-semibold text-start">${assignment.rate}</p>
+                  <p className="text-2xl font-semibold text-start">₱{assignment.rate}</p>
                   <p className="font-thin">/Month</p>
                   </div>
                 </CardHeader>
@@ -304,7 +309,10 @@ export default function TrainerDetailPage() {
 
                   {/*Schedule*/}
                   <div className="flex flex-col gap-2">
-                    <h3 className="text-sm font-regular">Schedule</h3>
+                    <h3 className="text-sm font-regular flex flex-row items-center">
+                      <CalendarDaysIcon className="w-3 h-3 mr-1"/>
+                      Schedule
+                      </h3>
                       <div className="flex flex-wrap sm:flex-row gap-2">
                       {(() => {
                         let parsedSchedule: string[] = [];
@@ -321,7 +329,10 @@ export default function TrainerDetailPage() {
                         ));
                       })()}
                       </div>
-                      <h3 className="text-sm font-regular">Time</h3>
+                      <h3 className="text-sm font-regular flex flex-row items-center">
+                        <ClockIcon className="w-3 h-3 mr-1"/>
+                        Time
+                      </h3>
                       <div className="flex flex-col sm:flex-row gap-2">
                           <div className="text-xs w-fit h-fit p-2 px-4 border-border border  rounded-full text-muted-foreground">
                             {formatTime(assignment.start_time)} - {formatTime(assignment.end_time)}
@@ -339,7 +350,7 @@ export default function TrainerDetailPage() {
                           className="rounded-full w-full"
                           disabled={assignment.current_capacity >= assignment.max_capacity}
                         >
-                          <BookOpenIcon className="h-4 w-4 mr-2" />
+                          <BookOpenIcon className="h-4 w-4" />
                           {assignment.current_capacity >= assignment.max_capacity
                             ? "Fully Booked"
                             : "Book this Trainer"}
@@ -369,7 +380,7 @@ export default function TrainerDetailPage() {
                       <DialogTrigger> 
                         <Button variant="outline" className="rounded-full w-full">
                         How to Pay
-                        <QuestionMarkCircleIcon className="h-4 w-4 ml-2" />
+                        <QuestionMarkCircleIcon className="h-4 w-4" />
                         </Button> 
                       </DialogTrigger>
                       <DialogContent className="gap-10 flex flex-col">

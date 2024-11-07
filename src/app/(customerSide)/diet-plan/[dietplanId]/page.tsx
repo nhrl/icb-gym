@@ -15,7 +15,7 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { HeartIcon, EyeIcon } from "@heroicons/react/24/outline";
+import { HeartIcon, EyeIcon, BookmarkIcon } from "@heroicons/react/24/outline";
 import { Toggle } from "@/components/ui/toggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -115,7 +115,7 @@ export default function DietPlanDetailPage() {
     );
 
   return (
-    <div className="w-full p-12 px-8 sm:px-[128px]">
+    <div className="w-full p-12 px-8 sm:px-[254px]">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -139,17 +139,14 @@ export default function DietPlanDetailPage() {
         <CardContent className="p-6 px-0">
           <div className="flex justify-between gap-4">
             <h2 className="text-2xl font-bold">{dietPlan.name}</h2>
-            <Toggle
-              variant="outline"
-              className="w-fit rounded-full"
-              onClick={() => setIsFavorite(!isFavorite)}
-            >
-              <HeartIcon
-                className={`h-4 w-4 ${
-                  isFavorite ? "fill-red-500 text-transparent" : "text-foreground"
-                }`}
-              />
-            </Toggle>
+               <Toggle 
+                  variant="outline" 
+                  className="w-fit items-center gap-2 rounded-full px-4"  
+                  onClick={() => setIsFavorite(!isFavorite)}
+                >
+                  <BookmarkIcon className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-transparent' : 'text-foreground'}`} />
+                  Save to Favorites
+                </Toggle>
           </div>
           <p className="text-lg text-muted-foreground">{dietPlan.description}</p>
 
@@ -199,7 +196,7 @@ export default function DietPlanDetailPage() {
 
                     <DialogDescription className="flex flex-col gap-4 mt-3">
                       <div className="flex flex-col justify-between">
-                        <h2 className="font-bold text-md text-foreground">Recipe</h2>
+                        <h2 className="font-bold text-md text-foreground">Ingredients</h2>
                         <p>{meal.ingredients}</p>
                       </div>
                       <div className="flex flex-col justify-between">

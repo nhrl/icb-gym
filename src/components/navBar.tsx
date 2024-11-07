@@ -118,7 +118,7 @@ export const NavBar: React.FC = () => {
 
   return (
     <>
-      <div className="top-0 z-50 sticky bg-background/95 flex items-center w-full justify-between  backdrop-blur-md border-b border-border shadow-lg p-4 px-6">
+      <div className="top-0 z-50 sticky bg-background/95 flex items-center w-full justify-between  backdrop-blur-md border-b border-border shadow-lg p-4 px-6 sm:px-16">
 
         <div className=" flex gap-8 flex-row items-center w-full justify-between">
           

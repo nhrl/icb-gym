@@ -100,6 +100,50 @@ body {
   background-blend-mode: multiply;
 }
 
+.membershipcard-bg {
+  /* Base Background */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-blend-mode: multiply;
+  
+  /* Glassmorphism Overlay */
+  position: relative;
+  backdrop-filter: blur(20px) brightness(1.2);
+  background-color: --card;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.membershipcard-bg::before {
+  /* Light Highlights (White Orbs) */
+  content: "";
+  position: absolute;
+  top: 20%;
+  left: 10%;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent);
+  border-radius: 50%;
+  filter: blur(15px);
+  opacity: 0.6;
+}
+
+.membershipcard-bg::after {
+  /* Additional White Orb */
+  content: "";
+  position: absolute;
+  bottom: 20%;
+  right: 10%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent);
+  border-radius: 50%;
+  filter: blur(20px);
+  opacity: 0.5;
+}
+
+
 @keyframes scroll {
   0% {
     transform: translateX(100%);
@@ -163,3 +207,4 @@ body {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
