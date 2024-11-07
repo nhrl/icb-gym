@@ -54,12 +54,13 @@ export default function ExerciseForm({ programId, onClose }: ExerciseFormProps) 
 
   const api = process.env.NEXT_PUBLIC_API_URL;
 
+  // Handle form submission
   const handleExerciseSubmit = async (data: zod.infer<typeof exerciseSchema>) => {
     const formData = new FormData();
     formData.append("name", data.name);
     formData.append("desc", data.desc);
-    formData.append("sets", data.sets.toString());
-    formData.append("reps", data.reps.toString());
+    formData.append("sets", data.sets.toString()); // Ensure sets is a number
+    formData.append("reps", data.reps.toString()); // Ensure reps is a number
     formData.append("program_id", data.program_id.toString());
 
     // Append image if exists
@@ -89,6 +90,7 @@ export default function ExerciseForm({ programId, onClose }: ExerciseFormProps) 
     }
   };
 
+  // Handle photo change
   const handleExercisePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
     if (file) {
@@ -99,13 +101,18 @@ export default function ExerciseForm({ programId, onClose }: ExerciseFormProps) 
     }
   };
 
+  // Handle number change (for sets and reps)
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>, field: "sets" | "reps") => {
+    const value = e.target.value ? Number(e.target.value) : 0;
+    exercisesForm.setValue(field, value);
+  };
+
   return (
     <div className="bg-background text-foreground text-sm rounded-lg shadow-lg w-full h-[fit] sm:h-full ">
       <Form {...exercisesForm}>
         <form onSubmit={exercisesForm.handleSubmit(handleExerciseSubmit)} className="gap-4 flex flex-col">
           {/* Close Button */}
           <div className="flex w-full items-center">
-
             <div className="flex flex-col">
               <h2 className="text-xl font-semibold">Add Exercise for Workout Program</h2>
               <p className="text-muted-foreground text-[12px]">Please enter the exercise details below</p>
@@ -196,7 +203,12 @@ export default function ExerciseForm({ programId, onClose }: ExerciseFormProps) 
                   <FormItem className="flex-1">
                     <FormLabel>Sets</FormLabel>
                     <FormControl>
-                      <Input {...field} type="number" className="border p-2 w-full rounded" />
+                      <Input
+                        {...field}
+                        type="number"
+                        className="border p-2 w-full rounded"
+                        onChange={(e) => handleNumberChange(e, "sets")} // Handle the number change
+                      />
                     </FormControl>
                     <FormMessage>{exercisesForm.formState.errors.sets?.message}</FormMessage>
                   </FormItem>
@@ -209,7 +221,12 @@ export default function ExerciseForm({ programId, onClose }: ExerciseFormProps) 
                   <FormItem className="flex-1">
                     <FormLabel>Reps</FormLabel>
                     <FormControl>
-                      <Input {...field} type="number" className="border p-2 w-full rounded" />
+                      <Input
+                        {...field}
+                        type="number"
+                        className="border p-2 w-full rounded"
+                        onChange={(e) => handleNumberChange(e, "reps")} // Handle the number change
+                      />
                     </FormControl>
                     <FormMessage>{exercisesForm.formState.errors.reps?.message}</FormMessage>
                   </FormItem>
