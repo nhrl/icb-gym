@@ -27,6 +27,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import CryptoJS from 'crypto-js';
 
 interface Workout {
   program_id: number
@@ -57,8 +58,31 @@ export default function WorkoutDetailPage() {
 
   const api = process.env.NEXT_PUBLIC_API_URL;
 
+  const fetchUserFromCookie = () => {
+    if (typeof window === "undefined") return null;
+    const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || "lhS7aOXRUPGPDId6mmHJdA00p39HAfU4";
+    const cookies = document.cookie.split("; ").reduce((acc: { [key: string]: string }, cookie) => {
+      const [name, value] = cookie.split("=");
+      acc[name] = value;
+      return acc;
+    }, {});
+  
+    const userCookie = cookies["user"];
+    if (!userCookie) return null;
+  
+    try {
+      const decryptedUserBytes = CryptoJS.AES.decrypt(userCookie, secretKey);
+      const decryptedUser = JSON.parse(decryptedUserBytes.toString(CryptoJS.enc.Utf8));
+      return decryptedUser.id;
+    } catch (error) {
+      console.error("Error decrypting user cookie:", error);
+      return null;
+    }
+  };
+
   useEffect(() => {
     const id = Number(workoutId);
+    const userId = fetchUserFromCookie();
     if (isNaN(id)) {
       console.error("Invalid workout ID");
       return;
@@ -99,9 +123,68 @@ export default function WorkoutDetailPage() {
       setBreadcrumbLink("/programs?recommended=true");
     }
 
+    const fetchFavorite = async () => {
+      try {
+        const response = await fetch(`${api}/api/customer/favorites/workout?customerId=${userId}&workoutId=${workoutId}`)
+        const message = await response.json();
+        const exists = message.exists;
+        if(exists) {
+          console.log(exists);
+          setIsFavorite(true);
+        } else {
+          setIsFavorite(false);
+          console.log(exists);
+        }
+        
+      } catch (error) {
+        console.error("Error fetching favorite:", error);
+      }
+    }
+
+    fetchFavorite();
     fetchWorkout();
     fetchExercise();
   }, [workoutId, api]);
+
+  const favorites = async () => {
+    const id = fetchUserFromCookie();
+    if(isFavorite) {
+      //Remove from favorites
+      console.log("Remove");
+      setIsFavorite(false);
+      try {
+        const response = await fetch(`${api}/api/customer/favorites/workout`,{
+          method:"DELETE",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({userId: id, workoutId: workoutId}),
+        })
+
+        const message = await response.json();
+        console.log(message.message);
+      } catch (error) {
+        console.error("Error adding to favorites:", error);
+      }
+    } else {
+      //Add from favorites
+      console.log("Add");
+      setIsFavorite(true);
+      try {
+        const response = await fetch(`${api}/api/customer/favorites/workout`,{
+          method:"POST",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({userId: id, workoutId: workoutId}),
+        });
+        const message = await response.json();
+        console.log(message.message);
+      } catch (error) {
+        console.error("Error adding to favorites:", error);
+      }
+    }
+  }
 
   if (!workout)
     return (
@@ -135,14 +218,14 @@ export default function WorkoutDetailPage() {
         <CardContent className="p-6 px-0">
           <div className="flex justify-between gap-4">
             <h2 className="text-2xl font-bold">{workout.title}</h2>
-            {/* <Toggle 
+            <Toggle 
               variant="outline" 
-              className="w-fit items-center gap-2 rounded-full px-4"  
-              onClick={() => setIsFavorite(!isFavorite)}
+              className={`w-fit items-center gap-2 rounded-full px-4 ${isFavorite ? 'bg-blue-500 text-white' : 'bg-transparent text-foreground'}`}  
+              onClick={favorites}
             >
-              <BookmarkIcon className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-transparent' : 'text-foreground'}`} />
-              Save to Favorites
-            </Toggle> */}
+              <BookmarkIcon className={`h-4 w-4 ${isFavorite ? 'text-white' : 'text-foreground'}`} />
+              {isFavorite ? "Saved to Favorites" : "Save to Favorites"}
+            </Toggle>
           </div>
           <p className="text-lg text-muted-foreground">{workout.description}</p>
 
