@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MagnifyingGlassIcon, SparklesIcon, HeartIcon, UserGroupIcon, ArrowRightCircleIcon } from "@heroicons/react/24/outline";
+import { BookmarkIcon, SparklesIcon, ArrowRightCircleIcon } from "@heroicons/react/24/outline";
 import { RiAsterisk } from "react-icons/ri";
 import { Toggle } from "@/components/ui/toggle";
 import CryptoJS from 'crypto-js';
@@ -188,6 +188,8 @@ export default function Page() {
               <SparklesIcon className="h-4 w-4 mr-1" />
               {buttonText}
             </Button>
+            {/*Show Favorites*/}
+            <Toggle size="sm" variant="outline"><BookmarkIcon className='h-4 w-4'/></Toggle>
           </div>
         </div>
 

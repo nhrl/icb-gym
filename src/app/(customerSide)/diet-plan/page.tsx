@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ArrowRightCircleIcon, HeartIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { ArrowRightCircleIcon, BookmarkIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { Badge } from '@/components/ui/badge';
 import { Toggle } from '@/components/ui/toggle';
 import CryptoJS from 'crypto-js';
@@ -145,7 +145,7 @@ export default function DietPlansPage() {
 
         <div className="flex flex-col w-full gap-6 p-12 sm:px-[128px] ">
           <div className="flex flex-col sm:flex-row w-full justify-between items-center">
-            <h1 className="text-[36px] font-black">Diet Plans</h1>
+            <h1 className="text-[36px] font-black">Diet plans</h1>
             <div className="flex flex-col sm:flex-row gap-2">
               <Input 
                 placeholder="Search for diet plans..." 
@@ -157,6 +157,8 @@ export default function DietPlansPage() {
                 <SparklesIcon className="h-4 w-4 mr-1" />
                 {buttonText}
               </Button>
+              {/*Show Favorites*/}
+              <Toggle size="sm" variant="outline"><BookmarkIcon className='h-4 w-4'/></Toggle>
             </div>
           </div>
 

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ArrowRightCircleIcon, ArrowsUpDownIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { ArrowRightCircleIcon, BookmarkIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { Toggle } from '@/components/ui/toggle';
 import { Badge } from '@/components/ui/badge';
 import CryptoJS from 'crypto-js';
@@ -161,6 +161,7 @@ export default function Page() {
                 <SparklesIcon className="h-4 w-4 mr-1" />
                 {buttonText}
               </Button>
+              <Toggle size="sm" variant="outline"><BookmarkIcon className='h-4 w-4'/></Toggle>
             </div>
               
             {/* <div className='w-full flex flex-row items-end justify-end'>
