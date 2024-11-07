@@ -161,7 +161,7 @@ export default function DietPlansPage() {
     const response = await fetch(`${api}/api/customer/favorites/show/dietplan?customerId=${id}`);
     const result = await response.json();
     if(result.success) {
-      setDietPlans(result.data);
+      setDietPlans(result.data || []);
       setFavoriteShow(true);
       setIsRecommended(false);
       setButtonText("Show All Diet Plans");
