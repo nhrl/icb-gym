@@ -184,7 +184,7 @@ export default function Page() {
     const response = await fetch(`${api}/api/customer/favorites/show/trainer?customerId=${id}&serviceId=${serviceId}`)
     const result = await response.json();
     if(result.success) {
-      setAssignments(result.trainer);
+      setAssignments(result.trainer || []);
       setButtonText("Show All Trainers");
       setFavoriteShow(true);
       setIsRecommended(false);
