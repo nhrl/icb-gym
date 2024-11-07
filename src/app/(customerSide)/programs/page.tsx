@@ -82,6 +82,7 @@ export default function Page() {
       setIsFavorite(isFavorite);
     } catch (error) {
       console.error("Error fetching diet plans:", error);
+      setWorkouts([]);
       setError("Failed to fetch diet plans.");
     } finally {
       setLoading(false);
@@ -151,7 +152,7 @@ export default function Page() {
     const response = await fetch(`${api}/api/customer/favorites/show/workout?customerId=${id}`);
     const result = await response.json();
     if(result.success) {
-      setWorkouts(result.programs);
+      setWorkouts(result.programs || []);
       setFavoriteShow(true);
       setIsRecommended(false);
       setButtonText("Show All Programs");
