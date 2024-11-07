@@ -123,6 +123,7 @@ export default function TrainerDetailPage() {
     }
   };
 
+  const userId = fetchUserFromCookie();
   useEffect(() => {
     const fetchAssignments = async () => {
       try {
@@ -146,9 +147,68 @@ export default function TrainerDetailPage() {
       }
     };
 
+    const fetchFavorite = async () => {
+      try {
+        console.log(userId);
+        const response = await fetch(`${api}/api/customer/favorites/trainer?customerId=${userId}&trainerId=${trainerId}`)
+        const message = await response.json();
+        const exists = message.exists;
+        if(exists) {
+          console.log(exists);
+          setIsFavorite(true);
+        } else {
+          setIsFavorite(false);
+          console.log(exists);
+        }
+        
+      } catch (error) {
+        console.error("Error fetching favorite:", error);
+      }
+    }
+    fetchFavorite();
     fetchAssignments();
-  }, [serviceId, api]);
+  }, [serviceId, api,trainerId, userId]);
 
+
+  const favorites = async () => {
+    const id = fetchUserFromCookie();
+    if(isFavorite) {
+      //Remove from favorites
+      console.log("Remove");
+      setIsFavorite(false);
+      try {
+        const response = await fetch(`${api}/api/customer/favorites/trainer`,{
+          method:"DELETE",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({userId: id, trainerId: trainerId}),
+        })
+
+        const message = await response.json();
+        console.log(message.message);
+      } catch (error) {
+        console.error("Error adding to favorites:", error);
+      }
+    } else {
+      //Add from favorites
+      console.log("Add");
+      setIsFavorite(true);
+      try {
+        const response = await fetch(`${api}/api/customer/favorites/trainer`,{
+          method:"POST",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({userId: id, trainerId: trainerId}),
+        });
+        const message = await response.json();
+        console.log(message.message);
+      } catch (error) {
+        console.error("Error adding to favorites:", error);
+      }
+    }
+  }
 
   if (loading) return <p>Loading assignments...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -265,11 +325,11 @@ export default function TrainerDetailPage() {
 
                     <Toggle 
                       variant="outline" 
-                      className="w-fit items-center gap-2 rounded-full px-4"  
-                      onClick={() => setIsFavorite(!isFavorite)}
+                      className={`w-fit items-center gap-2 rounded-full px-4 ${isFavorite ? 'bg-blue-500 text-white' : 'bg-transparent text-foreground'}`}  
+                      onClick={favorites}
                     >
-                      <BookmarkIcon className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-transparent' : 'text-foreground'}`} />
-                      Save to Favorites
+                      <BookmarkIcon className={`h-4 w-4 ${isFavorite ? 'text-white' : 'text-foreground'}`} />
+                      {isFavorite ? "Saved to Favorites" : "Save to Favorites"}
                     </Toggle>
                   </div>
                   <p className="text-lg text-muted-foreground">{assignment.description}</p>
