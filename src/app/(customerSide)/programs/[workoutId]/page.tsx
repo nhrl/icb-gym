@@ -135,14 +135,14 @@ export default function WorkoutDetailPage() {
         <CardContent className="p-6 px-0">
           <div className="flex justify-between gap-4">
             <h2 className="text-2xl font-bold">{workout.title}</h2>
-            <Toggle 
+            {/* <Toggle 
               variant="outline" 
               className="w-fit items-center gap-2 rounded-full px-4"  
               onClick={() => setIsFavorite(!isFavorite)}
             >
               <BookmarkIcon className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-transparent' : 'text-foreground'}`} />
               Save to Favorites
-            </Toggle>
+            </Toggle> */}
           </div>
           <p className="text-lg text-muted-foreground">{workout.description}</p>
 

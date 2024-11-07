@@ -262,7 +262,7 @@ export default function TrainerDetailPage() {
                     </div>
                     <p className="text-md">{trainer.email}</p>
                     </div>
-
+{/* 
                     <Toggle 
                       variant="outline" 
                       className="w-fit items-center gap-2 rounded-full px-4"  
@@ -270,7 +270,7 @@ export default function TrainerDetailPage() {
                     >
                       <BookmarkIcon className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-transparent' : 'text-foreground'}`} />
                       Save to Favorites
-                    </Toggle>
+                    </Toggle> */}
                   </div>
                   <p className="text-lg text-muted-foreground">{assignment.description}</p>
               </div>
