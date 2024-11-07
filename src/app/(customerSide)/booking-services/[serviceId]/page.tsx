@@ -60,6 +60,7 @@ export default function Page() {
   const [buttonText, setButtonText] = useState("Show Recommendations");
   const [searchTerm, setSearchTerm] = useState("");
   const [isRecommended, setIsRecommended] = useState(false);
+  const [isFavoriteShow, setFavoriteShow] = useState(false);
 
   const api = process.env.NEXT_PUBLIC_API_URL;
   const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || 'lhS7aOXRUPGPDId6mmHJdA00p39HAfU4';
@@ -91,17 +92,23 @@ export default function Page() {
     }
   }, [secretKey]);
 
-  const fetchAssignments = useCallback(async (recommended: boolean = false) => {
+  const fetchAssignments = useCallback(async (recommended: boolean = false, favorite: boolean = false) => {
     try {
       setLoading(true);
-      const url = recommended
-        ? `${api}/api/customer/recommendation/trainer?serviceId=${serviceId}&userId=${fetchUserFromCookie()}`
-        : `${api}/api/customer/service?id=${serviceId}`;
-
+      let url = "";
+      if(recommended) {
+        url = `${api}/api/customer/recommendation/trainer?serviceId=${serviceId}&userId=${fetchUserFromCookie()}`;
+      } else if(favorite) {
+        url = `${api}/api/customer/favorites/show/trainer?customerId=${fetchUserFromCookie()}&serviceId=${serviceId}`
+      } else {
+        url = `${api}/api/customer/service?id=${serviceId}`;
+      }
+    
       const response = await fetch(url);
       const data = await response.json();
       setAssignments(data.trainer || data.data || []);
       setIsRecommended(recommended);
+      setFavoriteShow(favorite);
     } catch (error) {
       console.error("Error fetching assignments:", error);
       setError("Failed to fetch assignments.");
@@ -111,14 +118,36 @@ export default function Page() {
   }, [api, fetchUserFromCookie, serviceId]);
 
   useEffect(() => {
-    fetchAssignments(isRecommended);
-  }, [fetchAssignments, isRecommended]);
+    const searchParams = new URLSearchParams(window.location.search);
+    const recommended = searchParams.get('recommended') === 'true';
+    const favorite = searchParams.get('favorites') === 'true';
+    fetchAssignments(recommended, favorite);
+
+    if (recommended) {
+      setButtonText("Show All Trainers");
+    } else if (favorite) {
+      setButtonText("Show All Trainers");
+    } else {
+      setButtonText("Show Recommendations");
+    }
+  }, [fetchAssignments]);
 
   const getRecommendation = async () => {
-    if (isRecommended) {
+    const searchParams = new URLSearchParams(window.location.search);
+    const recommended = searchParams.get('recommended') === 'true';
+    const favorite = searchParams.get('favorites') === 'true';
+
+    if (recommended) {
+      sessionStorage.setItem("showTrainerRecommendations", "false");
       setButtonText("Show Recommendations");
       setIsRecommended(false);
+      router.push(`${serviceId}`);
       await fetchAssignments(false);
+    } else if(favorite) {
+      sessionStorage.setItem("showFavoritesTrainer", "false");
+      setButtonText("Show Recommendations");
+      await fetchAssignments(false); // Fetch all diet plans
+      router.push(`${serviceId}`);
     } else {
       const id = fetchUserFromCookie();
       try {
@@ -130,6 +159,8 @@ export default function Page() {
           setAssignments(result.trainer);
           setButtonText("Show All Trainers");
           setIsRecommended(true);
+          sessionStorage.setItem("showTrainerRecommendations", "true");
+          router.push(`${serviceId}?recommended=true`);
         } else {
           setError(result.message || "Failed to fetch assignments.");
         }
@@ -146,6 +177,24 @@ export default function Page() {
   const getBackgroundImage = (photo: string) => {
     return photo && photo.trim() !== "" ? photo : fallbackImage;
   };
+
+  const favorites = async () => {
+    setLoading(true);
+    const id = fetchUserFromCookie();
+    const response = await fetch(`${api}/api/customer/favorites/show/trainer?customerId=${id}&serviceId=${serviceId}`)
+    const result = await response.json();
+    if(result.success) {
+      setAssignments(result.trainer);
+      setButtonText("Show All Trainers");
+      setFavoriteShow(true);
+      setIsRecommended(false);
+      sessionStorage.setItem("showFavoritesTrainer", "true");
+      router.push(`${serviceId}?favorites=true`);
+    } else {
+      setError(result.message || "Failed to fetch favorites.");
+    }
+    setLoading(false);
+  }
 
   if (loading) return <p>Loading assignments...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -189,7 +238,7 @@ export default function Page() {
               {buttonText}
             </Button>
             {/*Show Favorites*/}
-            <Toggle size="sm" variant="outline"><BookmarkIcon className='h-4 w-4'/></Toggle>
+            <Toggle size="sm" variant="outline" onClick={favorites}><BookmarkIcon className='h-4 w-4'/></Toggle>
           </div>
         </div>
 

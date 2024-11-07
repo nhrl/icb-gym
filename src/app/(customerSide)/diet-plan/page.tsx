@@ -35,6 +35,7 @@ export default function DietPlansPage() {
   const [buttonText, setButtonText] = useState("Show Recommendations");
   const [searchTerm, setSearchTerm] = useState("");
   const [isRecommended, setIsRecommended] = useState(false); // Track if recommendations are shown
+  const [isFavoriteShow, setFavoriteShow] = useState(false);
 
   const api = process.env.NEXT_PUBLIC_API_URL;
   const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || 'lhS7aOXRUPGPDId6mmHJdA00p39HAfU4';
@@ -63,31 +64,46 @@ export default function DietPlansPage() {
     }
   }, [secretKey]);
 
-  const fetchDietPlans = useCallback(async (recommended: boolean = false) => {
+  const fetchDietPlans = useCallback(async (recommended: boolean = false, isFavoriteShow: boolean = false) => {
     try {
       setLoading(true);
-      const url = recommended
-        ? `${api}/api/customer/recommendation/dietplan?userId=${fetchUserFromCookie()}`
-        : `${api}/api/manager/plans/diet`;
-
+      let url = "";
+  
+      if (recommended) {
+        url = `${api}/api/customer/recommendation/dietplan?userId=${fetchUserFromCookie()}`;
+      } else if (isFavoriteShow) {
+        url = `${api}/api/customer/favorites/show/dietplan?customerId=${fetchUserFromCookie()}`;
+      } else {
+        url = `${api}/api/manager/plans/diet`;
+      }
+  
       const response = await fetch(url);
       const data = await response.json();
       setDietPlans(data.dietplan || data.data || []);
       setIsRecommended(recommended);
+      setFavoriteShow(isFavorite);
     } catch (error) {
       console.error("Error fetching diet plans:", error);
       setError("Failed to fetch diet plans.");
     } finally {
       setLoading(false);
     }
-  }, [api, fetchUserFromCookie]);
+  }, [api, fetchUserFromCookie,isFavorite]);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const recommended = searchParams.get('recommended') === 'true';
-    fetchDietPlans(recommended);
-
-    setButtonText(recommended ? "Show All Diet Plans" : "Show Recommendations");
+    const favorite = searchParams.get('favorites') === 'true';
+  
+    fetchDietPlans(recommended, favorite);
+  
+    if (recommended) {
+      setButtonText("Show All Diet Plans");
+    } else if (favorite) {
+      setButtonText("Show All Diet Plans");
+    } else {
+      setButtonText("Show Recommendations");
+    }
   }, [fetchDietPlans]);
 
   const router = useRouter();
@@ -103,9 +119,15 @@ export default function DietPlansPage() {
   const showDietplanRecommendations = async () => {
     const searchParams = new URLSearchParams(window.location.search);
     const recommended = searchParams.get('recommended') === 'true';
+    const favorite = searchParams.get('favorites') === 'true';
 
     if (recommended) {
       sessionStorage.setItem("showDietplanRecommendations", "false");
+      setButtonText("Show Recommendations");
+      await fetchDietPlans(false); // Fetch all diet plans
+      router.push('/diet-plan');
+    } else if (favorite) {
+      sessionStorage.setItem("showFavorites", "false");
       setButtonText("Show Recommendations");
       await fetchDietPlans(false); // Fetch all diet plans
       router.push('/diet-plan');
@@ -119,6 +141,7 @@ export default function DietPlansPage() {
           setDietPlans(result.data);
           setIsRecommended(true);
           sessionStorage.setItem("showDietplanRecommendations", "true");
+          sessionStorage.setItem("showFavorites", "false");
           setButtonText("Show All Diet Plans");
           router.push('/diet-plan?recommended=true');
         } else {
@@ -131,6 +154,25 @@ export default function DietPlansPage() {
       }
     }
   };
+
+  const showFavorites = async () => {
+    setLoading(true);
+    const id = fetchUserFromCookie();
+    const response = await fetch(`${api}/api/customer/favorites/show/dietplan?customerId=${id}`);
+    const result = await response.json();
+    if(result.success) {
+      setDietPlans(result.data);
+      setFavoriteShow(true);
+      setIsRecommended(false);
+      setButtonText("Show All Diet Plans");
+      sessionStorage.setItem("showFavorites", "true");
+      sessionStorage.setItem("showDietplanRecommendations", "false");
+      router.push('/diet-plan?favorites=true');
+    } else {
+      setError(result.message || "Failed to fetch favorites.");
+    }
+    setLoading(false);
+  }
 
   if (loading) return <p>Loading diet plans...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -158,7 +200,7 @@ export default function DietPlansPage() {
                 {buttonText}
               </Button>
               {/*Show Favorites*/}
-              <Toggle size="sm" variant="outline"><BookmarkIcon className='h-4 w-4'/></Toggle>
+              <Toggle size="sm" variant="outline" onClick={showFavorites}><BookmarkIcon className='h-4 w-4'/></Toggle>
             </div>
           </div>
 

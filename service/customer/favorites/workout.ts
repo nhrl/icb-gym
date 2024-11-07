@@ -97,3 +97,55 @@ export async function removeFavoriteWorkout(data: any) {
         };
     }
 }
+
+
+export async function showFavoritesProgram(customerId:any) {
+    try {
+        const { data: favoriteIds, error: favoriteError } = await supabase
+        .from('favoriteworkout')
+        .select('program_id')
+        .eq('customer_id', customerId);
+  
+      if (favoriteError) {
+        return {
+          success: false,
+          message: "Error fetching favorite programs IDs.",
+          error: favoriteError.message,
+        };
+      }
+
+      const programIds = favoriteIds.map((item: any) => item.program_id);
+      if (programIds.length === 0) {
+        return {
+          success: true,
+          message: "No favorite programs found for this customer.",
+          data: [],
+        };
+      }
+
+      const { data: programs, error: programError } = await supabase
+        .from('program')
+        .select('*')
+        .in('program_id', programIds);
+  
+      if (programError) {
+        return {
+          success: false,
+          message: "Error fetching favorite programs.",
+          error: programError.message,
+        };
+      }
+  
+      return {
+        success: true,
+        message: "Successfully fetched favorite programs",
+        programs: programs,
+      };
+    } catch (error: any) {
+        return {
+            success: false,
+            message: "An unexpected error occurred. Please try again.",
+            error: error.message,
+        };
+    }
+}

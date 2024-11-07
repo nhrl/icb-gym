@@ -73,7 +73,7 @@ const formatTime = (time: string) => {
 
 
 export default function TrainerDetailPage() {
-  const { trainerId, serviceId } = useParams();
+  const {trainerId, serviceId } = useParams();
   const [isFavorite, setIsFavorite] = useState(false);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -140,6 +140,11 @@ export default function TrainerDetailPage() {
         if (showRecommendations) {
           setBreadcrumbLink(`/booking-services/${serviceId}?recommended=true`);
         }
+
+        const favoriteShow = sessionStorage.getItem("showFavoritesTrainer") === "true";
+        if(favoriteShow) {
+          setBreadcrumbLink(`/booking-services/${serviceId}?favorites=true`);
+        }
       } catch (err) {
         setError("An error occurred while fetching data.");
       } finally {
@@ -167,7 +172,7 @@ export default function TrainerDetailPage() {
     }
     fetchFavorite();
     fetchAssignments();
-  }, [serviceId, api,trainerId, userId]);
+  }, [serviceId, api,trainerId,userId]);
 
 
   const favorites = async () => {
@@ -182,7 +187,7 @@ export default function TrainerDetailPage() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({userId: id, trainerId: trainerId}),
+          body: JSON.stringify({userId: id, assignId: trainerId,service_id: serviceId}),
         })
 
         const message = await response.json();
@@ -193,6 +198,7 @@ export default function TrainerDetailPage() {
     } else {
       //Add from favorites
       console.log("Add");
+      console.log(trainerId);
       setIsFavorite(true);
       try {
         const response = await fetch(`${api}/api/customer/favorites/trainer`,{
@@ -200,10 +206,11 @@ export default function TrainerDetailPage() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({userId: id, trainerId: trainerId}),
+          body: JSON.stringify({userId: id, assignId: trainerId, service_id: serviceId}),
         });
         const message = await response.json();
         console.log(message.message);
+        console.log(message.error);
       } catch (error) {
         console.error("Error adding to favorites:", error);
       }
