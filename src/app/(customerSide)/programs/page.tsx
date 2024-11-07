@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ArrowRightCircleIcon, HeartIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { ArrowRightCircleIcon, ArrowsUpDownIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { Toggle } from '@/components/ui/toggle';
 import { Badge } from '@/components/ui/badge';
 import CryptoJS from 'crypto-js';
@@ -34,6 +34,8 @@ export default function Page() {
   const [buttonText, setButtonText] = useState("Show Recommendations");
   const [searchTerm, setSearchTerm] = useState("");
   const [isRecommended, setIsRecommended] = useState(false);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
 
   const api = process.env.NEXT_PUBLIC_API_URL;
   const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || 'lhS7aOXRUPGPDId6mmHJdA00p39HAfU4';
@@ -123,9 +125,19 @@ export default function Page() {
     }
   };
 
-  const filteredProgram = workouts.filter((workout) =>
-    workout.title.toLocaleLowerCase().includes(searchTerm.toLocaleLowerCase())
-  );
+  const toggleSortOrder = () => {
+    setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
+  };
+
+  const filteredProgram = workouts
+    .filter((workout) =>
+      workout.title.toLocaleLowerCase().includes(searchTerm.toLocaleLowerCase())
+    )
+    .sort((a, b) => 
+      sortOrder === "asc" 
+        ? a.title.localeCompare(b.title) 
+        : b.title.localeCompare(a.title)
+    );
 
   if (loading) return <p>Loading programs...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -136,7 +148,9 @@ export default function Page() {
         <div className="flex flex-col w-full gap-6 p-12 sm:px-[128px]">
           <div className="flex flex-col sm:flex-row w-full justify-between items-center">
             <h1 className="text-[36px] font-black">Workouts</h1>
-            <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex flex-col gap-2">
+
+            <div className='flex flex-row gap-2 items-end'>
               <Input 
                 placeholder="Search for workouts..." 
                 className="max-w-sm bg-foreground/5 border-border" 
@@ -147,6 +161,15 @@ export default function Page() {
                 <SparklesIcon className="h-4 w-4 mr-1" />
                 {buttonText}
               </Button>
+            </div>
+              
+            {/* <div className='w-full flex flex-row items-end justify-end'>
+              <Toggle onClick={toggleSortOrder} className='flex flex-row gap-2 w-fit' variant="outline" size="sm">
+                  <ArrowsUpDownIcon className='h-3 w-3 '/>
+                  <p>Order:</p>
+                  <p>{sortOrder === "asc" ? "A - Z" : "Z - A"}</p>
+              </Toggle>
+            </div> */}
             </div>
           </div>
 

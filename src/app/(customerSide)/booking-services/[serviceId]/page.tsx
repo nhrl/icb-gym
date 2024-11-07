@@ -229,7 +229,7 @@ export default function Page() {
                       <span className="text-sm">{assign.trainer.email}</span>
                     </div>
                     <div>
-                      <p>${assign.rate}/Month</p>
+                      <p>₱{assign.rate}/Month</p>
                     </div>
                   </div>
                   <Button variant="outline" className="rounded-full items-center flex flex-row">

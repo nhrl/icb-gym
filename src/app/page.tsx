@@ -1,15 +1,20 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { RiAsterisk } from "react-icons/ri";
 import { useState, useEffect } from "react";
 import { Button } from "../components/ui/button";
-
+import {Badge} from "../components/ui/badge";
+import Progress from "@/assets/Progress.png";
+import Recommend from "@/assets/Recommend.png";
 import { 
   InformationCircleIcon, 
   ArrowRightCircleIcon, 
+  SparklesIcon
 } from "@heroicons/react/24/outline";
 import SignupModal from "../components/signupModal";
+import LoginModal from "@/components/loginModal";
 import {
   Accordion,
   AccordionContent,
@@ -22,6 +27,7 @@ import {
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -29,6 +35,10 @@ export default function Home() {
 
   const openSignupModal = () => setIsSignupModalOpen(true);
   const closeSignupModal = () => setIsSignupModalOpen(false);
+
+  
+  const openLoginModal = () => setIsLoginModalOpen(true);
+  const closeLoginModal = () => setIsLoginModalOpen(false);
 
   
   const [tags] = useState([
@@ -66,7 +76,9 @@ export default function Home() {
           <div className="flex flex-wrap sm:flex-row gap-4 mt-4 sm:mt-6">
             <Button className="rounded-3xl gap-2 flex" variant="outline">
               <InformationCircleIcon className="h-4 w-4" />
-              About Us
+              <Link href='/privacy-policy'>
+              Privacy Policy
+              </Link>
             </Button>
             <Button className="rounded-3xl gap-2 flex" variant="secondary" onClick={openSignupModal}>
               Join Incredoball Now
@@ -84,6 +96,27 @@ export default function Home() {
           <div className="flex items-top w-full ">
             <RiAsterisk className="h-16 w-16  mr-2" />{herosection[0].description}
           </div>
+
+          <div className="flex flex-col sm:flex-row w-full  gap-10 sm:justify-between items-center mt-10 sm:px-[180px]">
+            
+            <div className="shadow-lg flex flex-col gap-2 text-left">
+              Get Recommended
+              <p className="text-sm text-muted-foreground">Personalized Recommendations Based on Your Preferred Tags</p>
+              {/* <Badge className="text-xs w-fit flex flex-row" variant="recommended"><SparklesIcon className='h-3 w-3 mr-2'/>Recommended</Badge> */}
+            </div>
+
+          <div className="flex flex-wrap sm:flex-row gap-4 mt-4 sm:mt-6">
+              <Image 
+                  src={Recommend} 
+                  alt="progress" 
+                  className="w-full sm:w-auto h-[200px] sm:h-[300px] md:h-[400px] lg:h-[400px] xl:h-[400px] object-contain shadow-lg rotate-6 " 
+                  priority 
+              />
+          </div>
+
+          </div>
+
+
         </div>
       </div>
 
@@ -107,6 +140,35 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      
+      {/* Progress Tracking Section */}
+      <div className="w-full h-fit text-center flex flex-col items-center gap-6 p-[64px] bg-[#09090b] border-b ">
+        <div className="font-black text-[36px] sm:text-[64px] text-center w-full leading-none h-fit items-center flex flex-col justify-center gap-6">
+          <div className=" items-center text-center w-full text-white flex flex-col gap-2">
+            Track your Progress 
+            <p className="text-sm font-thin text-muted-foreground">Track Your Bodyweight and Gym Consistency for Lasting Progress</p>
+          </div>
+
+          <Button className="rounded-3xl gap-2 flex" variant="secondary" onClick={openLoginModal}>
+              Login and Track Now
+              <ArrowRightCircleIcon className="h-4 w-4" />
+          </Button>
+
+        </div>
+
+          {/* Button Container */}
+          <div className="flex flex-wrap sm:flex-row gap-4 mt-4 sm:mt-6">
+              <Image 
+                  src={Progress} 
+                  alt="progress" 
+                  className="w-full sm:w-auto h-[200px] sm:h-[300px] md:h-[400px] lg:h-[500px] xl:h-[600px] object-contain" 
+                  priority 
+              />
+          </div>
+      </div>
+
+      
 
 
       <div className="w-full h-fit text-center flex flex-col gap-6 p-[64px]">
@@ -151,6 +213,11 @@ export default function Home() {
       {isSignupModalOpen && (       
         <div className="fixed inset-0 flex items-center justify-center z-[300] bg-black/50">
           <SignupModal onClose={closeSignupModal}/>
+        </div>)}
+
+        {isLoginModalOpen && (       
+        <div className="fixed inset-0 flex items-center justify-center z-[300] bg-black/50">
+          <LoginModal onClose={closeLoginModal}/>
         </div>)}
     </>
   );

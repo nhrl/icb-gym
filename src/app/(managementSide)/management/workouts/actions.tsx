@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import Image from "next/image";
-import useSWR from 'swr';  // SWR for client-side data fetching
+import useSWR from "swr";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,58 +15,40 @@ import ProgramEditForm from "@/components/mngComponents/programEditForm";
 import { Exercise, Program } from "./columns"; // Ensure this import matches your structure
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
+import ExerciseForm from "@/components/mngComponents/exerciseForm";
 
-// Define the ProgramActionsProps type
 type ProgramActionsProps = {
-  program: Program; // Expecting a Program object
+  program: Program;
   mutate: () => void;
 };
 
 const ProgramActions: React.FC<ProgramActionsProps> = ({ program, mutate }) => {
-  const [isExercisesPopupOpen, setIsExercisesPopupOpen] = useState(false); // State to control exercises popup
-  const [isEditOpen, setIsEditOpen] = useState(false); // State to control edit form modal visibility
-  const [isPhotoPopupOpen, setIsPhotoPopupOpen] = useState(false); // State to control photo popup visibility
-  const popupRef = useRef<HTMLDivElement>(null); // Ref for detecting clicks outside the popup
+  const [isExercisesPopupOpen, setIsExercisesPopupOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isPhotoPopupOpen, setIsPhotoPopupOpen] = useState(false);
+  const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false); // Control visibility of Add Exercise form
+  const popupRef = useRef<HTMLDivElement>(null);
 
-  // Use SWR hook at the top level of the component
   const api = process.env.NEXT_PUBLIC_API_URL;
   const fetcher = (url: string) => fetch(url).then((res) => res.json());
-  
+
   const { data, error, isLoading } = useSWR(
-    isExercisesPopupOpen ? `${api}/api/manager/plans/workout/exercise?id=${program.program_id}` : null, 
+    isExercisesPopupOpen ? `${api}/api/manager/plans/workout/exercise?id=${program.program_id}` : null,
     fetcher,
     { revalidateOnFocus: true }
   );
 
   const selectedExercises = data?.exercise || [];
 
-  // Function to open the exercises popup
-  const handleOpenExercisesPopup = () => {
-    setIsExercisesPopupOpen(true);
-  };
+  const handleOpenExercisesPopup = () => setIsExercisesPopupOpen(true);
+  const handleOpenEditForm = () => setIsEditOpen(true);
+  const handleCloseEditModal = () => setIsEditOpen(false);
+  const handleOpenPhotoPopup = () => setIsPhotoPopupOpen(true);
+  const handleClosePhotoPopup = () => setIsPhotoPopupOpen(false);
+  const handleOpenAddExerciseForm = () => setIsAddExerciseOpen(true); // Open Add Exercise Form
+  const handleCloseAddExerciseForm = () => setIsAddExerciseOpen(false); // Close Add Exercise Form
 
-  // Function to open the edit form modal
-  const handleOpenEditForm = () => {
-    setIsEditOpen(true);
-  };
-
-  // Function to close the edit form modal
-  const handleCloseEditModal = () => {
-    setIsEditOpen(false);
-  };
-
-  // Function to open the photo popup
-  const handleOpenPhotoPopup = () => {
-    setIsPhotoPopupOpen(true);
-  };
-
-  // Function to close the photo popup
-  const handleClosePhotoPopup = () => {
-    setIsPhotoPopupOpen(false);
-  };
-
-  // Close the exercises popup if the user clicks outside of it
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
@@ -87,6 +69,7 @@ const ProgramActions: React.FC<ProgramActionsProps> = ({ program, mutate }) => {
 
   return (
     <div>
+      {/* Dropdown Menu */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
@@ -101,18 +84,18 @@ const ProgramActions: React.FC<ProgramActionsProps> = ({ program, mutate }) => {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleOpenEditForm}>Edit</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleOpenAddExerciseForm}>
+            <PlusCircleIcon className="h-4 w-4 mr-2" /> Add Exercise
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={handleOpenExercisesPopup}>View Exercises</DropdownMenuItem>
-          <DropdownMenuItem onClick={handleOpenPhotoPopup}>View Photo</DropdownMenuItem> {/* New dropdown item */}
+          <DropdownMenuItem onClick={handleOpenPhotoPopup}>View Photo</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Popup to display Exercises */}
+      {/* Exercises Popup */}
       {isExercisesPopupOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-          <div
-            ref={popupRef}
-            className="bg-background border border-border rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
-          >
+          <div ref={popupRef} className="bg-background border border-border rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <h2 className="text-xl font-semibold mb-4">Exercises for {program.title}</h2>
             {selectedExercises.length > 0 ? (
               <div className="flex flex-col gap-4">
@@ -147,20 +130,19 @@ const ProgramActions: React.FC<ProgramActionsProps> = ({ program, mutate }) => {
         </div>
       )}
 
-      {/* Modal to show the Edit Form */}
+      {/* Edit Form Modal */}
       {isEditOpen && program && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="p-4 max-w-lg w-full rounded-lg">
-            <ProgramEditForm programData={program} onClose={handleCloseEditModal} mutate={mutate}/>
+            <ProgramEditForm programData={program} onClose={handleCloseEditModal} mutate={mutate} />
           </div>
         </div>
       )}
 
-      {/* Popup to display Program Photo */}
+      {/* Photo Popup */}
       {isPhotoPopupOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
           <div className="bg-background border border-border rounded-lg shadow-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
-            {/* Back Button */}
             <div className="flex items-center mb-4">
               <ArrowLeftIcon
                 className="h-6 w-6 cursor-pointer"
@@ -173,6 +155,15 @@ const ProgramActions: React.FC<ProgramActionsProps> = ({ program, mutate }) => {
                 <Image src={program.photoUrl} alt="Program Photo" className="w-full h-auto rounded-md" />
               </CardContent>
             </Card>
+          </div>
+        </div>
+      )}
+
+      {/* Add Exercise Form Modal */}
+      {isAddExerciseOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+          <div className="bg-background border border-border rounded-lg shadow-lg p-12 max-w-lg w-full max-h-[80vh] overflow-y-auto">
+            <ExerciseForm programId={program.program_id} onClose={handleCloseAddExerciseForm} /> {/* Insert Mutate */}
           </div>
         </div>
       )}

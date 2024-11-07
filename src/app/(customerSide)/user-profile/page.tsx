@@ -150,18 +150,30 @@ const { data: bookingData, mutate, error } = useSWR(
             </CardTitle>
             <div className="flex flex-row gap-2">
               <CardDescription>Status</CardDescription>
-              <Badge
-                variant={
-                  membershipStatus === "Active"
-                    ? "success"
-                    :  membershipStatus === "Pending"
-                    ? "pending"
-                    : "destructive"
-                }
-                className="w-fit rounded-full"
-              >
-                { membershipStatus }
-              </Badge>
+              <div className="flex items-center gap-2">
+                {/* Dot based on membership status */}
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    membershipStatus === "Active"
+                      ? "bg-green-500"
+                      : membershipStatus === "Pending"
+                      ? "bg-yellow-500"
+                      : "bg-red-500"
+                  }`}
+                ></span>
+                <Badge
+                  variant={
+                    membershipStatus === "Active"
+                      ? "success"
+                      : membershipStatus === "Pending"
+                      ? "pending"
+                      : "destructive"
+                  }
+                  className="w-fit rounded-full"
+                >
+                  {membershipStatus}
+                </Badge>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-4 justify-between">
