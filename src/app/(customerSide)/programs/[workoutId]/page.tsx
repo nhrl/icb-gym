@@ -118,9 +118,13 @@ export default function WorkoutDetailPage() {
         console.error("Error fetching exercises:", error);
       }
     }
-    const showRecommendations = sessionStorage.getItem("showProgramRecommendations") === "true";
+    const showRecommendations = sessionStorage.getItem("showWorkoutRecommendations") === "true";
     if (showRecommendations) {
       setBreadcrumbLink("/programs?recommended=true");
+    }
+    const favorites = sessionStorage.getItem("showFavoritesWorkout") === "true";
+    if(favorites) {
+      setBreadcrumbLink("/programs?favorites=true");
     }
 
     const fetchFavorite = async () => {

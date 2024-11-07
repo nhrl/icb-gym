@@ -97,3 +97,59 @@ export async function removeFavoriteDietplan(data: any) {
         };
     }
 }
+
+export async function showFavoritesDietplan(customerId: any) {
+    try {
+      // Fetch all dietplan_id values from favoritedietplan table for the specified customer
+      const { data: favoriteIds, error: favoriteError } = await supabase
+        .from('favoritedietplan')
+        .select('dietplan_id')
+        .eq('customer_id', customerId);
+  
+      if (favoriteError) {
+        return {
+          success: false,
+          message: "Error fetching favorite diet plan IDs.",
+          error: favoriteError.message,
+        };
+      }
+  
+      // Extract dietplan IDs
+      const dietplanIds = favoriteIds.map((item: any) => item.dietplan_id);
+  
+      if (dietplanIds.length === 0) {
+        return {
+          success: true,
+          message: "No favorite diet plans found for this customer.",
+          data: [],
+        };
+      }
+  
+      // Fetch all data from dietplan table where dietplan_id is in the list of favorite IDs
+      const { data: dietplans, error: dietplanError } = await supabase
+        .from('dietplan')
+        .select('*')
+        .in('dietplan_id', dietplanIds);
+  
+      if (dietplanError) {
+        return {
+          success: false,
+          message: "Error fetching favorite diet plans.",
+          error: dietplanError.message,
+        };
+      }
+  
+      return {
+        success: true,
+        message: "Successfully fetched favorite diet plans",
+        data: dietplans,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: "An unexpected error occurred. Please try again.",
+        error: error.message,
+      };
+    }
+  }
+  

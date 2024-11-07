@@ -146,6 +146,11 @@ export default function DietPlanDetailPage() {
     if (showRecommendations) {
       setBreadcrumbLink("/diet-plan?recommended=true");
     }
+
+    const showFavorites = sessionStorage.getItem("showFavorites") === "true";
+    if(showFavorites) {
+      setBreadcrumbLink("/diet-plan?favorites=true");
+    }
     fetchWorkout();
     fetchExercise();
     fetchFavorite();

@@ -35,7 +35,7 @@ export default function Page() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isRecommended, setIsRecommended] = useState(false);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-
+  const [isFavoriteShow, setFavoriteShow] = useState(false);
 
   const api = process.env.NEXT_PUBLIC_API_URL;
   const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || 'lhS7aOXRUPGPDId6mmHJdA00p39HAfU4';
@@ -63,31 +63,41 @@ export default function Page() {
     }
   }, [secretKey]);
 
-  const fetchProgram = useCallback(async (recommended: boolean = false) => {
+  const fetchProgram = useCallback(async (recommended: boolean = false, isFavoriteShow: boolean = false) => {
     try {
       setLoading(true);
-      const url = recommended
-        ? `${api}/api/customer/recommendation/program?userId=${fetchUserFromCookie()}`
-        : `${api}/api/manager/plans/workout`;
-
+      let url = "";
+      
+      if (recommended) {
+        url = `${api}/api/customer/recommendation/program?userId=${fetchUserFromCookie()}`;
+      } else if (isFavoriteShow) {
+        url = `${api}/api/customer/favorites/show/workout?customerId=${fetchUserFromCookie()}`;
+      } else {
+        url = `${api}/api/manager/plans/workout`;
+      }
       const response = await fetch(url);
       const data = await response.json();
       setWorkouts(data.programs || data.program || []);
       setIsRecommended(recommended);
+      setIsFavorite(isFavorite);
     } catch (error) {
       console.error("Error fetching diet plans:", error);
       setError("Failed to fetch diet plans.");
     } finally {
       setLoading(false);
     }
-  }, [api, fetchUserFromCookie]);
+  }, [api, fetchUserFromCookie,isFavorite]);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const recommended = searchParams.get('recommended') === 'true';
-    fetchProgram(recommended);
-
+    const favorite = searchParams.get('favorites') === 'true';
+  
+    fetchProgram(recommended, favorite);
+  
     if (recommended) {
+      setButtonText("Show All Programs");
+    } else if (favorite) {
       setButtonText("Show All Programs");
     } else {
       setButtonText("Show Recommendations");
@@ -105,15 +115,25 @@ export default function Page() {
   };
 
   const showProgramRecommendations = async () => {
-    const recommended = isRecommended;
+    const searchParams = new URLSearchParams(window.location.search);
+    const recommended = searchParams.get('recommended') === 'true';
+    const favorite = searchParams.get('favorites') === 'true';
 
     if (recommended) {
+      sessionStorage.setItem("showWorkoutRecommendations", "false");
+      setButtonText("Show Recommendations");
+      await fetchProgram(false);
+      router.push('/programs');
+    } else if(favorite){
+      sessionStorage.setItem("showFavoritesWorkout", "false");
       setButtonText("Show Recommendations");
       await fetchProgram(false);
       router.push('/programs');
     } else {
       try {
         setLoading(true);
+        sessionStorage.setItem("showWorkoutRecommendations", "true");
+        sessionStorage.setItem("showFavoritesWorkout", "false");
         await fetchProgram(true);
         setButtonText("Show All Programs");
         router.push('/programs?recommended=true');
@@ -125,12 +145,29 @@ export default function Page() {
     }
   };
 
+  const showFavorites = async () => {
+    setLoading(true);
+    const id = fetchUserFromCookie();
+    const response = await fetch(`${api}/api/customer/favorites/show/workout?customerId=${id}`);
+    const result = await response.json();
+    if(result.success) {
+      setWorkouts(result.programs);
+      setFavoriteShow(true);
+      setIsRecommended(false);
+      setButtonText("Show All Programs");
+      sessionStorage.setItem("showFavoritesWorkout", "true");
+      sessionStorage.setItem("showWorkoutRecommendations", "false");
+      router.push('/programs?favorites=true');
+    } else {
+      setError(result.message || "Failed to fetch favorites.");
+    }
+    setLoading(false);
+  }
   const toggleSortOrder = () => {
     setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
   };
 
-  const filteredProgram = workouts
-    .filter((workout) =>
+  const filteredProgram = workouts.filter((workout) =>
       workout.title.toLocaleLowerCase().includes(searchTerm.toLocaleLowerCase())
     )
     .sort((a, b) => 
@@ -161,7 +198,7 @@ export default function Page() {
                 <SparklesIcon className="h-4 w-4 mr-1" />
                 {buttonText}
               </Button>
-              <Toggle size="sm" variant="outline"><BookmarkIcon className='h-4 w-4'/></Toggle>
+              <Toggle size="sm" variant="outline" onClick={showFavorites}><BookmarkIcon className='h-4 w-4'/></Toggle>
             </div>
               
             {/* <div className='w-full flex flex-row items-end justify-end'>
