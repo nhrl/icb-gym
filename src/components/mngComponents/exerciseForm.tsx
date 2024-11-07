@@ -56,7 +56,6 @@ export default function ExerciseForm({ programId, onClose }: ExerciseFormProps) 
 
   const handleExerciseSubmit = async (data: zod.infer<typeof exerciseSchema>) => {
     const formData = new FormData();
-
     formData.append("name", data.name);
     formData.append("desc", data.desc);
     formData.append("sets", data.sets.toString());
