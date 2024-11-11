@@ -87,11 +87,12 @@ export async function getTrainerRecommendation(serviceId: any, userID: any) {
           (endTime >= preferenceStart && endTime <= preferenceEnd)
         );
       });
-  
+      
+      const availableTrainers = filteredTrainers?.filter((trainer) => trainer.current_capacity < trainer.max_capacity) || [];
       return {
         success: true,
         message: 'Successfully fetched trainer recommendations',
-        trainer: filteredTrainers,
+        trainer: availableTrainers,
       };
     } catch (error: any) {
       return {
