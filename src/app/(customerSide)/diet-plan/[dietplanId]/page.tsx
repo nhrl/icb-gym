@@ -284,14 +284,18 @@ export default function DietPlanDetailPage() {
                     <DialogDescription>{meal.food_desc}</DialogDescription>
 
                     <DialogDescription className="flex flex-col gap-4 mt-3">
-                      <div className="flex flex-col justify-between">
-                        <h2 className="font-bold text-md text-foreground">Ingredients</h2>
-                        <p>{meal.ingredients}</p>
-                      </div>
-                      <div className="flex flex-col justify-between">
-                        <h2 className="font-bold text-md text-foreground">Food Prep</h2>
-                        <p>{meal.food_prep}</p>
-                      </div>
+                    <div className="flex flex-col justify-between">
+                      <h2 className="font-bold text-md text-foreground">Ingredients</h2>
+                      {meal.ingredients.split(/\r?\n|\r/).map((ingredient, index) => (
+                        <p key={index}>{ingredient.trim()}</p>
+                      ))}
+                    </div>
+                    <div className="flex flex-col justify-between">
+                      <h2 className="font-bold text-md text-foreground">Food Prep</h2>
+                      {meal.food_prep.split(/\r?\n|\r|\.\s+/).map((step, index) => (
+                        <p key={index}>{step.trim()}</p>
+                      ))}
+                    </div>
 
                       {/* Macros */}
                       <div className="grid grid-cols-2 gap-4 mt-4">
