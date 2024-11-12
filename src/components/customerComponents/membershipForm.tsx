@@ -35,17 +35,20 @@ const membershipSchema = zod.object({
   membership_id: zod.number().optional(), // Add membership_id to schema
 });
 
+interface MembershipFormProps {
+  onSubmit: (data: any) => void;
+  onClose: () => void; // Added onClose prop
+}
+
 export default function MembershipForm({
   onSubmit,
-}: {
-  onSubmit: (data: any) => void;
-}) {
+  onClose, // Added onClose prop to close the form
+}: MembershipFormProps) {
   const [membershipOptions, setMembershipOptions] = useState<any[]>([]);
   const [selectedMembership, setSelectedMembership] = useState<any>(null);
   const [isMembershipApplied, setIsMembershipApplied] = useState(false); // Track if membership is already applied
   const [user_id, setUserID] = useState();
   const { toast } = useToast(); // ShadCN toast hook
-
 
   const form = useForm({
     resolver: zodResolver(membershipSchema),
@@ -85,6 +88,7 @@ export default function MembershipForm({
   }
 
   const api = process.env.NEXT_PUBLIC_API_URL;
+
   // Fetch membership options from the API
   useEffect(() => {
     const fetchMemberships = async () => {
@@ -154,89 +158,88 @@ export default function MembershipForm({
         title: "Membership Registered",
         description: `You have successfully registered for the ${data.membership_type} membership!`,
       });
-    }else {
+      onSubmit(data); // Trigger onSubmit callback with membership_id included
+      onClose(); // Close the form after successful submission
+    } else {
       console.log(message.error);
     }
     setIsMembershipApplied(true); // Mark the membership as applied
-    onSubmit(data); // Trigger onSubmit callback with membership_id included
   };
 
   return (
-    <>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
-          {/* Membership Type */}
-          <FormField
-            control={form.control}
-            name="membership_type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Membership Type</FormLabel>
-                <FormControl>
-                  <Select
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      handleMembershipChange(value);
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Membership Type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>Membership Types</SelectLabel>
-                        {membershipOptions.map((option) => (
-                          <SelectItem
-                            key={option.membership_id}
-                            value={option.membership_type}
-                          >
-                            {option.membership_type}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+        {/* Membership Type */}
+        <FormField
+          control={form.control}
+          name="membership_type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Membership Type</FormLabel>
+              <FormControl>
+                <Select
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    handleMembershipChange(value);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Membership Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Membership Types</SelectLabel>
+                      {membershipOptions.map((option) => (
+                        <SelectItem
+                          key={option.membership_id}
+                          value={option.membership_type}
+                        >
+                          {option.membership_type}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          {/* Validity Period */}
-          <FormField
-            control={form.control}
-            name="validity_period"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Validity Period</FormLabel>
-                <FormControl>
-                  <Input {...field} value={selectedMembership?.validity_period || ""} disabled />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+        {/* Validity Period */}
+        <FormField
+          control={form.control}
+          name="validity_period"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Validity Period</FormLabel>
+              <FormControl>
+                <Input {...field} value={selectedMembership?.validity_period || ""} disabled />
+              </FormControl>
+            </FormItem>
+          )}
+        />
 
-          {/* Rate */}
-          <FormField
-            control={form.control}
-            name="rate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Rate</FormLabel>
-                <FormControl>
-                  <Input {...field} value={selectedMembership?.rate || 0} disabled />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+        {/* Rate */}
+        <FormField
+          control={form.control}
+          name="rate"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Rate</FormLabel>
+              <FormControl>
+                <Input {...field} value={selectedMembership?.rate || 0} disabled />
+              </FormControl>
+            </FormItem>
+          )}
+        />
 
-          {/* Submit Button */}
-          <Button type="submit" className="w-full">
-            <CheckCircleIcon className="h-6 w-6 pr-2" />
-            Register Membership
-          </Button>
-        </form>
-      </Form>
-    </>
+        {/* Submit Button */}
+        <Button type="submit" className="w-full" variant="secondary">
+          <CheckCircleIcon className="h-3 w-3" />
+          Register Membership
+        </Button>
+      </form>
+    </Form>
   );
 }

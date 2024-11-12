@@ -224,7 +224,7 @@ export default function Page() {
         </Breadcrumb>
 
         <div className="flex flex-col sm:flex-row w-full justify-between items-center">
-          <h1 className="text-[36px] font-black">{serviceName}</h1>
+          <h1 className="text-[36px] font-black">Trainers for {serviceName}</h1>
 
           <div className="flex flex-col sm:flex-row gap-2">
             <Input

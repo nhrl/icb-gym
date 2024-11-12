@@ -350,7 +350,7 @@ export default function SignupModal({ onClose }: SignupProps) {
                     <FormItem>
                       <FormLabel>Confirm Password</FormLabel>
                       <FormControl>
-                        <Input {...field} type="password" className="border p-2 w-full rounded" />
+                        <Input {...field} type="password" className="border p-2 w-full rounded"/>
                       </FormControl>
                       <FormMessage>{form.formState.errors.confirmPassword?.message}</FormMessage>
                     </FormItem>
@@ -371,9 +371,12 @@ export default function SignupModal({ onClose }: SignupProps) {
                 <FormLabel className="font-thin text-[11px] gap-1 flex flex-row text-zinc-600">
                   Already have an account?
                   <span
-                    className="font-md text-foreground cursor-pointer"
-                    onClick={() => setIsLoginModal(true)}
-                  >
+                      className="font-md text-foreground cursor-pointer"
+                      onClick={() => {
+                        setIsLoginModal(true);  // Open the LoginModal
+                        onClose();  // Close the SignupModal
+                      }}
+                    >
                     Login
                   </span>
                 </FormLabel>

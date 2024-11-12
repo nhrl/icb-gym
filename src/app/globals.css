@@ -78,6 +78,13 @@ body {
   }
 }
 
+input {
+  color: white;
+  background-color: black;
+}
+.dark ::-ms-reveal {
+  filter: invert(100%);
+}
 
 @layer base {
   * {

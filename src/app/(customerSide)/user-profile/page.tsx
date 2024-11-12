@@ -8,9 +8,8 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+} from "@/components/ui/breadcrumb";
 import {
   Card,
   CardContent,
@@ -32,6 +31,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogClose,  // DialogClose for explicit close
 } from "@/components/ui/dialog";
 import { Toaster } from "@/components/ui/toaster"; // Import toaster
 import { useToast } from "@/hooks/use-toast";
@@ -44,13 +44,13 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 export default function Page() {
   const [loading, setLoading] = useState(true);
   const [membership, setMembership] = useState<any>(null); // Store user's membership
+  const [isDialogOpen, setIsDialogOpen] = useState(false); // Dialog state to track if it's open
   const { toast } = useToast(); // Toast handler
-  // Fetch user from cookie
 
-const fetchUserFromCookie = () => {
+  const fetchUserFromCookie = () => {
     if (typeof window === "undefined") return null; // Prevent running on server
-      const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || "lhS7aOXRUPGPDId6mmHJdA00p39HAfU4";
-      const cookies = document.cookie.split("; ").reduce((acc: { [key: string]: string }, cookie) => {
+    const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY || "lhS7aOXRUPGPDId6mmHJdA00p39HAfU4";
+    const cookies = document.cookie.split("; ").reduce((acc: { [key: string]: string }, cookie) => {
       const [name, value] = cookie.split("=");
       acc[name] = value;
       return acc;
@@ -67,18 +67,19 @@ const fetchUserFromCookie = () => {
       console.error("Error decrypting user cookie:", error);
       return null;
     }
-};
+  };
 
-const userId = fetchUserFromCookie(); // Fetch user ID from cookie
-const api = process.env.NEXT_PUBLIC_API_URL;
+  const userId = fetchUserFromCookie(); // Fetch user ID from cookie
+  const api = process.env.NEXT_PUBLIC_API_URL;
 
-const { data: bookingData, mutate, error } = useSWR(
+  const { data: bookingData, mutate, error } = useSWR(
     `${api}/api/customer/booking?id=${userId}`,
     fetcher,
     { revalidateOnFocus: true }
   );
 
   const bookings = bookingData?.data || [];
+  
   useEffect(() => {
     const fetchUserMembership = async (userId: number) => {
       try {
@@ -111,6 +112,8 @@ const { data: bookingData, mutate, error } = useSWR(
 
   const handleMembershipSubmit = (data: any) => {
     console.log("Membership registered with:", data);
+    setIsDialogOpen(false); // Close the dialog after successful submission
+    window.location.reload();  // Force a page reload
   };
 
   if (loading) {
@@ -121,110 +124,118 @@ const { data: bookingData, mutate, error } = useSWR(
   const disableRegistration = membership && ["Pending", "Active"].includes(membership.status);
   const membershipStatus = membership?.status || "None";
 
+  const openDialog = () => {
+    setIsDialogOpen(true); // Open the dialog when the user clicks register
+  };
+
+  const closeDialog = () => {
+    setIsDialogOpen(false); // Close the dialog manually
+  };
+
   return (
     <div className="p-4 px-4 sm:px-[128px] gap-4 flex flex-col">
-    {/* Breadcrumb */}
-    <div className="w-full h-fit">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/">Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/user-profile">User Profile</BreadcrumbLink>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-    </div>
+      {/* Breadcrumb */}
+      <div className="w-full h-fit">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/user-profile">User Profile</BreadcrumbLink>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
 
-    <div className="flex flex-col sm:flex-row md:flex-row gap-4">
-      {/* Left Column: Membership Card + Data Table */}
-      <div className="flex flex-col gap-4">
-        {/* Membership Card */}
-        <Card className="w-full h-fit membershipcard-bg">
-          <CardHeader className="flex flex-col gap-2">
-            <CardTitle className="flex flex-row justify-between items-center">
-              <p className="font-semibold text-3xl italic">Membership</p>
-              <Image src={logo} alt="icblogo" className="h-7 w-7" priority />
-            </CardTitle>
-            <div className="flex flex-row gap-2">
-              <CardDescription>Status</CardDescription>
-              <div className="flex items-center gap-2">
-                {/* Dot based on membership status */}
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    membershipStatus === "Active"
-                      ? "bg-green-500"
-                      : membershipStatus === "Pending"
-                      ? "bg-yellow-500"
-                      : "bg-red-500"
-                  }`}
-                ></span>
-                <Badge
-                  variant={
-                    membershipStatus === "Active"
-                      ? "success"
-                      : membershipStatus === "Pending"
-                      ? "pending"
-                      : "destructive"
-                  }
-                  className="w-fit rounded-full"
-                >
-                  {membershipStatus}
-                </Badge>
+      <div className="flex flex-col sm:flex-row md:flex-row gap-4">
+        {/* Left Column: Membership Card + Data Table */}
+        <div className="flex flex-col gap-4">
+          {/* Membership Card */}
+          <Card className="w-full h-fit membershipcard-bg">
+            <CardHeader className="flex flex-col gap-2">
+              <CardTitle className="flex flex-row justify-between items-center">
+                <p className="font-semibold text-3xl italic">Membership</p>
+                <Image src={logo} alt="icblogo" className="h-7 w-7" priority />
+              </CardTitle>
+              <div className="flex flex-row gap-2">
+                <CardDescription>Status</CardDescription>
+                <div className="flex items-center gap-2">
+                  {/* Dot based on membership status */}
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      membershipStatus === "Active"
+                        ? "bg-green-500"
+                        : membershipStatus === "Pending"
+                        ? "bg-yellow-500"
+                        : "bg-red-500"
+                    }`}
+                  ></span>
+                  <Badge
+                    variant={
+                      membershipStatus === "Active"
+                        ? "success"
+                        : membershipStatus === "Pending"
+                        ? "pending"
+                        : "destructive"
+                    }
+                    className="w-fit rounded-full"
+                  >
+                    {membershipStatus}
+                  </Badge>
+                </div>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-4 justify-between">
-            <div className="flex flex-row gap-2">
-              <p className="text-muted-foreground">Start Date</p>
-              <p>{membership?.date_start ? new Date(membership?.date_start ).toDateString() : "Not yet started"}</p>
-            </div>
-            <p className="font-thin hidden sm:inline">|</p>
-            <div className="flex flex-row gap-2">
-              <p className="text-muted-foreground">End Date</p>
-              <p>{membership?.date_end ? new Date(membership?.date_end).toDateString() : "Not available"}</p>
-            </div>
-          </CardContent>
-          <CardFooter className="w-full justify-end">
-            {disableRegistration ? (
-              <p className="text-muted-foreground">
-                You already have an {membership.status} membership.
-              </p>
-            ) : (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline">Register Membership</Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-lg mx-auto">
-                  <DialogHeader>
-                    <DialogTitle>Register Membership</DialogTitle>
-                  </DialogHeader>
-                  <MembershipForm onSubmit={handleMembershipSubmit} />
-                </DialogContent>
-              </Dialog>
-            )}
-          </CardFooter>
-        </Card>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-4 justify-between">
+              <div className="flex flex-row gap-2">
+                <p className="text-muted-foreground">Start Date</p>
+                <p>{membership?.date_start ? new Date(membership?.date_start ).toDateString() : "Not yet started"}</p>
+              </div>
+              <p className="font-thin hidden sm:inline">|</p>
+              <div className="flex flex-row gap-2">
+                <p className="text-muted-foreground">End Date</p>
+                <p>{membership?.date_end ? new Date(membership?.date_end).toDateString() : "Not available"}</p>
+              </div>
+            </CardContent>
+            <CardFooter className="w-full justify-end">
+              {disableRegistration ? (
+                <p className="text-muted-foreground">
+                  You already have an {membership.status} membership.
+                </p>
+              ) : (
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" onClick={openDialog}>Register Membership</Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-lg mx-auto">
+                    <DialogHeader>
+                      <DialogTitle>Register Membership</DialogTitle>
+                    </DialogHeader>
+                    <MembershipForm onSubmit={handleMembershipSubmit} onClose={closeDialog} />
+                  </DialogContent>
+                </Dialog>
+              )}
+            </CardFooter>
+          </Card>
 
-        {/* Data Table */}
-        <div className="p-6 border bg-card rounded-xl h-full w-full overflow-x-auto">
-          <DataTable
-            columns={columns}
-            data={bookings}
-            mutate={mutate}
-          />
+          {/* Data Table */}
+          <div className="p-6 border bg-card rounded-xl h-full w-full overflow-x-auto">
+            <DataTable
+              columns={columns}
+              data={bookings}
+              mutate={mutate}
+            />
+          </div>
         </div>
-      </div>
 
-      {/* Right Column: User Profile */}
-      <div className="w-full">
-        <UserProfile onProfileUpdate={handleProfileUpdate} />
+        {/* Right Column: User Profile */}
+        <div className="w-full">
+          <UserProfile onProfileUpdate={handleProfileUpdate} />
+        </div>
+        {/* Toaster Component - Positioned globally */}
+        <Toaster />
       </div>
-      {/* Toaster Component - Positioned globally */}
-      <Toaster />
-    </div>
     </div>
   );
 }
