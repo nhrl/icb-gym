@@ -222,19 +222,6 @@ export default function DietPlansPage() {
                       backgroundPosition: "center",
                     }}
                   >
-                    {/* <div className="w-full text-right">
-                      <Toggle
-                        variant="outline"
-                        className="w-fit rounded-full bg-black/30 border-white"
-                        onClick={() => setIsFavorite(!isFavorite)}
-                      >
-                        <HeartIcon
-                          className={`h-4 w-4 ${
-                            isFavorite ? "fill-red-500 text-transparent" : "text-white"
-                          }`}
-                        />
-                      </Toggle>
-                    </div> */}
                   </CardHeader>
 
                   <CardContent className="px-2 gap-2 flex flex-col">

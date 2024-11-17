@@ -98,22 +98,20 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col sm:flex-row w-full  gap-10 sm:justify-between items-center mt-10 sm:px-[180px]">
-            
             <div className="shadow-lg flex flex-col gap-2 text-left">
               Get Recommended
               <p className="text-sm text-muted-foreground">Personalized Recommendations Based on Your Preferred Tags</p>
               {/* <Badge className="text-xs w-fit flex flex-row" variant="recommended"><SparklesIcon className='h-3 w-3 mr-2'/>Recommended</Badge> */}
             </div>
 
-          <div className="flex flex-wrap sm:flex-row gap-4 mt-4 sm:mt-6">
+            <div className="flex flex-wrap sm:flex-row gap-4 mt-4 sm:mt-6">
               <Image 
                   src={Recommend} 
                   alt="progress" 
                   className="w-full sm:w-auto h-[200px] sm:h-[300px] md:h-[400px] lg:h-[400px] xl:h-[400px] object-contain shadow-lg rotate-6 " 
                   priority 
               />
-          </div>
-
+            </div>
           </div>
 
 
