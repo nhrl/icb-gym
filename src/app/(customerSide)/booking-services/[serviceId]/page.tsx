@@ -261,16 +261,9 @@ export default function Page() {
                     backgroundPosition: "center",
                   }}
                 >
-                  {/* <Toggle
-                    variant="outline"
-                    className="w-fit rounded-full bg-black/30 border-white"
-                    onClick={() => setIsFavorite(!isFavorite)}
-                  >
-                    <HeartIcon className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-transparent' : 'text-white'}`} />
-                  </Toggle> */}
                 </CardHeader>
 
-                <CardFooter className="p-4 flex flex-col gap-4 items-end">
+                <CardFooter className="p-4 flex flex-col gap-6 items-end">
                   {isRecommended && (
                       <Badge className="text-xs w-fit flex flex-row" variant="recommended"><SparklesIcon className='h-3 w-3 mr-2'/>Recommended</Badge>
                     )}
@@ -283,9 +276,20 @@ export default function Page() {
                       <p>₱{assign.rate}/Month</p>
                     </div>
                   </div>
-                  <Button variant="outline" className="rounded-full items-center flex flex-row">
-                    Book Now <ArrowRightCircleIcon className="h-4 w-4 ml-1" />
-                  </Button>
+
+                  <div className="flex flex-row w-full justify-between">
+                    
+                    <div className="flex flex-wrap w-full"> {/* Container for tags */}
+                      {/* Service Tags diri lang  i map */}
+                      <div className="p-2 px-4 w-fit rounded-full items-center justify-center border-border border">
+                        <p className="text-xs text-foreground">{assign.service.service_name}</p>
+                      </div>
+                    </div>
+
+                    <Button variant="outline" className="rounded-full items-center flex flex-row px-4" size="sm">
+                      Book Now <ArrowRightCircleIcon className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
                 </CardFooter>
               </Card>
             ))}
