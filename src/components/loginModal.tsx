@@ -173,7 +173,7 @@ export default function LoginModal({onClose}: loginProps) {
               )}
             />
 
-           {/* Forgot Password
+           {/* Forgot Password */}
             <Dialog>
               <DialogTrigger className="p-none w-full flex text-left text-muted-foreground"> 
                   Forgot Password?
@@ -206,7 +206,7 @@ export default function LoginModal({onClose}: loginProps) {
               <Button type="submit" className="mt-4 py-2 px-4 rounded w-full flex flex-row gap-2 hover:bg-primary/90 hover:text-[#0a0a0a]" variant="secondary">
                  Submit
               </Button>
-            </Dialog> */}
+            </Dialog> 
 
           </div>
 
