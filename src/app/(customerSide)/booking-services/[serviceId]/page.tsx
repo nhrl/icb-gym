@@ -47,6 +47,7 @@ interface Assignment {
   rate: number;
   trainer: Trainer;
   service: Service;
+  other_services?: { service_name: string }[]; 
 }
 
 export default function Page() {
@@ -278,14 +279,20 @@ export default function Page() {
                   </div>
 
                   <div className="flex flex-row w-full justify-between">
-                    
-                    <div className="flex flex-wrap w-full"> {/* Container for tags */}
-                      {/* Service Tags diri lang  i map */}
-                      <div className="p-2 px-4 w-fit rounded-full items-center justify-center border-border border">
-                        <p className="text-xs text-foreground">{assign.service.service_name}</p>
-                      </div>
-                    </div>
-
+                  <div className="flex flex-wrap w-full"> {/* Container for service tags */}
+                    {/* Map other services */}
+                    {assign.other_services &&
+                      Array.from(
+                        new Set(assign.other_services.map((service) => service.service_name)) // Remove duplicates
+                      ).map((uniqueServiceName, index) => (
+                        <div
+                          key={index}
+                          className="p-2 px-4 w-fit rounded-full items-center justify-center border-border border ml-2 mb-2"
+                        >
+                          <p className="text-xs text-foreground">{uniqueServiceName}</p>
+                        </div>
+                      ))}
+                  </div>
                     <Button variant="outline" className="rounded-full items-center flex flex-row px-4" size="sm">
                       Book Now <ArrowRightCircleIcon className="h-4 w-4 ml-1" />
                     </Button>

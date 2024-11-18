@@ -88,7 +88,32 @@ export async function getTrainerRecommendation(serviceId: any, userID: any) {
         );
       });
       
-      const availableTrainers = filteredTrainers?.filter((trainer) => trainer.current_capacity < trainer.max_capacity) || [];
+      // Fetch other assigned services for each trainer
+    const enrichedData = await Promise.all(
+      filteredTrainers.map(async (item) => {
+        const { data: otherServices, error: serviceError } = await supabase
+          .from("assign_trainer")
+          .select(`
+            service (
+              service_name
+            )
+          `)
+          .eq("trainer_id", item.trainer_id);
+
+        if (serviceError) {
+          console.error(`Error fetching services for trainer ${item.trainer_id}:`, serviceError.message);
+        }
+
+        const serviceNames = otherServices?.map((item) => item.service);
+      
+        return {
+          ...item,
+          other_services: serviceNames,
+        };
+      })
+    );
+
+      const availableTrainers = enrichedData?.filter((trainer) => trainer.current_capacity < trainer.max_capacity) || [];
       return {
         success: true,
         message: 'Successfully fetched trainer recommendations',

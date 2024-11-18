@@ -24,7 +24,7 @@ export async function getAssignTrainer(serviceId: any) {
           trainer_img,
           availability
         ),
-        service(
+        service (
           service_name
         )
       `)
@@ -38,12 +38,35 @@ export async function getAssignTrainer(serviceId: any) {
       };
     }
 
-    // Filter out trainers who are fully booked on the client side
-    const availableTrainers = data?.filter((trainer) => trainer.current_capacity < trainer.max_capacity) || [];
+    // Fetch other assigned services for each trainer
+    const enrichedData = await Promise.all(
+      data.map(async (item) => {
+        const { data: otherServices, error: serviceError } = await supabase
+          .from("assign_trainer")
+          .select(`
+            service (
+              service_name
+            )
+          `)
+          .eq("trainer_id", item.trainer_id);
 
+        if (serviceError) {
+          console.error(`Error fetching services for trainer ${item.trainer_id}:`, serviceError.message);
+        }
+
+        const serviceNames = otherServices?.map((item) => item.service);
+      
+        return {
+          ...item,
+          other_services: serviceNames,
+        };
+      })
+    );
+
+    const availableTrainers = enrichedData?.filter((trainer) => trainer.current_capacity < trainer.max_capacity) || [];
     return {
       success: true,
-      message: "Assign trainer fetched successfully.",
+      message: "Assign trainer fetched successfully with their other assigned services.",
       data: availableTrainers,
     };
   } catch (error: any) {
