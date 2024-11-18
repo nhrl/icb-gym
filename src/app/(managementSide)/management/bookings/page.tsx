@@ -72,8 +72,8 @@ export default function Page() {
   // Format data to include relevant fields for Booking
   const formattedData: Booking[] = data.data.map((item: any) => ({
     booking_id: item.booking_id,
-    customer_id: item.customer_id,
-    trainer_id: item.trainer_id,
+    username: item.username,
+    trainer_name: item.trainer_name,
     payment_status: item.payment_status,
     confirmation_status: item.confirmation_status,
     created_at: item.created_at,

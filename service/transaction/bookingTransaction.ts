@@ -13,9 +13,9 @@ export async function getBookings() {
           confirmation_status,
           created_at,
           customer (
-            firstname,
-            lastname
-          )
+            username
+          ),
+          trainers:trainer_id (firstname, lastname)
         `);
   
       if (error) {
@@ -25,11 +25,21 @@ export async function getBookings() {
           error: error.message 
         };
       }
-  
+      
+      const transformedData = data.map((booking: any) => ({
+        booking_id: booking.booking_id,
+        username: booking.customer.username,
+        trainer_name: booking.trainers ? `${booking.trainers.firstname} ${booking.trainers.lastname}` : 'Trainer not found',
+        assign_id: booking.assign_id,
+        payment_status: booking.payment_status,
+        confirmation_status: booking.confirmation_status,
+        created_at: booking.created_at,
+      }));
+
       return { 
         success: true, 
         message: 'Bookings retrieved successfully.', 
-        data 
+        data:  transformedData
       };
     } catch (error: any) {
       return { 
