@@ -163,10 +163,34 @@ export async function showFavoriteTrainer(customerId: any, serviceId:any) {
             };
         }
 
+        const enrichedData = await Promise.all(
+            trainerData.map(async (item) => {
+              const { data: otherServices, error: serviceError } = await supabase
+                .from("assign_trainer")
+                .select(`
+                  service (
+                    service_name
+                  )
+                `)
+                .eq("trainer_id", item.trainer_id);
+      
+              if (serviceError) {
+                console.error(`Error fetching services for trainer ${item.trainer_id}:`, serviceError.message);
+              }
+      
+              const serviceNames = otherServices?.map((item) => item.service);
+            
+              return {
+                ...item,
+                other_services: serviceNames,
+              };
+            })
+        );
+
         return {
             success: true,
             message: "Successfully fetched favorite trainers",
-            trainer: trainerData,
+            trainer: enrichedData,
         };
     } catch (error: any) {
         return {
