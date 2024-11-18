@@ -14,6 +14,14 @@ import { useToast } from '@/hooks/use-toast'; // Import Toaster and useToast
 import SignupModal from './signupModal'; // Import SignupModal
 import Cookies from 'js-cookie';
 import CryptoJS from 'crypto-js'; // Import the crypto-js library
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,  // DialogClose for explicit close
+} from "@/components/ui/dialog";
 
 // Define the login form schema
 const loginFormSchema = zod.object({
@@ -164,6 +172,42 @@ export default function LoginModal({onClose}: loginProps) {
                 </FormItem>
               )}
             />
+
+           {/* Forgot Password
+            <Dialog>
+              <DialogTrigger className="p-none w-full flex text-left text-muted-foreground"> 
+                  Forgot Password?
+              </DialogTrigger>
+              <DialogHeader className='flex flex-col w-full text-left'>
+                <DialogTitle>
+                    Forgot Password?
+                </DialogTitle>
+                <p className='text-muted-foregeound'>Enter your email and we will send your password</p>
+              </DialogHeader>
+              <DialogContent>
+               <Form {...form} >
+                <form onSubmit={form.handleSubmit(handleLogin)}>
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email Address</FormLabel>
+                        <FormControl>
+                          <Input {...field} type="email" className="border p-2 w-full" placeholder="Enter your email"/>
+                        </FormControl>
+                        <FormMessage>{form.formState.errors.email?.message}</FormMessage>
+                      </FormItem>
+                    )}
+                  />
+                </form>
+              </Form>
+              </DialogContent>
+              <Button type="submit" className="mt-4 py-2 px-4 rounded w-full flex flex-row gap-2 hover:bg-primary/90 hover:text-[#0a0a0a]" variant="secondary">
+                 Submit
+              </Button>
+            </Dialog> */}
+
           </div>
 
           {/* Form Buttons */}
