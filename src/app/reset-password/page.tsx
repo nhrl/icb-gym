@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function Resetpassword() {
   const router = useRouter();
@@ -62,11 +64,11 @@ export default function Resetpassword() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-4">Reset Password</h1>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="bg-backgroujd border border-border p-8 rounded shadow-md w-full max-w-md">
+        <h1 className="text-2xl font-bold text-foreground mb-4">Reset Password</h1>
         {successMessage && <p className="text-green-600 mb-4">{successMessage}</p>}
-        {error && <p className="text-red-600 mb-4">{error}</p>}
+        {error && <p className="text-destructive mb-4">{error}</p>}
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="password" className="block text-gray-700 mb-2">
@@ -96,12 +98,13 @@ export default function Resetpassword() {
               required
             />
           </div>
-          <button
+          <Button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
+            className="w-full py-2 px-4 rounded"
+            variant="secondary"
           >
             Submit
-          </button>
+          </Button>
         </form>
       </div>
     </div>
