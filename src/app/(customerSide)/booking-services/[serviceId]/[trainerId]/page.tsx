@@ -80,6 +80,7 @@ export default function TrainerDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast(); // Use the toast hook from Shadcn
   const [breadcrumbLink, setBreadcrumbLink] = useState(`/booking-services/${serviceId}`);
+  const [isDialogOpen, setIsDialogOpen] = useState(false); 
 
   const [howtopay] = useState([
     {
@@ -252,12 +253,14 @@ export default function TrainerDetailPage() {
         description: message.message,
         duration: 3000,
       });
+      setIsDialogOpen(false);
     } else {
       console.log(message.error);
       toast({
         title: "Booking Failed",
         description: message.message,
         duration: 3000,
+        variant: "destructive",
       });
     }
   }
@@ -410,12 +413,13 @@ export default function TrainerDetailPage() {
                   {/*Button*/}    
                   <div className="gap-2 flex flex-col">
 
-                  <Dialog>
+                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                       <DialogTrigger asChild>
                         <Button
                           variant="secondary"
                           className="rounded-full w-full"
                           disabled={assignment.current_capacity >= assignment.max_capacity}
+                          onClick={() => setIsDialogOpen(true)} 
                         >
                           <BookOpenIcon className="h-4 w-4" />
                           {assignment.current_capacity >= assignment.max_capacity
@@ -431,10 +435,9 @@ export default function TrainerDetailPage() {
                           </DialogDescription>
                         </DialogHeader>
                         <div className="flex justify-end space-x-2 mt-4">
-                          <Button variant="outline">Cancel</Button>
+                          <Button variant="outline"  onClick={() => setIsDialogOpen(false)}>Cancel</Button>
                           <Button
                             variant="secondary"
-                            className="bg-primary text-primary-foreground"
                             onClick={addBooking}
                           >
                             Yes, Book this Trainer
