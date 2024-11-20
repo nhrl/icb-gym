@@ -17,7 +17,9 @@ import CryptoJS from "crypto-js";
 
 const loginFormSchema = zod.object({
   email: zod.string().email(),
-  password: zod.string().min(8),
+  password: zod
+    .string()
+    .min(8, { message: "Password must be at least 8 characters long" }),
 });
 
 interface loginProps {
@@ -178,18 +180,18 @@ export default function LoginModal({ onClose }: loginProps) {
                 </FormItem>
               )}
             />
-            <h4
-              className="p-none w-full flex text-left text-muted-foreground cursor-pointer"
+            <p
+              className="p-none w-full flex text-left text-muted-foreground cursor-pointer text-xs"
               onClick={handleForgotPassword} // Trigger forgot password handler
             >
               Forgot Password?
-            </h4>
+            </p>
           </div>
 
           <div className="items-center gap-4 flex flex-col">
             <Button
               type="submit"
-              className="mt-4 py-2 px-4 rounded w-full flex flex-row gap-2 hover:bg-primary/90 hover:text-[#0a0a0a]"
+              className="py-2 px-4 rounded w-full flex flex-row gap-2 hover:bg-primary/90 hover:text-[#0a0a0a]"
               variant="secondary"
             >
               <ArrowRightEndOnRectangleIcon className="h-4 w-4" />
@@ -210,9 +212,9 @@ export default function LoginModal({ onClose }: loginProps) {
 
       {/* Forgot Password Success Popup */}
       {isPopupVisible && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-            <h3 className="text-lg font-semibold">Reset Link Sent</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background bg-opacity-50 border-border border">
+          <div className="bg-background p-6 rounded-lg shadow-lg text-center">
+            <h3 className="text-lg font-semibold text-foreground">Reset Link Sent</h3>
             <p className="text-sm text-muted-foreground">
               We have sent a password reset link to your email. Please check your inbox.
             </p>

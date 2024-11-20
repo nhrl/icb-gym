@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import logo from "../assets/logos/logodark.png";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   ArrowRightEndOnRectangleIcon,
   ArrowUpLeftIcon,
@@ -195,10 +196,7 @@ const SideBar: React.FC<SideProps> = ({ className }) => {
               <Image src={logo} alt="icblogo" className="inline h-8 w-8" />
             </div>
 
-            <Button onClick={toggleTheme} variant="outline" className="cursor-pointer">
-              {theme === 'light' ? <div className="flex flex-row items-center text-xs"><SunIcon className="h-3 w-3 mr-2" />Light</div>:  <div className="flex flex-row items-center text-xs"><MoonIcon className="h-3 w-3 mr-2" />Dark</div>}
-            </Button>
-
+  
             {/* Render Sidebar Buttons */}
             <div className="flex flex-col gap-6">
               {/* Maintenance Section */}
@@ -216,12 +214,32 @@ const SideBar: React.FC<SideProps> = ({ className }) => {
               </div>
             </div>
 
-          
+          <div className="flex flex-col gap-4">
+              <div className="flex flex-row w-full justify-between">
+                {theme === 'light' ? (
+                  <div className="flex flex-row items-center text-sm">
+                    <SunIcon className="h-4 w-4 mr-2" />
+                    Light
+                  </div>
+                ) : (
+                  <div className="flex flex-row items-center text-sm">
+                    <MoonIcon className="h-4 w-4 mr-2" />
+                    Dark
+                  </div>
+                )}
 
-            <Button variant="outline" className="gap-2 items-center flex flex-row" onClick={signOut}>
-              <ArrowRightEndOnRectangleIcon className="h-4 w-4" />
-              Signout
-            </Button>
+                <Switch
+                  checked={theme === 'dark'}
+                  onCheckedChange={toggleTheme} // Handle theme toggle
+                  className="mr-2"
+                />
+            </div>
+
+              <Button variant="outline" className="gap-2 items-center flex flex-row" onClick={signOut}>
+                <ArrowRightEndOnRectangleIcon className="h-4 w-4" />
+                Signout
+              </Button>
+            </div>
           </div>
         </div>
       </aside>
