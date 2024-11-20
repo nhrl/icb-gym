@@ -27,17 +27,6 @@ import {
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import TrainerActions from "./actions"; 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
-import TrainerEditForm from "@/components/mngComponents/trainerEditForm";
-import TrainerAssignForm from "@/components/mngComponents/trainerAssignForm"; // Assignment form for trainers
 
 // Define the shape of your data based on the Trainers type
 export type Trainers = {
